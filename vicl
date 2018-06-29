@@ -1,0 +1,3 @@
+#!/bin/bash
+
+clover2 ~/.clover2/vicl/viclone.ocl $@

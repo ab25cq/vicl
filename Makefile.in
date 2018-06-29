@@ -1,0 +1,98 @@
+#######################################################
+# installed directories
+#######################################################
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+datadir=@datadir@
+mandir=@mandir@
+sharedstatedir=@sharedstatedir@
+sysconfdir=@sysconfdir@/clover2
+includedir=@includedir@/clover2
+datarootdir=@datarootdir@/clover2
+docdir=@datadir@/doc
+libdir=@libdir@
+
+
+##########################################################
+# environmnet variables
+##########################################################
+CC=@CC@
+CXX=@CXX@
+INSTALL=@INSTALL@
+CFLAGS=@CFLAGS@
+LIBS=@LIBS@
+OS=@OS@
+DESTDIR=@DESTDIR@
+OBJS=@OBJS@
+CXXFLAGS=@CXXFLAGS@
+
+##########################################################
+# main
+##########################################################
+all: vicl
+
+vicl: Clover.oclcl ViClone.oclcl viclone.ocl pre-install
+
+Clover.oclcl: Fundamental.clcl
+	cclover2 -core Fundamental.clcl
+	if test -e Clover.bc; then bclover2 Clover.bc; fi
+
+ViClone.oclcl: ViClone.clcl
+	cclover2 ViClone.clcl
+	if test -e ViClone.bc; then bclover2 ViClone.bc; fi
+
+viclone.ocl: viclone.cl
+	cclover2 viclone.cl
+
+pre-install:
+	mkdir -p $(HOME)/.clover2/vicl
+	install -m 644 Clover.oclcl $(HOME)/.clover2/vicl
+	if test -e libClover.so.1.0.0; then install -m 755 libClover.so.1.0.0 $(HOME)/.clover2/vicl; cp -a libClover.so $(HOME)/.clover2/vicl; fi
+	install -m 644 ViClone.oclcl $(HOME)/.clover2/vicl
+	if test -e libViClone.so.1.0.0; then install -m 755 libViClone.so.1.0.0 $(HOME)/.clover2/vicl; cp -a libViClone.so $(HOME)/.clover2/vicl; fi
+	install -m 644 viclone.ocl $(HOME)/.clover2/vicl
+
+#########################################################
+# install
+#########################################################
+install:
+	mkdir -p "$(DESTDIR)"/bin
+	install -m 755 vicl "$(DESTDIR)"/bin
+
+#########################################################
+# uninstall
+#########################################################
+uninstall:
+	rm -f ~/.clover2/Clover.oclcl
+	rm -f ~/.clover2/libClover.so.1.0.0
+	rm -f ~/.clover2/libClover.so
+	rm -f ~/.clover2/viclone.ocl
+	rm -f ~/.clover2/ViClone.oclcl
+	rm -f ~/.clover2/libViClone.so.1.0.0
+	rm -f ~/.clover2/libViClone.so
+	rm -f "$(DESTDIR)"/bin/vicl
+
+#########################################################
+# permission
+#########################################################
+permission:
+	chmod 644 *
+	chmod 755 .git man src configure
+	chmod 644 ViClone.clcl viclone.cl
+
+########################################################
+# clean
+########################################################
+clean:
+	rm -fR core.* core a.out *.oclcl *.bc *.s *.o *.ocl *.clm src/*.dwo *.ll *.so.1.0.0 *.so
+
+distclean: clean
+	rm -fR Makefile autom4te.cache
+
+########################################################
+# test
+########################################################
+test: 
+	@echo "Compile to test code..."
+

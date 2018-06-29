@@ -1,0 +1,702 @@
+
+class ViClone
+{
+    endOfAplication:bool;
+    cursorX:int;
+    cursorY:int;
+    scrollTopY:int;
+    scrollTopX:int;
+    mode: int;
+    keyEvents: lambda[](ViClone, int);
+
+    texts:EqualableList<String>;
+
+    enum { EDITMODE, INSERTMODE, COMMANDMODE }
+
+    def getLineInsideScreenSize(original_line: String, cursor_line:bool):Tuple2<String,Bool> {
+        maxx := getmaxx();
+
+        start_line := 0;
+        if(cursor_line) {
+            start_line = scrollTopX;
+        }
+
+        result := "";
+        n := 0;
+        for(i:=start_line; i<original_line.length(); i++) {
+            c := original_line.chars(i);
+
+            if(c == '\t') {
+                if(n >= maxx-8-1) {
+                    break;
+                }
+
+                result.append(">       ");
+                n += 8;
+            }
+            else {
+                if(n >= maxx-1) {
+                    break;
+                }
+
+                result.append(c);
+                n++;
+            }
+        }
+
+        over_maxx := i != original_line.length();
+
+        return (result, over_maxx);
+    }
+
+    def getLine(original_line:String):Tuple2<String,Bool> {
+        result := "";
+        for(i:=0; i<original_line.length(); i++) {
+            c := original_line.chars(i);
+
+            if(c == '\t') {
+                result.append(">       ");
+            }
+            else {
+                result.append(c);
+            }
+        }
+
+        maxx := getmaxx();
+
+        return (result, result.length() >= maxx-1);
+    }
+
+    def fixCursorAndScrollTop() {
+        maxy := getmaxy();
+
+        if(cursorY >= maxy) {
+            scroll_size := cursorY - maxy + 1;
+
+            scrollTopY += scroll_size;
+            cursorY -= scroll_size;
+
+            if(scrollTopY >= texts.length()) {
+                scrollTopY = texts.length()-1;
+            }
+
+            if(scrollTopY < 0) {
+                scrollTopY = 0;
+            }
+        }
+
+        if(cursorY < 0) {
+            scroll_size := -cursorY;
+
+            cursorY = 0;
+            scrollTopY -= scroll_size;
+
+            if(scrollTopY >= texts.length()) {
+                scrollTopY = texts.length()-1;
+            }
+
+            if(scrollTopY < 0) {
+                scrollTopY = 0;
+            }
+        }
+
+        if(cursorY < 0) {
+            cursorY = 0;
+        }
+
+        if(cursorY >= maxy) {
+            cursorY = maxy -1;
+        }
+
+        if(scrollTopY + maxy >= texts.length()) {
+            maxy2 := texts.length() - scrollTopY;
+
+            if(cursorY >= maxy2) {
+                cursorY = maxy2-1;
+            }
+        }
+
+        original_line := texts.items(scrollTopY+cursorY);
+        (line, over_maxx) := getLineInsideScreenSize(original_line, false);
+
+        maxx := getmaxx();
+
+        if(line.equals("")) {
+            cursorX = 0;
+        }
+        elif(cursorX >= maxx-1) {
+            if(over_maxx) {
+                scroll_size := cursorX - maxx + 1;
+
+                cursorX -= scroll_size + 1;
+                scrollTopX += scroll_size + 1;
+
+                if(scrollTopX >= original_line.length()-maxx+1) {
+                    scrollTopX = original_line.length()-maxx+1;
+                }
+            }
+            else {
+                cursorX = line.length()-1;
+            }
+        }
+        elif(cursorX >= line.length()) {
+            cursorX = line.length()-1;
+        }
+    }
+
+    def initialize() {
+        endOfAplication = false;
+        cursorX = 0;
+        cursorY = 0;
+        scrollTopY = 0;
+        scrollTopX = 0;
+
+        mode = EDITMODE;
+
+        keyEvents = new lambda[KEY_MAX](ViClone, int)();
+        
+        keyEvents['Z'.to_int] = lambda(self:ViClone, key:int) {
+            endOfAplication = true;
+        }
+        keyEvents['j'.to_int] = lambda(self:ViClone, key:int) {
+            cursorY++;
+
+            maxy := getmaxy();
+
+            if(cursorY >= maxy) {
+                scrollTopY++;
+                cursorY--;
+            }
+
+            if(scrollTopY + cursorY >= texts.length()) {
+                scrollTopY--;
+                cursorY--;
+
+                if(scrollTopY < 0) {
+                    scrollTopY = 0;
+                }
+                if(cursorY < 0) {
+                    cursorY = 0;
+                }
+            }
+
+            original_line := texts.items(scrollTopY+cursorY);
+            (line, over_maxx) := getLineInsideScreenSize(original_line, false);
+
+            if(line.equals("")) {
+                cursorX = 0;
+            }
+            else {
+                if(cursorX >= line.length()) {
+                    cursorX = line.length()-1;
+                }
+            }
+
+            scrollTopX = 0;
+        }
+        keyEvents['k'.to_int] = lambda(self:ViClone, key:int) {
+            cursorY--;
+
+            maxy := getmaxy();
+
+            if(cursorY < 0) {
+                scrollTopY--;
+                cursorY++;
+            }
+
+            if(scrollTopY < 0) {
+                scrollTopY = 0;
+            }
+
+            original_line := texts.items(scrollTopY+cursorY);
+            (line, over_maxx) := getLineInsideScreenSize(original_line, false);
+
+            if(line.equals("")) {
+                cursorX = 0;
+            }
+            else {
+                if(cursorX >= line.length()) {
+                    cursorX = line.length()-1;
+                }
+            }
+
+            scrollTopX = 0;
+        }
+        keyEvents['h'.to_int] = lambda(self:ViClone, key:int) {
+            cursorX--;
+
+            if(cursorX < 0) {
+                scrollTopX -= -cursorX;
+
+                if(scrollTopX < 0) {
+                    scrollTopX = 0;
+                }
+
+                cursorX = 0;
+            }
+        }
+        keyEvents['l'.to_int] = lambda(self:ViClone, key:int) {
+            self.cursorX++;
+
+            maxx := getmaxx();
+
+            original_line := texts.items(scrollTopY+cursorY);
+            (line, over_maxx) := getLineInsideScreenSize(original_line, false);
+
+            if(line.equals("")) {
+                cursorX = 0;
+            }
+            elif(cursorX >= maxx-1) {
+                if(over_maxx) {
+                    cursorX--;
+                    scrollTopX++;
+
+                    if(scrollTopX >= original_line.length()-maxx+1) {
+                        scrollTopX = original_line.length()-maxx+1;
+                    }
+                }
+                else {
+                    cursorX = line.length()-1;
+                }
+            }
+            elif(cursorX >= line.length()) {
+                cursorX = line.length()-1;
+            }
+        }
+        keyEvents['w'.to_int] = lambda(self:ViClone, key:int) {
+            original_line := texts.items(scrollTopY+cursorY);
+
+            (line,over_maxx) := getLine(original_line);
+
+            if(original_line.identifyWith(null).negative()) {
+                if(line.equals("")) {
+                    cursorX = 0;
+                    cursorY++;
+                    scrollTopX = 0;
+                }
+                else {
+                    c := line.chars(scrollTopX+cursorX);
+
+                    if(c.isalpha()) {
+                        while(c.isalpha()) {
+                            cursorX++;
+
+                            if(scrollTopX+cursorX >= line.length()-1) {
+                                cursorX = 0;
+                                cursorY++;
+                                scrollTopX = 0;
+                                break;
+                            }
+
+                            c = line.chars(scrollTopX+cursorX);
+                        }
+                    }
+                    elif(c.isdigit()) {
+                        while(c.isdigit()) {
+                            cursorX++;
+
+                            if(scrollTopX+cursorX >= line.length()-1) {
+                                cursorX = 0;
+                                cursorY++;
+                                scrollTopX = 0;
+                                break;
+                            }
+
+                            c = line.chars(scrollTopX+cursorX);
+                        }
+                    }
+                    elif(c.isspace()) {
+                        while(c.isspace()) {
+                            cursorX++;
+
+                            if(scrollTopX+cursorX >= line.length()-1) {
+                                cursorX = 0;
+                                cursorY++;
+                                scrollTopX = 0;
+                                break;
+                            }
+
+                            c = line.chars(scrollTopX+cursorX);
+                        }
+                    }
+                    else {
+                        while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
+                            cursorX++;
+
+                            if(scrollTopX+cursorX >= line.length()-1) {
+                                cursorX = 0;
+                                cursorY++;
+                                scrollTopX = 0;
+                                break;
+                            }
+
+                            c = line.chars(scrollTopX+cursorX);
+                        }
+                    }
+                }
+
+                maxx := getmaxx();
+
+                if(line.equals("")) {
+                    cursorX = 0;
+                }
+                elif(cursorX >= maxx-1) {
+                    if(over_maxx) {
+                        if(scrollTopX >= original_line.length()-maxx+1) {
+                            cursorX = 0;
+                            cursorY++;
+                            scrollTopX = 0;
+                        }
+                        else {
+                            scroll_size := cursorX - maxx + 1;
+
+                            cursorX-=scroll_size + 1;
+                            scrollTopX+=scroll_size + 1;
+
+                            if(scrollTopX >= original_line.length()-maxx+1) {
+                                scrollTopX = original_line.length()-maxx+1;
+                            }
+                        }
+                    }
+                    else {
+                        cursorX = line.length()-1;
+                    }
+
+                    if(cursorX >= maxx-1) {
+                        cursorX = 0;
+                        scrollTopX = 0;
+                        cursorY++;
+                    }
+                }
+                elif(cursorX >= line.length()) {
+                    cursorX = line.length()-1;
+                    scrollTopX = 0;
+                }
+
+                maxy := getmaxy();
+
+                if(cursorY >= maxy) {
+                    scrollTopY++;
+                    cursorY--;
+                }
+
+                if(scrollTopY + cursorY >= texts.length()) {
+                    scrollTopY--;
+                    cursorY--;
+
+                    if(scrollTopY < 0) {
+                        scrollTopY = 0;
+                    }
+                    if(cursorY < 0) {
+                        cursorY = 0;
+                    }
+                }
+            }
+        }
+        keyEvents['b'.to_int] = lambda(self:ViClone, key:int) {
+            original_line := texts.items(scrollTopY+cursorY);
+
+            (line,over_maxx) := getLine(original_line);
+
+            if(original_line.identifyWith(null).negative()) {
+                if(line.equals("")) {
+                    cursorX = 9999;
+                    cursorY--;
+                }
+                else {
+                    c := line.chars(scrollTopX+cursorX);
+
+                    if(c.isalpha()) {
+                        while(c.isalpha()) {
+                            cursorX--;
+
+                            if(scrollTopX+cursorX < 0) {
+                                if(cursorY == 0) {
+                                    cursorX = 0;
+                                    scrollTopX = 0;
+                                }
+                                else {
+                                    cursorX = 9999;
+                                    cursorY--;
+                                    scrollTopX = 0;
+                                }
+                                break;
+                            }
+
+                            c = line.chars(scrollTopX+cursorX);
+                        }
+                    }
+                    elif(c.isdigit()) {
+                        while(c.isdigit()) {
+                            cursorX--;
+
+                            if(scrollTopX+cursorX < 0) {
+                                if(cursorY == 0) {
+                                    cursorX = 0;
+                                    scrollTopX = 0;
+                                }
+                                else {
+                                    cursorX = 9999;
+                                    cursorY--;
+                                    scrollTopX = 0;
+                                }
+                                break;
+                            }
+
+                            c = line.chars(scrollTopX+cursorX);
+                        }
+                    }
+                    elif(c.isspace()) {
+                        while(c.isspace()) {
+                            cursorX--;
+
+                            if(scrollTopX+cursorX < 0) {
+                                if(cursorY == 0) {
+                                    cursorX = 0;
+                                    scrollTopX = 0;
+                                }
+                                else {
+                                    cursorX = 9999;
+                                    cursorY--;
+                                    scrollTopX = 0;
+                                }
+                                break;
+                            }
+
+                            c = line.chars(scrollTopX+cursorX);
+                        }
+                    }
+                    else {
+                        while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
+                            cursorX--;
+
+                            if(scrollTopX+cursorX < 0) {
+                                if(cursorY == 0) {
+                                    cursorX = 0;
+                                    scrollTopX = 0;
+                                }
+                                else {
+                                    cursorX = 9999;
+                                    cursorY--;
+                                    scrollTopX = 0;
+                                }
+                                break;
+                            }
+
+                            c = line.chars(scrollTopX+cursorX);
+                        }
+                    }
+                }
+
+                if(cursorX < 0) {
+                    scrollTopX -= -cursorX;
+                    cursorX = 0;
+                }
+
+                maxx := getmaxx();
+
+                original_line = texts.items(scrollTopY+cursorY);
+                (line, over_maxx) = getLineInsideScreenSize(original_line, false);
+
+                if(line.equals("")) {
+                    cursorX = 0;
+                }
+                elif(cursorX >= maxx-1) {
+                    if(over_maxx) {
+                        scroll_size := cursorX - maxx + 1;
+
+                        cursorX -= scroll_size + 1;
+                        scrollTopX += scroll_size + 1;
+
+                        if(scrollTopX >= original_line.length()-maxx+1) {
+                            scrollTopX = original_line.length()-maxx+1;
+                        }
+                    }
+                    else {
+                        cursorX = line.length()-1;
+                    }
+                }
+                elif(cursorX >= line.length()) {
+                    cursorX = line.length()-1;
+                }
+
+                if(cursorY < 0) {
+                    scrollTopY--;
+                    cursorY = 0;
+                }
+
+                if(scrollTopY < 0) {
+                    scrollTopY = 0;
+                }
+
+                if(scrollTopY + cursorY >= texts.length()) {
+                    scrollTopY-= scrollTopY + cursorY - texts.length();
+                }
+            }
+        }
+        keyEvents['0'.to_int] = lambda(self:ViClone, key:int) {
+            cursorX = 0;
+            scrollTopX = 0;
+        }
+        keyEvents['$'.to_int] = lambda(self:ViClone, key:int) {
+            maxx := getmaxx();
+
+            original_line := texts.items(scrollTopY+cursorY);
+            (line, over_maxx) := getLineInsideScreenSize(original_line, false);
+
+            if(line.equals("")) {
+                cursorX = 0;
+            }
+            elif(over_maxx) {
+                cursorX = line.length()-1;
+                scrollTopX = original_line.length()-maxx+1;
+            }
+            else {
+                cursorX = line.length()-1;
+            }
+        }
+
+        ### Controll Keys ###
+        keyEvents[('D'-'A').to_int+1] = lambda(self:ViClone, key:int) {  # Control-D
+            maxy := getmaxy();
+            self.cursorY += maxy / 2;
+
+            scrollTopX = 0;
+
+            fixCursorAndScrollTop();
+
+            clear();
+            view();
+        }
+        keyEvents[('U'-'A').to_int+1] = lambda(self:ViClone, key:int) {  # Control-U
+            maxy := getmaxy();
+            self.cursorY -= maxy / 2;
+
+            scrollTopX = 0;
+
+            fixCursorAndScrollTop();
+
+            clear();
+            view();
+        }
+        keyEvents[('L'-'A').to_int+1] = lambda(self:ViClone, key:int) {  # Control-L
+            clear();
+            view();
+        }
+
+        keyEvents['a'.to_int] = lambda(self:ViClone, key:int) {
+            mode = INSERTMODE;
+        }
+
+        ### read file ###
+        if(Clover.ARGV.length() == 2) {
+            texts = EqualableList<String>();
+        }
+        elif(Clover.ARGV.length() == 3) {
+            fname := Clover.ARGV.items(2);
+            texts = fname.toPath().read().toString().split(/\n/);
+        }
+        else {
+            throw Exception("vi clone can't edit multiple files");
+        }
+
+        ### start cursesw ###
+        initscr();
+        keypad(stdscr, true);
+        noecho();
+    }
+
+    def finalize() {
+        endwin();
+    }
+
+    def clearWithoutBlink() {
+        maxx := getmaxx();
+        maxy := getmaxy();
+
+        line := " ".multiply(maxx);
+        line2 := " ".multiply(maxx-1);
+
+        for(i:=0; i<maxy; i++) {
+            if(i == maxy -1) {
+                line2.mvprintw(i, 0, "%s");
+            }
+            else {
+                line.mvprintw(i, 0, "%s");
+            }
+        }
+    }
+
+    def view() {
+        clearWithoutBlink();
+
+        maxx := getmaxx();
+        maxy := getmaxy();
+
+        visible_texts := texts.subList(scrollTopY, scrollTopY + maxy);
+
+        y := 0;
+        visible_texts.each {
+            (line, over_maxx) := getLineInsideScreenSize(it, cursorY == y);
+
+            ### cursor ####
+            if(cursorY == y) {
+                if(line.length() == 0) {
+                    attron(A_REVERSE);
+                    " ".mvprintw(y,0, "%s");
+                    attroff(A_REVERSE);
+                }
+                else {
+                    line.subString(0, cursorX).mvprintw(y, 0, "%s");
+
+                    c := line.chars(cursorX);
+
+                    attron(A_REVERSE);
+                    c.toString().mvprintw(y, cursorX, "%s");
+                    attroff(A_REVERSE);
+
+                    line.subString(cursorX+1, -1).mvprintw(y, cursorX+1, "%s");
+                }
+            }
+            ### visible line ###
+            else {
+                if(line.length() != 0) {
+                    line.mvprintw(y, 0, "%s");
+                }
+            }
+
+            y++;
+        }
+
+        refresh();
+    }
+
+    def input(): int {
+        return getch();
+    }
+
+    def insertMode(key:int) {
+        when(key) {
+            case (('['-'A').to_int+1) {
+                mode = EDITMODE;
+            }
+        }
+    }
+
+    def runKeyInvent(key:int) {
+        when(mode) {
+            case (EDITMODE) {
+                if(keyEvents[key].identifyWith(null).negative()) {
+                    keyEvents[key](self, key);
+                }
+            }
+
+            case (INSERTMODE) {
+                insertMode(key);
+            }
+
+            case (COMMANDMODE) {
+            }
+        }
+    }
+}

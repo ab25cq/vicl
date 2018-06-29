@@ -1,0 +1,11 @@
+include "MyOwnLibrary.clcl"
+
+class Clover 
+{
+    def onException(message:String, in_try:bool):static {
+        if(!in_try) {
+            endwin();
+            inherit(message, in_try);
+        }
+    }
+}
