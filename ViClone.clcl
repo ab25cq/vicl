@@ -685,9 +685,11 @@ class ViClone
         when(key) {
             case (('['-'A').to_int+1) {
                 mode = EDITMODE;
+                fixCursorAndScrollTop();
             }
 
             else {
+                maxx := getmaxx();
                 line := texts.items(cursorY + scrollTopY);
 
                 if(line.identifyWith(null).negative()) {
@@ -695,6 +697,11 @@ class ViClone
                     if(c.isalnum()) {
                         line.insert(cursorX + scrollTopX, c.toString());
                         cursorX++;
+
+                        if(cursorX >= maxx-1) {
+                            scrollTopX++;
+                            cursorX--;
+                        }
                     }
                 }
             }
