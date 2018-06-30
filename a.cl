@@ -1,9 +1,7 @@
-a:Tuple2<String, Integer> = ("AAA", 1);
 
-(b,c) := a;
-#(b,c) := ("AAA", 1);
+a := "ABC";
 
-a.toString().println();
+a.insert(1, "c");
+a.insert(1, "c");
 
-b.toString().println();
-c.toString().println();
+a.println();

@@ -1,13 +1,9 @@
 vicl := ViClone();
 
-while(true) {
+while(!vicl.endOfAplication) {
     vicl.view();
 
     key := vicl.input();
 
     vicl.runKeyInvent(key);
-
-    if(vicl.endOfAplication) {
-        break;
-    }
 }

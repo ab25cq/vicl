@@ -584,7 +584,13 @@ class ViClone
             view();
         }
 
+        keyEvents['i'.to_int] = lambda(self:ViClone, key:int) {
+            mode = INSERTMODE;
+        }
+
         keyEvents['a'.to_int] = lambda(self:ViClone, key:int) {
+            cursorX++;
+
             mode = INSERTMODE;
         }
 
@@ -679,6 +685,18 @@ class ViClone
         when(key) {
             case (('['-'A').to_int+1) {
                 mode = EDITMODE;
+            }
+
+            else {
+                line := texts.items(cursorY + scrollTopY);
+
+                if(line.identifyWith(null).negative()) {
+                    c := key.to_char;
+                    if(c.isalnum()) {
+                        line.insert(cursorX + scrollTopX, c.toString());
+                        cursorX++;
+                    }
+                }
             }
         }
     }
