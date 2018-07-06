@@ -8,10 +8,52 @@ class ViClone
     scrollTopX:int;
     mode: int;
     keyEvents: lambda[](ViClone, int);
+    fileName:String;
+    startPositionOfInsertMode:int;
+    tabSize:int;
 
     texts:EqualableList<String>;
 
     enum { EDITMODE, INSERTMODE, COMMANDMODE }
+
+    def initialize() {
+        endOfAplication = false;
+        cursorX = 0;
+        cursorY = 0;
+        scrollTopY = 0;
+        scrollTopX = 0;
+        startPositionOfInsertMode = 0;
+        tabSize = 4;
+
+        mode = EDITMODE;
+
+        keyEvents = new lambda[KEY_MAX](ViClone, int)();
+
+        ### read file ###
+        if(Clover.ARGV.length() == 2) {
+            texts = EqualableList<String>();
+        }
+        elif(Clover.ARGV.length() == 3) {
+            fname := Clover.ARGV.items(2);
+            texts = fname.toPath().read().toString().split(/\n/);
+            fileName = fname.clone();
+        }
+        else {
+            throw Exception("vi clone can't edit multiple files");
+        }
+
+        ### start cursesw ###
+        initscr();
+        keypad(stdscr, true);
+        noecho();
+
+        ### default key events ###
+        defaultKeyEnvents();
+    }
+
+    def finalize() {
+        endwin();
+    }
 
     def getLineInsideScreenSize(original_line: String, cursor_line:bool):Tuple2<String,Bool> {
         maxx := getmaxx();
@@ -68,7 +110,7 @@ class ViClone
     }
 
     def fixCursorAndScrollTop() {
-        maxy := getmaxy();
+        maxy := getmaxy()-1;
 
         if(cursorY >= maxy) {
             scroll_size := cursorY - maxy + 1;
@@ -144,24 +186,40 @@ class ViClone
         }
     }
 
-    def initialize() {
-        endOfAplication = false;
-        cursorX = 0;
-        cursorY = 0;
-        scrollTopY = 0;
+    def enterNewLine() {
+        maxx := getmaxx();
+        maxy := getmaxy();
+
+        original_line := texts.items(scrollTopY+cursorY);
+
+        spaces_num := 0;
+        try {
+            spaces_num = original_line.scan(/^\s+/).items(0).length() + 1;
+            cursorX = spaces_num + 1;
+        } catch(e:Exception) {
+            spaces_num = -1;
+            cursorX = 0;
+        }
+
         scrollTopX = 0;
-
-        mode = EDITMODE;
-
-        keyEvents = new lambda[KEY_MAX](ViClone, int)();
+        cursorY++;
         
+        spaces := " ".multiply(spaces_num);
+        texts.insert(cursorY+scrollTopY, spaces);
+
+        fixCursorAndScrollTop();
+
+        startPositionOfInsertMode = cursorX + scrollTopX;
+    }
+
+    def defaultKeyEnvents() {
         keyEvents['Z'.to_int] = lambda(self:ViClone, key:int) {
             endOfAplication = true;
         }
         keyEvents['j'.to_int] = lambda(self:ViClone, key:int) {
             cursorY++;
 
-            maxy := getmaxy();
+            maxy := getmaxy()-1;
 
             if(cursorY >= maxy) {
                 scrollTopY++;
@@ -197,7 +255,7 @@ class ViClone
         keyEvents['k'.to_int] = lambda(self:ViClone, key:int) {
             cursorY--;
 
-            maxy := getmaxy();
+            maxy := getmaxy()-1;
 
             if(cursorY < 0) {
                 scrollTopY--;
@@ -373,7 +431,7 @@ class ViClone
                     scrollTopX = 0;
                 }
 
-                maxy := getmaxy();
+                maxy := getmaxy()-1;
 
                 if(cursorY >= maxy) {
                     scrollTopY++;
@@ -558,7 +616,7 @@ class ViClone
 
         ### Controll Keys ###
         keyEvents[('D'-'A').to_int+1] = lambda(self:ViClone, key:int) {  # Control-D
-            maxy := getmaxy();
+            maxy := getmaxy()-1;
             self.cursorY += maxy / 2;
 
             scrollTopX = 0;
@@ -569,7 +627,7 @@ class ViClone
             view();
         }
         keyEvents[('U'-'A').to_int+1] = lambda(self:ViClone, key:int) {  # Control-U
-            maxy := getmaxy();
+            maxy := getmaxy()-1;
             self.cursorY -= maxy / 2;
 
             scrollTopX = 0;
@@ -584,36 +642,175 @@ class ViClone
             view();
         }
 
+        ### Insert Mode ###
         keyEvents['i'.to_int] = lambda(self:ViClone, key:int) {
             mode = INSERTMODE;
+            startPositionOfInsertMode = cursorX + scrollTopX;
         }
 
         keyEvents['a'.to_int] = lambda(self:ViClone, key:int) {
+            maxx := getmaxx();
+
             cursorX++;
 
+            if(cursorX >= maxx-1) {
+                scrollTopX++;
+                cursorX--;
+            }
+
             mode = INSERTMODE;
+            startPositionOfInsertMode = cursorX + scrollTopX;
         }
+        keyEvents['A'.to_int] = lambda(self:ViClone, key:int) {
+            maxx := getmaxx();
 
-        ### read file ###
-        if(Clover.ARGV.length() == 2) {
-            texts = EqualableList<String>();
-        }
-        elif(Clover.ARGV.length() == 3) {
-            fname := Clover.ARGV.items(2);
-            texts = fname.toPath().read().toString().split(/\n/);
-        }
-        else {
-            throw Exception("vi clone can't edit multiple files");
-        }
+            original_line := texts.items(scrollTopY+cursorY);
+            (line,over_max) := getLine(original_line);
 
-        ### start cursesw ###
-        initscr();
-        keypad(stdscr, true);
-        noecho();
+            if(line.length() > maxx-1) {
+                scrollTopX = line.length() - maxx +2;
+                cursorX = maxx-2;
+            }
+            else {
+                cursorX = line.length();
+            }
+
+            mode = INSERTMODE;
+            startPositionOfInsertMode = cursorX + scrollTopX;
+        }
+        keyEvents['o'.to_int] = lambda(self:ViClone, key:int) {
+            enterNewLine();
+
+            mode = INSERTMODE;
+            startPositionOfInsertMode = cursorX + scrollTopX;
+        }
     }
 
-    def finalize() {
-        endwin();
+    def input(): int {
+        return getch();
+    }
+
+    def insertMode(key:int) {
+        when(key) {
+            case (('['-'A').to_int+1) {
+                mode = EDITMODE;
+                fixCursorAndScrollTop();
+            }
+
+            ### Backspace ###
+            case (('H'-'A').to_int+1, KEY_BACKSPACE) {
+                maxx := getmaxx();
+                original_line := texts.items(cursorY + scrollTopY);
+                (line,over_max) := getLine(original_line);
+
+                if(original_line.identifyWith(null).negative()) {
+                    try {
+                        if(scrollTopX+cursorX > 0 && cursorX + scrollTopX > startPositionOfInsertMode) {
+                            original_line.chars(cursorX + scrollTopX);
+
+                            cursorX--;
+                            original_line.delete(cursorX + scrollTopX);
+
+                            if(cursorX < 0) {
+                                scrollTopX--;
+                                cursorX++;
+
+                                if(scrollTopX < 0) {
+                                    scrollTopX = 0;
+                                    cursorX = 0;
+                                }
+                            }
+                        }
+                    }
+                    catch(e:Exception) {
+                        fixCursorAndScrollTop();
+                    }
+                }
+            }
+
+            case ('\n'.to_int) {
+                enterNewLine();
+            }
+
+            case (('D'-'A').to_int+1) {
+                maxx := getmaxx();
+                original_line := texts.items(cursorY + scrollTopY);
+                (line,over_max) := getLine(original_line);
+
+                if(original_line.identifyWith(null).negative()) {
+                    try {
+                        if(scrollTopX+cursorX > 0) {
+                            cursorX-=4;
+                            original_line.delete((cursorX + scrollTopX)..(cursorX + scrollTopX+4));
+
+                            if(cursorX < 0) {
+                                scrollTopX--;
+                                cursorX++;
+
+                                if(scrollTopX < 0) {
+                                    scrollTopX = 0;
+                                    cursorX = 0;
+                                }
+                            }
+                        }
+                    }
+                    catch(e:Exception) {
+                        fixCursorAndScrollTop();
+                    }
+                }
+                
+            }
+
+            case ('\t'.to_int) {
+                maxx := getmaxx();
+                line := texts.items(cursorY + scrollTopY);
+
+                if(line.identifyWith(null).negative()) {
+                    line.insert(cursorX + scrollTopX, " ".multiply(tabSize));
+                    cursorX+=tabSize;
+
+                    if(cursorX >= maxx-1) {
+                        scrollTopX+=tabSize;
+                        cursorX-=tabSize;
+                    }
+                }
+            }
+
+            else {
+                maxx := getmaxx();
+                line := texts.items(cursorY + scrollTopY);
+
+                if(line.identifyWith(null).negative()) {
+                    c := key.to_char;
+                    if(c.isalnum() || c == ' ') {
+                        line.insert(cursorX + scrollTopX, c.toString());
+                        cursorX++;
+
+                        if(cursorX >= maxx-1) {
+                            scrollTopX++;
+                            cursorX--;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    def runKeyInvent(key:int) {
+        when(mode) {
+            case (EDITMODE) {
+                if(keyEvents[key].identifyWith(null).negative()) {
+                    keyEvents[key](self, key);
+                }
+            }
+
+            case (INSERTMODE) {
+                insertMode(key);
+            }
+
+            case (COMMANDMODE) {
+            }
+        }
     }
 
     def clearWithoutBlink() {
@@ -639,7 +836,7 @@ class ViClone
         maxx := getmaxx();
         maxy := getmaxy();
 
-        visible_texts := texts.subList(scrollTopY, scrollTopY + maxy);
+        visible_texts := texts.subList(scrollTopY, scrollTopY + maxy-1);
 
         y := 0;
         visible_texts.each {
@@ -674,54 +871,10 @@ class ViClone
             y++;
         }
 
+        attron(A_REVERSE);
+        mvprintw(maxy-1, 0, "%s %d(%d%%)", array { fileName, scrollTopY+cursorY, scrollTopY+cursorY/texts.length() });
+        attroff(A_REVERSE);
+
         refresh();
-    }
-
-    def input(): int {
-        return getch();
-    }
-
-    def insertMode(key:int) {
-        when(key) {
-            case (('['-'A').to_int+1) {
-                mode = EDITMODE;
-                fixCursorAndScrollTop();
-            }
-
-            else {
-                maxx := getmaxx();
-                line := texts.items(cursorY + scrollTopY);
-
-                if(line.identifyWith(null).negative()) {
-                    c := key.to_char;
-                    if(c.isalnum()) {
-                        line.insert(cursorX + scrollTopX, c.toString());
-                        cursorX++;
-
-                        if(cursorX >= maxx-1) {
-                            scrollTopX++;
-                            cursorX--;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    def runKeyInvent(key:int) {
-        when(mode) {
-            case (EDITMODE) {
-                if(keyEvents[key].identifyWith(null).negative()) {
-                    keyEvents[key](self, key);
-                }
-            }
-
-            case (INSERTMODE) {
-                insertMode(key);
-            }
-
-            case (COMMANDMODE) {
-            }
-        }
     }
 }

@@ -1,7 +1,10 @@
 
-a := "ABC";
+initscr();
+keypad(stdscr, true);
+noecho();
 
-a.insert(1, "c");
-a.insert(1, "c");
+key := getch();
 
-a.println();
+endwin();
+
+key.to_int().toString().println();
