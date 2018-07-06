@@ -770,9 +770,11 @@ class ViClone
                     cursorX+=tabSize;
 
                     if(cursorX >= maxx-1) {
-                        scrollTopX+=tabSize;
+                        scrollTopX += tabSize;
                         cursorX-=tabSize;
                     }
+
+                    fixCursorAndScrollTop();
                 }
             }
 
