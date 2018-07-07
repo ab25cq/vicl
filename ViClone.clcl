@@ -11,6 +11,8 @@ class ViClone
     fileName:String;
     startPositionOfInsertMode:int;
     tabSize:int;
+    statusLineInCommandMode:String;
+    modifiedText:bool;
 
     texts:EqualableList<String>;
 
@@ -24,6 +26,7 @@ class ViClone
         scrollTopX = 0;
         startPositionOfInsertMode = 0;
         tabSize = 4;
+        statusLineInCommandMode = "";
 
         mode = EDITMODE;
 
@@ -41,6 +44,8 @@ class ViClone
         else {
             throw Exception("vi clone can't edit multiple files");
         }
+
+        modifiedText = false;
 
         ### start cursesw ###
         initscr();
@@ -213,9 +218,6 @@ class ViClone
     }
 
     def defaultKeyEnvents() {
-        keyEvents['Z'.to_int] = lambda(self:ViClone, key:int) {
-            endOfAplication = true;
-        }
         keyEvents['j'.to_int] = lambda(self:ViClone, key:int) {
             cursorY++;
 
@@ -614,7 +616,6 @@ class ViClone
             }
         }
 
-        ### Controll Keys ###
         keyEvents[('D'-'A').to_int+1] = lambda(self:ViClone, key:int) {  # Control-D
             maxy := getmaxy()-1;
             self.cursorY += maxy / 2;
@@ -634,10 +635,6 @@ class ViClone
 
             fixCursorAndScrollTop();
 
-            clear();
-            view();
-        }
-        keyEvents[('L'-'A').to_int+1] = lambda(self:ViClone, key:int) {  # Control-L
             clear();
             view();
         }
@@ -683,6 +680,44 @@ class ViClone
 
             mode = INSERTMODE;
             startPositionOfInsertMode = cursorX + scrollTopX;
+        }
+
+        ### delete text ###
+        keyEvents['d'.to_int] = lambda(self:ViClone, key:int) {
+            key = getch();
+            if(key == 'd'.to_int) {
+                original_line := texts.items(cursorY + scrollTopY);
+
+                if(original_line.identifyWith(null).negative()) {
+                    texts.deleteAt(scrollTopY+cursorY);
+                }
+            }
+        }
+        keyEvents['x'.to_int] = lambda(self:ViClone, key:int) {
+            original_line := texts.items(cursorY + scrollTopY);
+
+            if(original_line.identifyWith(null).negative()) {
+                original_line.delete(cursorX + scrollTopX);
+
+                fixCursorAndScrollTop();
+            }
+        }
+
+        ### misc ###
+        keyEvents['Z'.to_int] = lambda(self:ViClone, key:int) {
+            key = getch();
+            if(key == 'Z'.to_int) {
+                texts.join("\n").write(fileName);
+                endOfAplication = true;
+            }
+        }
+        keyEvents[':'.to_int] = lambda(self:ViClone, key:int) {
+            mode = COMMANDMODE;
+            statusLineInCommandMode = ":";
+        }
+        keyEvents[('L'-'A').to_int+1] = lambda(self:ViClone, key:int) {  # Control-L
+            clear();
+            view();
         }
     }
 
@@ -798,6 +833,43 @@ class ViClone
         }
     }
 
+    def commandMode(key:int) {
+        when(key) {
+            case ('w'.to_int) {
+                statusLineInCommandMode.append("w");
+            }
+            case ('q'.to_int) {
+                statusLineInCommandMode.append("q");
+            }
+            case ('!'.to_int) {
+                statusLineInCommandMode.append("!");
+            }
+            case (('['-'A').to_int+1) {
+                mode = EDITMODE;
+            }
+            case (KEY_ENTER, ('J'-'A').to_int+1) {
+                if(statusLineInCommandMode.match(/w/) && statusLineInCommandMode.match(/q/)) {
+                    texts.join("\n").write(fileName);
+                    endOfAplication = true;
+                }
+                elif(statusLineInCommandMode.match(/q/) && statusLineInCommandMode.match(/!/)) {
+                    endOfAplication = true;
+                }
+                elif(statusLineInCommandMode.match(/w/)) {
+                    texts.join("\n").write(fileName);
+                    modifiedText = false;
+                }
+                elif(statusLineInCommandMode.match(/q/)) {
+                    if(!modifiedText) {
+                        endOfAplication = true;
+                    }
+                }
+
+                mode = EDITMODE;
+            }
+        }
+    }
+
     def runKeyInvent(key:int) {
         when(mode) {
             case (EDITMODE) {
@@ -807,10 +879,12 @@ class ViClone
             }
 
             case (INSERTMODE) {
+                modifiedText = true;
                 insertMode(key);
             }
 
             case (COMMANDMODE) {
+                commandMode(key);
             }
         }
     }
@@ -873,9 +947,16 @@ class ViClone
             y++;
         }
 
-        attron(A_REVERSE);
-        mvprintw(maxy-1, 0, "%s %d(%d%%)", array { fileName, scrollTopY+cursorY, scrollTopY+cursorY/texts.length() });
-        attroff(A_REVERSE);
+        if(mode == COMMANDMODE) {
+            attron(A_REVERSE);
+            statusLineInCommandMode.mvprintw(maxy-1, 0, "%s");
+            attroff(A_REVERSE);
+        }
+        else {
+            attron(A_REVERSE);
+            mvprintw(maxy-1, 0, "%s %d(%d%%)", array { fileName, scrollTopY+cursorY, scrollTopY+cursorY/texts.length() });
+            attroff(A_REVERSE);
+        }
 
         refresh();
     }
