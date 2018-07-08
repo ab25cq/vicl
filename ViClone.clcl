@@ -7,7 +7,7 @@ class ViClone
     scrollTopY:int;
     scrollTopX:int;
     mode: int;
-    keyEvents: lambda[](ViClone, int);
+    keyEvents: lambda[](ViClone, int, int);
     fileName:String;
     startPositionOfInsertMode:int;
     tabSize:int;
@@ -30,7 +30,7 @@ class ViClone
 
         mode = EDITMODE;
 
-        keyEvents = new lambda[KEY_MAX](ViClone, int)();
+        keyEvents = new lambda[KEY_MAX](ViClone, int, int)();
 
         ### read file ###
         if(Clover.ARGV.length() == 2) {
@@ -236,8 +236,13 @@ class ViClone
         startPositionOfInsertMode = cursorX + scrollTopX;
     }
 
+    def enterInsertMode() {
+        mode = INSERTMODE;
+        startPositionOfInsertMode = cursorX + scrollTopX;
+    }
+
     def defaultKeyEnvents() {
-        keyEvents['j'.to_int] = lambda(self:ViClone, key:int) {
+        keyEvents['j'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             cursorY++;
 
             maxy := getmaxy()-1;
@@ -277,7 +282,7 @@ class ViClone
 
             scrollTopX = 0;
         }
-        keyEvents['k'.to_int] = lambda(self:ViClone, key:int) {
+        keyEvents['k'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             cursorY--;
 
             maxy := getmaxy()-1;
@@ -308,7 +313,7 @@ class ViClone
 
             scrollTopX = 0;
         }
-        keyEvents['h'.to_int] = lambda(self:ViClone, key:int) {
+        keyEvents['h'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             cursorX--;
 
             if(cursorX < 0) {
@@ -321,7 +326,7 @@ class ViClone
                 cursorX = 0;
             }
         }
-        keyEvents['l'.to_int] = lambda(self:ViClone, key:int) {
+        keyEvents['l'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             self.cursorX++;
 
             maxx := getmaxx();
@@ -352,7 +357,7 @@ class ViClone
                 cursorX = line.length()-1;
             }
         }
-        keyEvents['w'.to_int] = lambda(self:ViClone, key:int) {
+        keyEvents['w'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             original_line := texts.items(scrollTopY+cursorY);
             if(original_line.identifyWith(null)) {
                 original_line = "";
@@ -485,7 +490,7 @@ class ViClone
                 }
             }
         }
-        keyEvents['b'.to_int] = lambda(self:ViClone, key:int) {
+        keyEvents['b'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             original_line := texts.items(scrollTopY+cursorY);
             if(original_line.identifyWith(null)) {
                 original_line = "";
@@ -632,11 +637,11 @@ class ViClone
                 }
             }
         }
-        keyEvents['0'.to_int] = lambda(self:ViClone, key:int) {
+        keyEvents['0'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             cursorX = 0;
             scrollTopX = 0;
         }
-        keyEvents['$'.to_int] = lambda(self:ViClone, key:int) {
+        keyEvents['$'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             maxx := getmaxx();
 
             original_line := texts.items(scrollTopY+cursorY);
@@ -657,7 +662,7 @@ class ViClone
             }
         }
 
-        keyEvents[('D'-'A').to_int+1] = lambda(self:ViClone, key:int) {  # Control-D
+        keyEvents[('D'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {  # Control-D
             maxy := getmaxy()-1;
             self.cursorY += maxy / 2;
 
@@ -668,7 +673,7 @@ class ViClone
             clear();
             view();
         }
-        keyEvents[('U'-'A').to_int+1] = lambda(self:ViClone, key:int) {  # Control-U
+        keyEvents[('U'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {  # Control-U
             maxy := getmaxy()-1;
             self.cursorY -= maxy / 2;
 
@@ -681,12 +686,11 @@ class ViClone
         }
 
         ### Insert Mode ###
-        keyEvents['i'.to_int] = lambda(self:ViClone, key:int) {
-            mode = INSERTMODE;
-            startPositionOfInsertMode = cursorX + scrollTopX;
+        keyEvents['i'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            enterInsertMode();
         }
 
-        keyEvents['a'.to_int] = lambda(self:ViClone, key:int) {
+        keyEvents['a'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             maxx := getmaxx();
 
             cursorX++;
@@ -696,10 +700,9 @@ class ViClone
                 cursorX--;
             }
 
-            mode = INSERTMODE;
-            startPositionOfInsertMode = cursorX + scrollTopX;
+            enterInsertMode();
         }
-        keyEvents['A'.to_int] = lambda(self:ViClone, key:int) {
+        keyEvents['A'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             maxx := getmaxx();
 
             original_line := texts.items(scrollTopY+cursorY);
@@ -716,34 +719,75 @@ class ViClone
                 cursorX = line.length();
             }
 
-            mode = INSERTMODE;
-            startPositionOfInsertMode = cursorX + scrollTopX;
+            enterInsertMode();
         }
-        keyEvents['o'.to_int] = lambda(self:ViClone, key:int) {
+        keyEvents['o'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             enterNewLine();
 
-            mode = INSERTMODE;
-            startPositionOfInsertMode = cursorX + scrollTopX;
+            enterInsertMode();
         }
 
         ### delete text ###
-        keyEvents['d'.to_int] = lambda(self:ViClone, key:int) {
-            key = getch();
-            if(key == 'd'.to_int) {
-                original_line := texts.items(cursorY + scrollTopY);
+        keyEvents['d'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            when(key2) {
+                case ('e'.to_int, 'w'.to_int) {
+                    line := texts.items(scrollTopY+cursorY);
 
-                if(original_line.identifyWith(null).negative()) {
-                    texts.deleteAt(scrollTopY+cursorY);
+                    if(line.identifyWith(null).negative()) {
+                        c := line.chars(scrollTopX+cursorX);
+
+                        if(c.isalpha()) {
+                            while(c.isalpha()) {
+                                line.delete(scrollTopX+cursorX);
+                                c = line.chars(scrollTopX+cursorX);
+                            }
+                        }
+                        elif(c.isdigit()) {
+                            while(c.isdigit()) {
+                                line.delete(scrollTopX+cursorX);
+                                c = line.chars(scrollTopX+cursorX);
+                            }
+                        }
+                        elif(c.isspace()) {
+                            while(c.isspace()) {
+                                line.delete(scrollTopX+cursorX);
+                                c = line.chars(scrollTopX+cursorX);
+                            }
+                        }
+                        else {
+                            while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
+                                line.delete(scrollTopX+cursorX);
+                                c = line.chars(scrollTopX+cursorX);
+                            }
+                        }
+                    }
                 }
+                case ('d'.to_int) {
+                    original_line := texts.items(cursorY + scrollTopY);
 
-                if(texts.length() == 0) {
-                    texts.add("");
-                    scrollTopX = 0;
-                    cursorX = 0;
+                    if(original_line.identifyWith(null).negative()) {
+                        texts.deleteAt(scrollTopY+cursorY);
+                    }
+
+                    if(texts.length() == 0) {
+                        texts.add("");
+                        scrollTopX = 0;
+                        cursorX = 0;
+                    }
                 }
             }
         }
-        keyEvents['x'.to_int] = lambda(self:ViClone, key:int) {
+        keyEvents['c'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            when(key2) {
+                case ('e'.to_int, 'w'.to_int) {
+                    keyEvents['d'.to_int](self, 'd'.to_int, 'w'.to_int);
+                    enterInsertMode();
+                }
+                case ('d'.to_int) {
+                }
+            }
+        }
+        keyEvents['x'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             original_line := texts.items(cursorY + scrollTopY);
 
             if(original_line.identifyWith(null).negative()) {
@@ -754,18 +798,17 @@ class ViClone
         }
 
         ### misc ###
-        keyEvents['Z'.to_int] = lambda(self:ViClone, key:int) {
-            key = getch();
-            if(key == 'Z'.to_int) {
+        keyEvents['Z'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            if(key2 == 'Z'.to_int) {
                 texts.join("\n").write(fileName);
                 endOfAplication = true;
             }
         }
-        keyEvents[':'.to_int] = lambda(self:ViClone, key:int) {
+        keyEvents[':'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             mode = COMMANDMODE;
             statusLineInCommandMode = "";
         }
-        keyEvents[('L'-'A').to_int+1] = lambda(self:ViClone, key:int) {  # Control-L
+        keyEvents[('L'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {  # Control-L
             clear();
             view();
         }
@@ -875,7 +918,7 @@ class ViClone
 
                 if(line.identifyWith(null).negative()) {
                     c := key.to_char;
-                    if(c.isalnum() || c == ' ') {
+                    if(c.isalnum() || c == ' ' || c.isgraph()) {
                         line.insert(cursorX + scrollTopX, c.toString());
                         cursorX++;
 
@@ -933,7 +976,13 @@ class ViClone
         when(mode) {
             case (EDITMODE) {
                 if(keyEvents[key].identifyWith(null).negative()) {
-                    keyEvents[key](self, key);
+                    key2 := 0;
+                    when(key) {
+                        case ('d'.to_int, 'c'.to_int, 'Z'.to_int) {
+                            key2 = getch();
+                        }
+                    }
+                    keyEvents[key](self, key, key2);
                 }
             }
 
