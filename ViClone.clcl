@@ -207,7 +207,7 @@ class ViClone
         }
     }
 
-    def enterNewLine() {
+    def enterNewLine(no_tails_getting:bool) {
         maxx := getmaxx();
         maxy := getmaxy();
 
@@ -216,10 +216,20 @@ class ViClone
             original_line = "";
         }
 
+        tails := "";
+        if(!no_tails_getting) {
+            tails = original_line.subString((scrollTopX+cursorX)..-1);
+            original_line.delete((scrollTopX+cursorX)..-1);
+        }
+
         spaces_num := 0;
+
         try {
-            spaces_num = original_line.scan(/^\s+/).items(0).length() + 1;
-            cursorX = spaces_num + 1;
+            spaces_num = original_line.scan(/^\s+/).items(0).length();
+            if(tails.length() == 0) {
+                spaces_num++;
+            }
+            cursorX = spaces_num;
         } catch(e:Exception) {
             spaces_num = -1;
             cursorX = 0;
@@ -229,6 +239,7 @@ class ViClone
         cursorY++;
         
         spaces := " ".multiply(spaces_num);
+        spaces.append(tails);
         texts.insert(cursorY+scrollTopY, spaces);
 
         fixCursorAndScrollTop();
@@ -722,7 +733,7 @@ class ViClone
             enterInsertMode();
         }
         keyEvents['o'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            enterNewLine();
+            enterNewLine(true);
 
             enterInsertMode();
         }
@@ -774,6 +785,8 @@ class ViClone
                         scrollTopX = 0;
                         cursorX = 0;
                     }
+
+                    fixCursorAndScrollTop();
                 }
             }
         }
@@ -860,7 +873,7 @@ class ViClone
             }
 
             case ('\n'.to_int) {
-                enterNewLine();
+                enterNewLine(false);
             }
 
             case (('D'-'A').to_int+1) {

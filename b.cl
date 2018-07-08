@@ -6,3 +6,14 @@ else {
 }
 
 println("AAA");
+
+println(
+    "BBB"
+    , "DDD"
+    , "GGG" 
+    , "FFF" 
+    , "EEE" 
+    , "CCC"
+    , "DDD" 
+    , "EEE");
+println("CCC");
