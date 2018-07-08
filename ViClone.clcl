@@ -38,7 +38,18 @@ class ViClone
         }
         elif(Clover.ARGV.length() == 3) {
             fname := Clover.ARGV.items(2);
-            texts = fname.toPath().read().toString().split(/\n/);
+            if(access(fname, W_OK) == 0) {
+                texts = fname.toPath().read().toString().split(/\n/);
+
+                if(texts.length() == 0) {
+                    texts = EqualableList<String>();
+                    texts.add("");
+                }
+            }
+            else {
+                texts = EqualableList<String>();
+                texts.add("");
+            }
             fileName = fname.clone();
         }
         else {
@@ -147,10 +158,6 @@ class ViClone
             }
         }
 
-        if(cursorY < 0) {
-            cursorY = 0;
-        }
-
         if(cursorY >= maxy) {
             cursorY = maxy -1;
         }
@@ -163,12 +170,21 @@ class ViClone
             }
         }
 
+        if(cursorY < 0) {
+            cursorY = 0;
+        }
+
         original_line := texts.items(scrollTopY+cursorY);
+        if(original_line.identifyWith(null)) {
+            original_line = "";
+        }
+
         (line, over_maxx) := getLineInsideScreenSize(original_line, false);
 
         maxx := getmaxx();
 
         if(line.equals("")) {
+            scrollTopX = 0;
             cursorX = 0;
         }
         elif(cursorX >= maxx-1) {
@@ -186,7 +202,7 @@ class ViClone
                 cursorX = line.length()-1;
             }
         }
-        elif(cursorX >= line.length()) {
+        elif(cursorX >= line.length() && line.length() != 0) {
             cursorX = line.length()-1;
         }
     }
@@ -196,6 +212,9 @@ class ViClone
         maxy := getmaxy();
 
         original_line := texts.items(scrollTopY+cursorY);
+        if(original_line.identifyWith(null)) {
+            original_line = "";
+        }
 
         spaces_num := 0;
         try {
@@ -241,6 +260,10 @@ class ViClone
             }
 
             original_line := texts.items(scrollTopY+cursorY);
+            if(original_line.identifyWith(null)) {
+                original_line = "";
+            }
+
             (line, over_maxx) := getLineInsideScreenSize(original_line, false);
 
             if(line.equals("")) {
@@ -269,6 +292,9 @@ class ViClone
             }
 
             original_line := texts.items(scrollTopY+cursorY);
+            if(original_line.identifyWith(null)) {
+                original_line = "";
+            }
             (line, over_maxx) := getLineInsideScreenSize(original_line, false);
 
             if(line.equals("")) {
@@ -301,6 +327,9 @@ class ViClone
             maxx := getmaxx();
 
             original_line := texts.items(scrollTopY+cursorY);
+            if(original_line.identifyWith(null)) {
+                original_line = "";
+            }
             (line, over_maxx) := getLineInsideScreenSize(original_line, false);
 
             if(line.equals("")) {
@@ -325,6 +354,9 @@ class ViClone
         }
         keyEvents['w'.to_int] = lambda(self:ViClone, key:int) {
             original_line := texts.items(scrollTopY+cursorY);
+            if(original_line.identifyWith(null)) {
+                original_line = "";
+            }
 
             (line,over_maxx) := getLine(original_line);
 
@@ -455,6 +487,9 @@ class ViClone
         }
         keyEvents['b'.to_int] = lambda(self:ViClone, key:int) {
             original_line := texts.items(scrollTopY+cursorY);
+            if(original_line.identifyWith(null)) {
+                original_line = "";
+            }
 
             (line,over_maxx) := getLine(original_line);
 
@@ -556,6 +591,9 @@ class ViClone
                 maxx := getmaxx();
 
                 original_line = texts.items(scrollTopY+cursorY);
+                if(original_line.identifyWith(null)) {
+                    original_line = "";
+                }
                 (line, over_maxx) = getLineInsideScreenSize(original_line, false);
 
                 if(line.equals("")) {
@@ -602,6 +640,9 @@ class ViClone
             maxx := getmaxx();
 
             original_line := texts.items(scrollTopY+cursorY);
+            if(original_line.identifyWith(null)) {
+                original_line = "";
+            }
             (line, over_maxx) := getLineInsideScreenSize(original_line, false);
 
             if(line.equals("")) {
@@ -662,6 +703,9 @@ class ViClone
             maxx := getmaxx();
 
             original_line := texts.items(scrollTopY+cursorY);
+            if(original_line.identifyWith(null)) {
+                original_line = "";
+            }
             (line,over_max) := getLine(original_line);
 
             if(line.length() > maxx-1) {
@@ -691,6 +735,12 @@ class ViClone
                 if(original_line.identifyWith(null).negative()) {
                     texts.deleteAt(scrollTopY+cursorY);
                 }
+
+                if(texts.length() == 0) {
+                    texts.add("");
+                    scrollTopX = 0;
+                    cursorX = 0;
+                }
             }
         }
         keyEvents['x'.to_int] = lambda(self:ViClone, key:int) {
@@ -713,7 +763,7 @@ class ViClone
         }
         keyEvents[':'.to_int] = lambda(self:ViClone, key:int) {
             mode = COMMANDMODE;
-            statusLineInCommandMode = ":";
+            statusLineInCommandMode = "";
         }
         keyEvents[('L'-'A').to_int+1] = lambda(self:ViClone, key:int) {  # Control-L
             clear();
@@ -736,6 +786,9 @@ class ViClone
             case (('H'-'A').to_int+1, KEY_BACKSPACE) {
                 maxx := getmaxx();
                 original_line := texts.items(cursorY + scrollTopY);
+                if(original_line.identifyWith(null)) {
+                    original_line = "";
+                }
                 (line,over_max) := getLine(original_line);
 
                 if(original_line.identifyWith(null).negative()) {
@@ -770,6 +823,9 @@ class ViClone
             case (('D'-'A').to_int+1) {
                 maxx := getmaxx();
                 original_line := texts.items(cursorY + scrollTopY);
+                if(original_line.identifyWith(null)) {
+                    original_line = "";
+                }
                 (line,over_max) := getLine(original_line);
 
                 if(original_line.identifyWith(null).negative()) {
@@ -846,6 +902,9 @@ class ViClone
             }
             case (('['-'A').to_int+1) {
                 mode = EDITMODE;
+            }
+            case (('H'-'A').to_int+1, KEY_BACKSPACE) {
+                statusLineInCommandMode.delete(-2);
             }
             case (KEY_ENTER, ('J'-'A').to_int+1) {
                 if(statusLineInCommandMode.match(/w/) && statusLineInCommandMode.match(/q/)) {
@@ -949,13 +1008,32 @@ class ViClone
 
         if(mode == COMMANDMODE) {
             attron(A_REVERSE);
-            statusLineInCommandMode.mvprintw(maxy-1, 0, "%s");
+            statusLineInCommandMode.mvprintw(maxy-1, 0, ":%s");
             attroff(A_REVERSE);
         }
+        elif(mode == INSERTMODE) {
+            if(texts.length() == 0) {
+                attron(A_REVERSE);
+                mvprintw(maxy-1, 0, "INSERT %s %d %d", array { fileName, scrollTopY+cursorY, scrollTopX+cursorX });
+                attroff(A_REVERSE);
+            }
+            else {
+                attron(A_REVERSE);
+                mvprintw(maxy-1, 0, "INSERT %s %d(%d%%) %d", array { fileName, scrollTopY+cursorY, scrollTopY+cursorY/texts.length(), scrollTopX+cursorX });
+                attroff(A_REVERSE);
+            }
+        }
         else {
-            attron(A_REVERSE);
-            mvprintw(maxy-1, 0, "%s %d(%d%%)", array { fileName, scrollTopY+cursorY, scrollTopY+cursorY/texts.length() });
-            attroff(A_REVERSE);
+            if(texts.length() == 0) {
+                attron(A_REVERSE);
+                mvprintw(maxy-1, 0, "%s %d %d", array { fileName, scrollTopY+cursorY, scrollTopX+cursorX });
+                attroff(A_REVERSE);
+            }
+            else {
+                attron(A_REVERSE);
+                mvprintw(maxy-1, 0, "%s %d(%d%%) %d", array { fileName, scrollTopY+cursorY, scrollTopY+cursorY/texts.length(), scrollTopX+cursorX });
+                attroff(A_REVERSE);
+            }
         }
 
         refresh();
