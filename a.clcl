@@ -1,0 +1,10 @@
+class TESTX {
+    def method() {
+        slist{1,2,3}.each {
+            it.toString().println();
+            if(it == 2) {
+                break;
+            }
+        }
+    }
+}

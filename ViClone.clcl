@@ -252,6 +252,32 @@ class ViClone
         startPositionOfInsertMode = cursorX + scrollTopX;
     }
 
+    def getCursorChar(): char {
+        result:char = '\0';
+        maxy := getmaxy();
+        visible_texts := texts.subList(scrollTopY, scrollTopY + maxy-1);
+
+        y := 0;
+        visible_texts.each {
+            (line, over_maxx) := getLineInsideScreenSize(it, cursorY == y);
+
+            ### cursor ####
+            if(cursorY == y) {
+                try {
+                    result = line.chars(cursorX);
+                }
+                catch(e:Exception) {
+                    result = '\0';
+                }
+                break;
+            }
+
+            y++;
+        }
+
+        return result;
+    }
+
     def defaultKeyEnvents() {
         keyEvents['j'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             cursorY++;
@@ -695,6 +721,52 @@ class ViClone
             clear();
             view();
         }
+        keyEvents['G'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            maxy := getmaxy();
+            cursorX = 0;
+            scrollTopY = texts.length()-1 -maxy;
+            cursorY = maxy -1;
+            fixCursorAndScrollTop();
+        }
+        keyEvents['g'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            if(key2 == 'g'.to_int) {
+                scrollTopY = 0;
+                cursorY = 0;
+                cursorX = 0;
+                fixCursorAndScrollTop();
+            }
+        }
+        keyEvents['%'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            c := getCursorChar();
+
+            if(c == '(') {
+                nest := 0;
+                y := 0;
+                texts.subList(scrollTopY+cursorY, -1).each { |line:String|
+                    x := 0;
+                    line.each { |c2:char|
+                        if(x > scrollTopX+cursorX) {
+                            if(c2 == '(') {
+                                nest++;
+                            }
+                            elif(c2 == ')') {
+                                if(nest == 0) {
+                                    cursorX = x - scrollTopX;
+                                    cursorY = y + scrollTopY + cursorY;
+                                }
+                                nest--;
+                            }
+                        }
+
+                        x++;
+                    }
+
+                    y++;
+                }
+
+                fixCursorAndScrollTop();
+            }
+        }
 
         ### Insert Mode ###
         keyEvents['i'.to_int] = lambda(self:ViClone, key:int, key2:int) {
@@ -991,7 +1063,7 @@ class ViClone
                 if(keyEvents[key].identifyWith(null).negative()) {
                     key2 := 0;
                     when(key) {
-                        case ('d'.to_int, 'c'.to_int, 'Z'.to_int) {
+                        case ('d'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int) {
                             key2 = getch();
                         }
                     }
@@ -1056,6 +1128,46 @@ class ViClone
                     attroff(A_REVERSE);
 
                     line.subString(cursorX+1, -1).mvprintw(y, cursorX+1, "%s");
+
+                    if(c == '(') {
+                        nest := 0;
+                        y2 := 0;
+                        find_cursor := false;
+
+                        visible_texts.each {
+                            (line, over_maxx) := getLineInsideScreenSize(it, false);
+
+                            x2 := 0;
+                            it.each {
+                                c := it;
+
+                                if(y2 == cursorY && x2 == cursorX) {
+                                    find_cursor = true;
+                                }
+                                elif(find_cursor) {
+                                    if(c == '(') {
+                                        nest++;
+                                    }
+                                    elif(c == ')') {
+                                        if(nest == 0) {
+                                            attron(A_BOLD);
+                                            c.toString().mvprintw(y2, x2, "%s");
+                                            attroff(A_BOLD);
+                                            return;
+                                        }
+
+                                        nest--;
+                                    }
+                                }
+
+                                x2++;
+                            }
+
+                            y2++;
+                        }
+                    }
+                    elif(c == '{') {
+                    }
                 }
             }
             ### visible line ###
