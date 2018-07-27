@@ -1,11 +1,11 @@
 if(true) {
-   println("HELLO WORLD");
+    println("HELLO WORLD");
+    println("AAA"); 
+    println("CCC"); 
 }
 else {
-   println("HELLO WORLD2"); 
+    println("HELLO WORLD2"); 
 }
-
-println("AAA");
 
 println(
     "BBB"

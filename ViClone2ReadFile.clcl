@@ -1,0 +1,43 @@
+include "ViClone.clcl"
+
+class ViClone
+{
+    texts:EqualableList<String>;
+    fileName:String;
+
+    def initialize() {
+        inherit();
+
+        ### read file ###
+        if(Clover.ARGV.length() == 2) {
+            texts = EqualableList<String>();
+        }
+        elif(Clover.ARGV.length() == 3) {
+            fname := Clover.ARGV.items(2);
+            if(access(fname, W_OK) == 0) {
+                texts = fname.toPath().read().toString().split(/\n/);
+
+                if(texts.length() == 0) {
+                    texts = EqualableList<String>();
+                    texts.add("");
+                }
+            }
+            else {
+                texts = EqualableList<String>();
+                texts.add("");
+            }
+            fileName = fname.clone();
+        }
+        else {
+            throw Exception("vi clone can't edit multiple files");
+        }
+    }
+    def defaultKeyEvents() {
+        keyEvents['Z'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            if(key2 == 'Z'.to_int) {
+                texts.join("\n").write(fileName);
+                endOfAplication = true;
+            }
+        }
+    }
+}

@@ -1,0 +1,235 @@
+include "ViClone3View.clcl"
+
+class ViClone
+{
+    def initialize() {
+        inherit();
+    }
+
+    def enterNewLine(no_tails_getting:bool) {
+        maxx := getmaxx();
+        maxy := getmaxy();
+
+        original_line := texts.items(scrollTopY+cursorY);
+        if(original_line.identifyWith(null)) {
+            original_line = "";
+        }
+
+        tails := "";
+        if(!no_tails_getting) {
+            tails = original_line.subString((scrollTopX+cursorX)..-1);
+            original_line.delete((scrollTopX+cursorX)..-1);
+        }
+
+        spaces_num := 0;
+
+        try {
+            spaces_num = original_line.scan(/^\s+/).items(0).length();
+            if(tails.length() == 0) {
+                spaces_num++;
+            }
+            cursorX = spaces_num;
+        } catch(e:Exception) {
+            spaces_num = -1;
+            cursorX = 0;
+        }
+
+        scrollTopX = 0;
+        cursorY++;
+        
+        spaces := " ".multiply(spaces_num);
+        spaces.append(tails);
+        texts.insert(cursorY+scrollTopY, spaces);
+
+        fixCursorAndScrollTop();
+
+        startPositionOfInsertMode = cursorX + scrollTopX;
+    }
+
+    def enterInsertMode() {
+        mode = INSERTMODE;
+        startPositionOfInsertMode = cursorX + scrollTopX;
+    }
+
+    def defaultKeyEvents() {
+        inherit();
+
+        ### Insert Mode ###
+        keyEvents['i'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+           addUndoText();
+
+           enterInsertMode();
+        }
+
+        keyEvents['a'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            addUndoText();
+
+            maxx := getmaxx();
+
+            cursorX++;
+
+            if(cursorX >= maxx-1) {
+                scrollTopX++;
+                cursorX--;
+            }
+
+            enterInsertMode();
+        }
+        keyEvents['A'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            addUndoText();
+
+            maxx := getmaxx();
+
+            original_line := texts.items(scrollTopY+cursorY);
+            if(original_line.identifyWith(null)) {
+                original_line = "";
+            }
+            (line,over_max) := getLine(original_line);
+
+            if(line.length() > maxx-1) {
+                scrollTopX = line.length() - maxx +2;
+                cursorX = maxx-2;
+            }
+            else {
+                cursorX = line.length();
+            }
+
+            enterInsertMode();
+        }
+        keyEvents['o'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            addUndoText();
+
+            enterNewLine(true);
+
+            enterInsertMode();
+        }
+        keyEvents['c'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            when(key2) {
+                case ('e'.to_int, 'w'.to_int) {
+                    keyEvents['d'.to_int](self, 'd'.to_int, 'w'.to_int);
+                    enterInsertMode();
+                }
+                case ('d'.to_int) {
+                }
+            }
+        }
+    }
+
+    def insertMode(key:int) {
+        when(key) {
+            case (('['-'A').to_int+1) {
+                mode = EDITMODE;
+                fixCursorAndScrollTop();
+            }
+
+            ### Backspace ###
+            case (('H'-'A').to_int+1, KEY_BACKSPACE) {
+                maxx := getmaxx();
+                original_line := texts.items(cursorY + scrollTopY);
+                if(original_line.identifyWith(null)) {
+                    original_line = "";
+                }
+                (line,over_max) := getLine(original_line);
+
+                if(original_line.identifyWith(null).negative()) {
+                    try {
+                        if(scrollTopX+cursorX > 0 && cursorX + scrollTopX > startPositionOfInsertMode) {
+                            original_line.chars(cursorX + scrollTopX);
+
+                            cursorX--;
+                            original_line.delete(cursorX + scrollTopX);
+
+                            if(cursorX < 0) {
+                                scrollTopX--;
+                                cursorX++;
+
+                                if(scrollTopX < 0) {
+                                    scrollTopX = 0;
+                                    cursorX = 0;
+                                }
+                            }
+                        }
+                    }
+                    catch(e:Exception) {
+                        fixCursorAndScrollTop();
+                    }
+                }
+            }
+
+            case ('\n'.to_int) {
+                enterNewLine(false);
+            }
+
+            case (('D'-'A').to_int+1) {
+                maxx := getmaxx();
+                original_line := texts.items(cursorY + scrollTopY);
+                if(original_line.identifyWith(null)) {
+                    original_line = "";
+                }
+                (line,over_max) := getLine(original_line);
+
+                if(original_line.identifyWith(null).negative()) {
+                    try {
+                        if(scrollTopX+cursorX > 0) {
+                            cursorX-=4;
+                            original_line.delete((cursorX + scrollTopX)..(cursorX + scrollTopX+4));
+
+                            if(cursorX < 0) {
+                                scrollTopX--;
+                                cursorX++;
+
+                                if(scrollTopX < 0) {
+                                    scrollTopX = 0;
+                                    cursorX = 0;
+                                }
+                            }
+                        }
+                    }
+                    catch(e:Exception) {
+                        fixCursorAndScrollTop();
+                    }
+                }
+                
+            }
+
+            case ('\t'.to_int) {
+                maxx := getmaxx();
+                line := texts.items(cursorY + scrollTopY);
+
+                if(line.identifyWith(null).negative()) {
+                    if(line.match(/^\s*$/)) {
+                        line.insert(cursorX + scrollTopX, " ".multiply(tabSize));
+                        cursorX+=tabSize;
+
+                        if(cursorX >= maxx-1) {
+                            scrollTopX += tabSize;
+                            cursorX-=tabSize;
+                        }
+                    }
+                    else {
+                        if(fileName.match(/.+\.cl$/)) {
+                            methodNameCompletionForClover2();
+                        }
+                    }
+                }
+            }
+            else {
+                maxx := getmaxx();
+                line := texts.items(cursorY + scrollTopY);
+
+                if(line.identifyWith(null).negative()) {
+                    c := key.to_char;
+                    if(c.isalnum() || c == ' ' || c.isgraph()) {
+                        line.insert(cursorX + scrollTopX, c.toString());
+                        cursorX++;
+
+                        if(cursorX >= maxx-1) {
+                            scrollTopX++;
+                            cursorX--;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

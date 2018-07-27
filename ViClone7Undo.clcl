@@ -1,0 +1,41 @@
+include "ViClone6Edit.clcl"
+
+class ViClone
+{
+    undoTexts:EqualableList<EqualableList<String>>;
+    undoIndex:int;
+
+    def initialize() {
+        inherit();
+
+        undoTexts = EqualableList<EqualableList<String>>();
+        undoIndex = 0;
+    }
+
+    def addUndoText() {
+        undoTexts.delete(undoIndex, -1);
+        undoTexts.add(texts.clone());
+        undoIndex++;
+    }
+
+    def defaultKeyEvents() {
+        inherit();
+
+        keyEvents['u'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            if(undoIndex == undoTexts.length()) {
+                addUndoText();
+                undoIndex--;
+            }
+            if(undoIndex > 0) {
+                undoIndex--;
+                texts = undoTexts.items(undoIndex);
+            }
+        }
+        keyEvents[('R'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {
+            if(undoIndex < undoTexts.length()-1) {
+                undoIndex++;
+                texts = undoTexts.items(undoIndex);
+            }
+        }
+    }
+}

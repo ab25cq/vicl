@@ -1,0 +1,62 @@
+include "ViClone4InsertMode.clcl"
+
+class ViClone
+{
+    modifiedText:bool;
+
+    def initialize() {
+        inherit();
+
+        modifiedText = false;
+    }
+
+    def commandMode(key:int) {
+        when(key) {
+            case ('w'.to_int) {
+                statusLineInCommandMode.append("w");
+            }
+            case ('q'.to_int) {
+                statusLineInCommandMode.append("q");
+            }
+            case ('!'.to_int) {
+                statusLineInCommandMode.append("!");
+            }
+            case (('['-'A').to_int+1) {
+                mode = EDITMODE;
+                addUndoText();
+            }
+            case (('H'-'A').to_int+1, KEY_BACKSPACE) {
+                statusLineInCommandMode.delete(-2);
+            }
+            case (KEY_ENTER, ('J'-'A').to_int+1) {
+                if(statusLineInCommandMode.match(/w/) && statusLineInCommandMode.match(/q/)) {
+                    texts.join("\n").write(fileName);
+                    endOfAplication = true;
+                }
+                elif(statusLineInCommandMode.match(/q/) && statusLineInCommandMode.match(/!/)) {
+                    endOfAplication = true;
+                }
+                elif(statusLineInCommandMode.match(/w/)) {
+                    texts.join("\n").write(fileName);
+                    modifiedText = false;
+                }
+                elif(statusLineInCommandMode.match(/q/)) {
+                    if(!modifiedText) {
+                        endOfAplication = true;
+                    }
+                }
+
+                mode = EDITMODE;
+            }
+        }
+    }
+
+    def defaultKeyEvents() {
+        inherit();
+
+        keyEvents[':'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            mode = COMMANDMODE;
+            statusLineInCommandMode = "";
+        }
+    }
+}

@@ -1,0 +1,32 @@
+include "ViClone7Undo.clcl"
+
+class ViClone
+{
+    def initialize() {
+        inherit();
+    }
+
+    def methodNameCompletionForClover2()
+    {
+/*
+        source := "";
+        i := 0;
+        for(i:=0; i<texts.length() && i<scrollTopY+cursorY-1; i++) {
+            source.append(texts.items(i));
+        }
+        if(scrollTopY+cursorY >= 0 && scrollTopY+cursorY < texts.length()) {
+            cursor_line := texts.items(scrollTopY+cursorY);
+            source.append(cursor_line.subString(0, scrollTopX + cursorX));
+        }
+
+        parser := CLParser(source);
+        type := parser.getType();
+
+type.println();
+*/
+    }
+
+    def defaultKeyEvents() {
+        inherit();
+    }
+}

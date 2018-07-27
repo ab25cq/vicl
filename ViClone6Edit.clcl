@@ -1,0 +1,149 @@
+include "ViClone5CommandMode.clcl"
+
+class ViClone
+{
+    def getCursorChar(): char {
+        result:char = '\0';
+        maxy := getmaxy();
+        visible_texts := texts.subList(scrollTopY, scrollTopY + maxy-1);
+
+        y := 0;
+        visible_texts.each {
+            (line, over_maxx) := getLineInsideScreenSize(it, cursorY == y);
+
+            ### cursor ####
+            if(cursorY == y) {
+                try {
+                    result = line.chars(cursorX);
+                }
+                catch(e:Exception) {
+                    result = '\0';
+                }
+                break;
+            }
+
+            y++;
+        }
+
+        return result;
+    }
+
+    def defaultKeyEvents() {
+        inherit();
+
+        keyEvents['%'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            c := getCursorChar();
+
+            if(c == '(') {
+                nest := 0;
+                y := 0;
+                texts.subList(scrollTopY+cursorY, -1).each { |line:String|
+                    x := 0;
+                    line.each { |c2:char|
+                        if(x > scrollTopX+cursorX) {
+                            if(c2 == '(') {
+                                nest++;
+                            }
+                            elif(c2 == ')') {
+                                if(nest == 0) {
+                                    cursorX = x - scrollTopX;
+                                    cursorY = y + scrollTopY + cursorY;
+                                }
+                                nest--;
+                            }
+                        }
+
+                        x++;
+                    }
+
+                    y++;
+                }
+
+                fixCursorAndScrollTop();
+            }
+        }
+
+        keyEvents['J'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            addUndoText();
+
+            line := texts.items(cursorY + scrollTopY);
+
+            next_line := texts.items(cursorY + scrollTopY + 1);
+
+            if(line.identifyWith(null).negative() && next_line.identifyWith(null).negative()) {
+                cursorX = line.length();
+
+                line.append(" ");
+                line.append(next_line);
+
+                texts.deleteAt(scrollTopY+cursorY+1);
+
+                fixCursorAndScrollTop();
+            }
+        }
+        keyEvents['d'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            addUndoText();
+
+            when(key2) {
+                case ('e'.to_int, 'w'.to_int) {
+                    line := texts.items(scrollTopY+cursorY);
+
+                    if(line.identifyWith(null).negative()) {
+                        c := line.chars(scrollTopX+cursorX);
+
+                        if(c.isalpha()) {
+                            while(c.isalpha()) {
+                                line.delete(scrollTopX+cursorX);
+                                c = line.chars(scrollTopX+cursorX);
+                            }
+                        }
+                        elif(c.isdigit()) {
+                            while(c.isdigit()) {
+                                line.delete(scrollTopX+cursorX);
+                                c = line.chars(scrollTopX+cursorX);
+                            }
+                        }
+                        elif(c.isspace()) {
+                            while(c.isspace()) {
+                                line.delete(scrollTopX+cursorX);
+                                c = line.chars(scrollTopX+cursorX);
+                            }
+                        }
+                        else {
+                            while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
+                                line.delete(scrollTopX+cursorX);
+                                c = line.chars(scrollTopX+cursorX);
+                            }
+                        }
+                    }
+                }
+                case ('d'.to_int) {
+                    original_line := texts.items(cursorY + scrollTopY);
+
+                    if(original_line.identifyWith(null).negative()) {
+                        texts.deleteAt(scrollTopY+cursorY);
+                    }
+
+                    if(texts.length() == 0) {
+                        texts.add("");
+                        scrollTopX = 0;
+                        cursorX = 0;
+                    }
+
+                    fixCursorAndScrollTop();
+                }
+            }
+        }
+        keyEvents['x'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            original_line := texts.items(cursorY + scrollTopY);
+
+            if(original_line.identifyWith(null).negative()) {
+                addUndoText();
+
+                original_line.delete(cursorX + scrollTopX);
+
+                fixCursorAndScrollTop();
+            }
+        }
+    }
+}
