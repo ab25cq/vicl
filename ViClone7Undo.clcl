@@ -13,7 +13,7 @@ class ViClone
     }
 
     def addUndoText() {
-        undoTexts.delete(undoIndex, -1);
+        undoTexts.deleteWithRange(undoIndex, -1);
         undoTexts.add(texts.clone());
         undoIndex++;
     }
