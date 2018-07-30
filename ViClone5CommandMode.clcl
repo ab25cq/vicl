@@ -2,7 +2,7 @@ include "ViClone4InsertMode.clcl"
 
 class ViClone
 {
-    modifiedText:bool;
+    var modifiedText:bool;
 
     def initialize() {
         inherit();

@@ -32,11 +32,19 @@ CXXFLAGS=@CXXFLAGS@
 ##########################################################
 all: vicl
 
-vicl: Clover.oclcl ViClone.oclcl viclone.ocl pre-install
+vicl: CLParser.oclcl Clover.oclcl ViClone.oclcl viclone.ocl pre-install
 
-Clover.oclcl: Fundamental.clcl
+Clover.oclcl: Fundamental.clcl CLParser.clcl
 	cclover2 -core Fundamental.clcl
 	if test -e Clover.bc; then bclover2 Clover.bc; fi
+
+CLParser.oclcl: CLParser.clcl
+	cclover2 CLParser.clcl
+	if test -e CLNodeType.bc; then bclover2 CLNodeType.bc; fi
+	if test -e CLNodeTreeBase.bc; then bclover2 CLNodeTreeBase.bc; fi
+	if test -e CLNodeTreeInt.bc; then bclover2 CLNodeTreeInt.bc; fi
+	if test -e CLNodeTreePlus.bc; then bclover2 CLNodeTreePlus.bc; fi
+	if test -e CLParser.bc; then bclover2 CLParser.bc; fi
 
 ViClone.oclcl: ViClone.clcl ViClone2ReadFile.clcl ViClone3View.clcl ViClone4InsertMode.clcl ViClone5CommandMode.clcl ViClone6Edit.clcl ViClone7Undo.clcl ViClone8MethodNameCompletion.clcl
 	cclover2 ViClone8MethodNameCompletion.clcl
@@ -51,6 +59,17 @@ pre-install:
 	if test -e libClover.so.1.0.0; then install -m 755 libClover.so.1.0.0 $(HOME)/.clover2/vicl; cp -a libClover.so $(HOME)/.clover2/vicl; fi
 	install -m 644 ViClone.oclcl $(HOME)/.clover2/vicl
 	if test -e libViClone.so.1.0.0; then install -m 755 libViClone.so.1.0.0 $(HOME)/.clover2/vicl; cp -a libViClone.so $(HOME)/.clover2/vicl; fi
+	install -m 644 viclone.ocl $(HOME)/.clover2/vicl
+	install -m 644 CLNodeType.oclcl $(HOME)/.clover2/vicl
+	if test -e libCLNodeType.so.1.0.0; then install -m 755 libCLNodeType.so.1.0.0 $(HOME)/.clover2/vicl; cp -a libCLNodeType.so $(HOME)/.clover2/vicl; fi
+	install -m 644 CLParser.oclcl $(HOME)/.clover2/vicl
+	if test -e libCLParser.so.1.0.0; then install -m 755 libCLParser.so.1.0.0 $(HOME)/.clover2/vicl; cp -a libCLParser.so $(HOME)/.clover2/vicl; fi
+	install -m 644 CLNodeTreePlus.oclcl $(HOME)/.clover2/vicl
+	if test -e libCLNodeTreePlus.so.1.0.0; then install -m 755 libCLNodeTreePlus.so.1.0.0 $(HOME)/.clover2/vicl; cp -a libCLNodeTreePlus.so $(HOME)/.clover2/vicl; fi
+	install -m 644 CLNodeTreeInt.oclcl $(HOME)/.clover2/vicl
+	if test -e libCLNodeTreeInt.so.1.0.0; then install -m 755 libCLNodeTreeInt.so.1.0.0 $(HOME)/.clover2/vicl; cp -a libCLNodeTreeInt.so $(HOME)/.clover2/vicl; fi
+	install -m 644 CLNodeTreeBase.oclcl $(HOME)/.clover2/vicl
+	if test -e libCLNodeTreeBase.so.1.0.0; then install -m 755 libCLNodeTreeBase.so.1.0.0 $(HOME)/.clover2/vicl; cp -a libCLNodeTreeBase.so $(HOME)/.clover2/vicl; fi
 	install -m 644 viclone.ocl $(HOME)/.clover2/vicl
 
 #########################################################

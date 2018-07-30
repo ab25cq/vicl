@@ -2,8 +2,8 @@ include "ViClone6Edit.clcl"
 
 class ViClone
 {
-    undoTexts:EqualableList<EqualableList<String>>;
-    undoIndex:int;
+    var undoTexts:EqualableList<EqualableList<String>>;
+    var undoIndex:int;
 
     def initialize() {
         inherit();

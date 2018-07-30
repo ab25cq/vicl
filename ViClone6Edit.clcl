@@ -4,10 +4,10 @@ class ViClone
 {
     def getCursorChar(): char {
         result:char = '\0';
-        maxy := getmaxy();
-        visible_texts := texts.subList(scrollTopY, scrollTopY + maxy-1);
+        var maxy := getmaxy();
+        var visible_texts := texts.subList(scrollTopY, scrollTopY + maxy-1);
 
-        y := 0;
+        var y := 0;
         visible_texts.each {
             (line, over_maxx) := getLineInsideScreenSize(it, cursorY == y);
 
@@ -32,7 +32,7 @@ class ViClone
         inherit();
 
         keyEvents['%'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            c := getCursorChar();
+            var c := getCursorChar();
 
             if(c == '(') {
                 nest := 0;
@@ -66,9 +66,9 @@ class ViClone
         keyEvents['J'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             addUndoText();
 
-            line := texts.items(cursorY + scrollTopY);
+            var line := texts.items(cursorY + scrollTopY);
 
-            next_line := texts.items(cursorY + scrollTopY + 1);
+            var next_line := texts.items(cursorY + scrollTopY + 1);
 
             if(line.identifyWith(null).negative() && next_line.identifyWith(null).negative()) {
                 cursorX = line.length();
@@ -86,10 +86,10 @@ class ViClone
 
             when(key2) {
                 case ('e'.to_int, 'w'.to_int) {
-                    line := texts.items(scrollTopY+cursorY);
+                    var line := texts.items(scrollTopY+cursorY);
 
                     if(line.identifyWith(null).negative()) {
-                        c := line.chars(scrollTopX+cursorX);
+                        var c := line.chars(scrollTopX+cursorX);
 
                         if(c.isalpha()) {
                             while(c.isalpha()) {
@@ -118,7 +118,7 @@ class ViClone
                     }
                 }
                 case ('d'.to_int) {
-                    original_line := texts.items(cursorY + scrollTopY);
+                    var original_line := texts.items(cursorY + scrollTopY);
 
                     if(original_line.identifyWith(null).negative()) {
                         texts.deleteAt(scrollTopY+cursorY);
@@ -135,12 +135,23 @@ class ViClone
             }
         }
         keyEvents['x'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            original_line := texts.items(cursorY + scrollTopY);
+            var original_line := texts.items(cursorY + scrollTopY);
 
             if(original_line.identifyWith(null).negative()) {
                 addUndoText();
 
                 original_line.delete(cursorX + scrollTopX);
+
+                fixCursorAndScrollTop();
+            }
+        }
+        keyEvents['D'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            var original_line := texts.items(cursorY + scrollTopY);
+
+            if(original_line.identifyWith(null).negative()) {
+                addUndoText();
+
+                original_line.delete(cursorX + scrollTopX, -1);
 
                 fixCursorAndScrollTop();
             }

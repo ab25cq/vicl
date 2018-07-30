@@ -5,5 +5,5 @@ while(!vicl.endOfAplication) {
 
     key := vicl.input();
 
-    vicl.runKeyInvent(key);
+    vicl.runKeyEvents(key);
 }

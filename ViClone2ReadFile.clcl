@@ -2,8 +2,8 @@ include "ViClone.clcl"
 
 class ViClone
 {
-    texts:EqualableList<String>;
-    fileName:String;
+    var texts:EqualableList<String>;
+    var fileName:String;
 
     def initialize() {
         inherit();
@@ -13,7 +13,7 @@ class ViClone
             texts = EqualableList<String>();
         }
         elif(Clover.ARGV.length() == 3) {
-            fname := Clover.ARGV.items(2);
+            var fname := Clover.ARGV.items(2);
             if(access(fname, W_OK) == 0) {
                 texts = fname.toPath().read().toString().split(/\n/);
 

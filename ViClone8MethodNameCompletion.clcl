@@ -2,31 +2,98 @@ include "ViClone7Undo.clcl"
 
 class ViClone
 {
+    var typeName:String?;
+    var completionMethods: List<Method>?;
+
+    var completionCurosor: int;
+    var completionScrollTop: int;
+   
     def initialize() {
         inherit();
+
+        typeName = null;
+        completionMethods = null;
+
+        completionCurosor = 0;
+        completionScrollTop = 0;
     }
 
     def methodNameCompletionForClover2()
     {
-/*
-        source := "";
-        i := 0;
+        var source := "";
         for(i:=0; i<texts.length() && i<scrollTopY+cursorY-1; i++) {
             source.append(texts.items(i));
         }
         if(scrollTopY+cursorY >= 0 && scrollTopY+cursorY < texts.length()) {
-            cursor_line := texts.items(scrollTopY+cursorY);
+            var cursor_line := texts.items(scrollTopY+cursorY);
             source.append(cursor_line.subString(0, scrollTopX + cursorX));
         }
 
-        parser := CLParser(source);
-        type := parser.getType();
+        var index := source.rindexOf(".");
+        source = source.subString(0, index);
 
-type.println();
-*/
+        var parser := CLParser(source, fileName);
+        typeName = parser.getTypeWithBoxing();
+
+        var klass := Class(typeName);
+        completionMethods = klass.getMethods();
+
+        mode = COMPLETIONMODE;
     }
 
     def defaultKeyEvents() {
         inherit();
+    }
+
+    def completionView() {
+        clearWithoutBlink();
+
+        var maxx := getmaxx();
+        var maxy := getmaxy();
+
+        var i := 0;
+        completionMethods.subList(completionScrollTop, -1).each {
+            if(completionScrollTop+i == completionCurosor) {
+                attron(A_REVERSE);
+                it.toString().mvprintw(i, 0, "%s");
+                attroff(A_REVERSE);
+            }
+            else {
+                it.toString().mvprintw(i, 0, "%s");
+            }
+
+            i++;
+
+            if(i >= maxy) {
+                break;
+            }
+        }
+
+        refresh();
+    }
+
+    def completionMode(key:int) {
+        when(key) {
+            case (KEY_UP) {
+                completionCurosor--;
+            }
+
+            case (KEY_DOWN) {
+                completionCurosor++;
+            }
+
+            case (('['-'A').to_int+1) {
+                mode = INSERTMODE;
+            }
+        }
+    }
+
+    def view() {
+        if(mode == COMPLETIONMODE) {
+            completionView();
+        }
+        else {
+            inherit();
+        }
     }
 }

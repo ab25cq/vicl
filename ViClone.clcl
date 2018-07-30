@@ -1,11 +1,11 @@
 
 class ViClone
 {
-    endOfAplication:bool;
-    keyEvents: lambda[](ViClone, int, int);
-    mode: int;
+    var endOfAplication:bool;
+    var keyEvents: lambda[](ViClone, int, int);
+    var mode: int;
 
-    enum { EDITMODE, INSERTMODE, COMMANDMODE }
+    enum { EDITMODE, INSERTMODE, COMMANDMODE, COMPLETIONMODE }
 
     def initialize() {
         endOfAplication = false;
@@ -29,11 +29,11 @@ class ViClone
         endwin();
     }
 
-    def runKeyInvent(key:int) {
+    def runKeyEvents(key:int) {
         when(mode) {
             case (EDITMODE) {
                 if(keyEvents[key].identifyWith(null).negative()) {
-                    key2 := 0;
+                    var key2 := 0;
                     when(key) {
                         case ('d'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int) {
                             key2 = getch();
@@ -50,6 +50,10 @@ class ViClone
 
             case (COMMANDMODE) {
                 commandMode(key);
+            }
+
+            case (COMPLETIONMODE) {
+                completionMode(key);
             }
         }
     }
