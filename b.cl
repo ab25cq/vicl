@@ -2,6 +2,7 @@ if(true) {
     println("HELLO WORLD");
     println("AAA"); 
     println("CCC"); 
+    println("DDD"); 
 }
 else {
     println("HELLO WORLD2"); 

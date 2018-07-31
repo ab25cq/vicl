@@ -5,7 +5,7 @@ class ViClone
     var keyEvents: lambda[](ViClone, int, int);
     var mode: int;
 
-    enum { EDITMODE, INSERTMODE, COMMANDMODE, COMPLETIONMODE }
+    enum { EDITMODE, INSERTMODE, COMMANDMODE }
 
     def initialize() {
         endOfAplication = false;
@@ -27,34 +27,5 @@ class ViClone
 
     def finalize() {
         endwin();
-    }
-
-    def runKeyEvents(key:int) {
-        when(mode) {
-            case (EDITMODE) {
-                if(keyEvents[key].identifyWith(null).negative()) {
-                    var key2 := 0;
-                    when(key) {
-                        case ('d'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int) {
-                            key2 = getch();
-                        }
-                    }
-                    keyEvents[key](self, key, key2);
-                }
-            }
-
-            case (INSERTMODE) {
-                modifiedText = true;
-                insertMode(key);
-            }
-
-            case (COMMANDMODE) {
-                commandMode(key);
-            }
-
-            case (COMPLETIONMODE) {
-                completionMode(key);
-            }
-        }
     }
 }

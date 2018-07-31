@@ -230,4 +230,14 @@ class ViClone
             }
         }
     }
+
+    def runKeyEvents(key:int) {
+        if(mode == INSERTMODE) {
+            modifiedText = true;
+            insertMode(key);
+        }
+        else {
+            inherit(key);
+        }
+    }
 }

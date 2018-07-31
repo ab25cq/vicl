@@ -624,25 +624,6 @@ class ViClone
         }
     }
 
-
-    def clearWithoutBlink() {
-        var maxx := getmaxx();
-        var maxy := getmaxy();
-
-        var line := " ".multiply(maxx);
-        var line2 := " ".multiply(maxx-1);
-
-        for(i:=0; i<maxy; i++) {
-            if(i == maxy -1) {
-                line2.mvprintw(i, 0, "%s");
-            }
-            else {
-                line.mvprintw(i, 0, "%s");
-            }
-        }
-    }
-
-
     def view() {
         clearWithoutBlink();
 
@@ -732,28 +713,62 @@ class ViClone
         elif(mode == INSERTMODE) {
             if(texts.length() == 0) {
                 attron(A_REVERSE);
-                mvprintw(maxy-1, 0, "INSERT %s %d %d", array { fileName, scrollTopY+cursorY, scrollTopX+cursorX });
+                if(fileName == null) {
+                    mvprintw(maxy-1, 0, "INSERT  %d %d", array { scrollTopY+cursorY, scrollTopX+cursorX });
+                }
+                else {
+                    mvprintw(maxy-1, 0, "INSERT %s %d %d", array { fileName, scrollTopY+cursorY, scrollTopX+cursorX });
+                }
                 attroff(A_REVERSE);
             }
             else {
                 attron(A_REVERSE);
-                mvprintw(maxy-1, 0, "INSERT %s %d(%d%%) %d", array { fileName, scrollTopY+cursorY, scrollTopY+cursorY/texts.length(), scrollTopX+cursorX });
+                if(fileName == null) {
+                    mvprintw(maxy-1, 0, "INSERT  %d(%d%%) %d", array { scrollTopY+cursorY, scrollTopY+cursorY/texts.length(), scrollTopX+cursorX });
+                }
+                else {
+                    mvprintw(maxy-1, 0, "INSERT %s %d(%d%%) %d", array { fileName, scrollTopY+cursorY, scrollTopY+cursorY/texts.length(), scrollTopX+cursorX });
+                }
                 attroff(A_REVERSE);
             }
         }
         else {
             if(texts.length() == 0) {
                 attron(A_REVERSE);
-                mvprintw(maxy-1, 0, "%s %d %d undo(%d:%d)", array { fileName, scrollTopY+cursorY, scrollTopX+cursorX, undoIndex, undoTexts.length() });
+                if(fileName == null) {
+                    mvprintw(maxy-1, 0, " %d %d undo(%d:%d)", array { scrollTopY+cursorY, scrollTopX+cursorX, undoIndex, undoTexts.length() });
+                }
+                else {
+                    mvprintw(maxy-1, 0, "%s %d %d undo(%d:%d)", array { fileName, scrollTopY+cursorY, scrollTopX+cursorX, undoIndex, undoTexts.length() });
+                }
                 attroff(A_REVERSE);
             }
             else {
                 attron(A_REVERSE);
-                mvprintw(maxy-1, 0, "%s %d(%d%%) %d undo(%d:%d)", array { fileName, scrollTopY+cursorY, scrollTopY+cursorY/texts.length(), scrollTopX+cursorX, undoIndex, undoTexts.length() });
+                if(fileName == null) {
+                    mvprintw(maxy-1, 0, " %d(%d%%) %d undo(%d:%d)", array { scrollTopY+cursorY, scrollTopY+cursorY/texts.length(), scrollTopX+cursorX, undoIndex, undoTexts.length() });
+                }
+                else {
+                    mvprintw(maxy-1, 0, "%s %d(%d%%) %d undo(%d:%d)", array { fileName, scrollTopY+cursorY, scrollTopY+cursorY/texts.length(), scrollTopX+cursorX, undoIndex, undoTexts.length() });
+                }
                 attroff(A_REVERSE);
             }
         }
 
         refresh();
+    }
+
+    def runKeyEvents(key:int) {
+        if(mode == EDITMODE) {
+            if(keyEvents[key].identifyWith(null).negative()) {
+                var key2 := 0;
+                when(key) {
+                    case ('d'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int) {
+                        key2 = getch();
+                    }
+                }
+                keyEvents[key](self, key, key2);
+            }
+        }
     }
 }

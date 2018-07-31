@@ -30,14 +30,15 @@ class ViClone
             }
             case (KEY_ENTER, ('J'-'A').to_int+1) {
                 if(statusLineInCommandMode.match(/w/) && statusLineInCommandMode.match(/q/)) {
-                    texts.join("\n").write(fileName);
-                    endOfAplication = true;
+                    writeToFile().if {
+                        endOfAplication = true;
+                    }
                 }
                 elif(statusLineInCommandMode.match(/q/) && statusLineInCommandMode.match(/!/)) {
                     endOfAplication = true;
                 }
                 elif(statusLineInCommandMode.match(/w/)) {
-                    texts.join("\n").write(fileName);
+                    writeToFile();
                     modifiedText = false;
                 }
                 elif(statusLineInCommandMode.match(/q/)) {
@@ -57,6 +58,14 @@ class ViClone
         keyEvents[':'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             mode = COMMANDMODE;
             statusLineInCommandMode = "";
+        }
+    }
+    def runKeyEvents(key:int) {
+        if(mode == COMMANDMODE) {
+            commandMode(key);
+        }
+        else {
+            inherit(key);
         }
     }
 }
