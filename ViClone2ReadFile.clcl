@@ -161,6 +161,7 @@ class ViClone
     def writeToFile():bool {
         if(fileName == null) {
             fileName = inputStringLine("input file name:");
+            
             if(access(fileName, F_OK) == 0) {
                 var n := selectStrings("overwite to \{fileName}?", list { "yes", "no" });
 
@@ -169,22 +170,27 @@ class ViClone
                         texts.join("\n").write(fileName);
                     }
                     else {
-                        messageBox("vicl can't write file which is named \{fileName}");
+                        messageBox("permission denied \{fileName}");
                         return false;
                     }
                 }
             }
+            else {
+                try {
+                    texts.join("\n").write(fileName);
+                }
+                catch(e:Exception) {
+                    messageBox("vicl can't write file. (\{fileName})");
+                    return false;
+                }
+            }
         }
         else {
-            if(access(fileName, R_OK) != 0) {
-                touch(fileName);
-            }
-
             if(access(fileName, W_OK) == 0) {
                 texts.join("\n").write(fileName);
             }
             else {
-                messageBox("vicl can't write file which is named \{fileName}");
+                messageBox("permission denyed \{fileName}");
                 return false;
             }
         }

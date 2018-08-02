@@ -11,7 +11,7 @@ class ViClone
         var maxy := getmaxy();
 
         var original_line := texts.items(scrollTopY+cursorY);
-        if(original_line.identifyWith(null)) {
+        if(original_line == null) {
             original_line = "";
         }
 
@@ -81,7 +81,7 @@ class ViClone
             var maxx := getmaxx();
 
             var original_line := texts.items(scrollTopY+cursorY);
-            if(original_line.identifyWith(null)) {
+            if(original_line == null) {
                 original_line = "";
             }
             (line,over_max) := getLine(original_line);
@@ -126,12 +126,12 @@ class ViClone
             case (('H'-'A').to_int+1, KEY_BACKSPACE) {
                 var maxx := getmaxx();
                 var original_line := texts.items(cursorY + scrollTopY);
-                if(original_line.identifyWith(null)) {
+                if(original_line == null) {
                     original_line = "";
                 }
                 (line,over_max) := getLine(original_line);
 
-                if(original_line.identifyWith(null).negative()) {
+                if(original_line != null) {
                     try {
                         if(scrollTopX+cursorX > 0 && cursorX + scrollTopX > startPositionOfInsertMode) {
                             original_line.chars(cursorX + scrollTopX);
@@ -163,12 +163,12 @@ class ViClone
             case (('D'-'A').to_int+1) {
                 var maxx := getmaxx();
                 var original_line := texts.items(cursorY + scrollTopY);
-                if(original_line.identifyWith(null)) {
+                if(original_line == null) {
                     original_line = "";
                 }
                 (line,over_max) := getLine(original_line);
 
-                if(original_line.identifyWith(null).negative()) {
+                if(original_line != null) {
                     try {
                         if(scrollTopX+cursorX > 0) {
                             cursorX-=4;
@@ -196,7 +196,7 @@ class ViClone
                 var maxx := getmaxx();
                 var line := texts.items(cursorY + scrollTopY);
 
-                if(line.identifyWith(null).negative()) {
+                if(line != null) {
                     if(line.match(/^\s*$/)) {
                         line.insert(cursorX + scrollTopX, " ".multiply(tabSize));
                         cursorX+=tabSize;
@@ -207,7 +207,16 @@ class ViClone
                         }
                     }
                     elif(fileName.match(/.+\.cl$/)) {
-                        methodNameCompletionForClover2();
+                        val str := methodNameCompletionForClover2().scan(/^(.+\()/).items(1);
+                        str?.map { 
+                            line.insert(cursorX + scrollTopX, str); 
+                            cursorX += str.length();
+
+                            if(cursorX >= maxx-1) {
+                                scrollTopX += tabSize;
+                                cursorX-=tabSize;
+                            }
+                        }
                     }
                 }
             }
@@ -215,7 +224,7 @@ class ViClone
                 var maxx := getmaxx();
                 var line := texts.items(cursorY + scrollTopY);
 
-                if(line.identifyWith(null).negative()) {
+                if(line != null) {
                     var c := key.to_char;
                     if(c.isalnum() || c == ' ' || c.isgraph()) {
                         line.insert(cursorX + scrollTopX, c.toString());

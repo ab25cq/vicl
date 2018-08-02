@@ -74,7 +74,7 @@ class ViClone
         }
 
         var original_line := texts.items(scrollTopY+cursorY);
-        if(original_line.identifyWith(null)) {
+        if(original_line == null) {
             original_line = "";
         }
 
@@ -184,7 +184,7 @@ class ViClone
             }
 
             var original_line := texts.items(scrollTopY+cursorY);
-            if(original_line.identifyWith(null)) {
+            if(original_line == null) {
                 original_line = "";
             }
 
@@ -216,7 +216,7 @@ class ViClone
             }
 
             var original_line := texts.items(scrollTopY+cursorY);
-            if(original_line.identifyWith(null)) {
+            if(original_line == null) {
                 original_line = "";
             }
             (line, over_maxx) := getLineInsideScreenSize(original_line, false);
@@ -251,7 +251,7 @@ class ViClone
             var maxx := getmaxx();
 
             var original_line := texts.items(scrollTopY+cursorY);
-            if(original_line.identifyWith(null)) {
+            if(original_line == null) {
                 original_line = "";
             }
             (line, over_maxx) := getLineInsideScreenSize(original_line, false);
@@ -278,13 +278,13 @@ class ViClone
         }
         keyEvents['w'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             var original_line := texts.items(scrollTopY+cursorY);
-            if(original_line.identifyWith(null)) {
+            if(original_line == null) {
                 original_line = "";
             }
 
             (line,over_maxx) := getLine(original_line);
 
-            if(original_line.identifyWith(null).negative()) {
+            if(original_line != null) {
                 if(line.equals("")) {
                     cursorX = 0;
                     cursorY++;
@@ -411,13 +411,13 @@ class ViClone
         }
         keyEvents['b'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             var original_line := texts.items(scrollTopY+cursorY);
-            if(original_line.identifyWith(null)) {
+            if(original_line == null) {
                 original_line = "";
             }
 
             (line,over_maxx) := getLine(original_line);
 
-            if(original_line.identifyWith(null).negative()) {
+            if(original_line != null) {
                 if(line.equals("")) {
                     cursorX = 9999;
                     cursorY--;
@@ -515,7 +515,7 @@ class ViClone
                 var maxx := getmaxx();
 
                 original_line = texts.items(scrollTopY+cursorY);
-                if(original_line.identifyWith(null)) {
+                if(original_line == null) {
                     original_line = "";
                 }
                 (line, over_maxx) = getLineInsideScreenSize(original_line, false);
@@ -564,7 +564,7 @@ class ViClone
             var maxx := getmaxx();
 
             var original_line := texts.items(scrollTopY+cursorY);
-            if(original_line.identifyWith(null)) {
+            if(original_line == null) {
                 original_line = "";
             }
             (line, over_maxx) := getLineInsideScreenSize(original_line, false);
@@ -760,7 +760,7 @@ class ViClone
 
     def runKeyEvents(key:int) {
         if(mode == EDITMODE) {
-            if(keyEvents[key].identifyWith(null).negative()) {
+            if(keyEvents[key] != null) {
                 var key2 := 0;
                 when(key) {
                     case ('d'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int) {

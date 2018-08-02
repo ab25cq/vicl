@@ -38,8 +38,9 @@ class ViClone
                     endOfAplication = true;
                 }
                 elif(statusLineInCommandMode.match(/w/)) {
-                    writeToFile();
-                    modifiedText = false;
+                    writeToFile().if {
+                        modifiedText = false;
+                    }
                 }
                 elif(statusLineInCommandMode.match(/q/)) {
                     if(!modifiedText) {

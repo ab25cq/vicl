@@ -23,9 +23,14 @@ class ViClone
         var parser := CLParser(source, fileName);
         var type_name := parser.getTypeWithBoxing();
 
-        var klass := Class(type_name);
-        var methods := klass.getMethods().map { it.methodNameAndParams() };
+        if(!type_name.equals("")) {
+            var klass := Class(type_name);
+            var methods := klass.getMethods().map { it.methodNameAndParams() };
 
-        return selectStrings("[klass.className]", methods).map { if(it == -1) { null } else { methods.items(index); } }
+            return selectStrings("[klass.className]", methods).map { if(it == -1) { "" } else { methods.items(it); } }
+        }
+        else {
+            return "";
+        }
     }
 }
