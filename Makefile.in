@@ -41,7 +41,6 @@ Clover.oclcl: Fundamental.clcl CLParser.clcl
 CLParser.oclcl: CLParser.clcl
 	cclover2 CLParser.clcl
 	if test -e CLNodeType.bc; then bclover2 CLNodeType.bc; fi
-	if test -e CLNodeTreeBase.bc; then bclover2 CLNodeTreeBase.bc; fi
 	if test -e CLNodeTreeInt.bc; then bclover2 CLNodeTreeInt.bc; fi
 	if test -e CLNodeTreePlus.bc; then bclover2 CLNodeTreePlus.bc; fi
 	if test -e CLParser.bc; then bclover2 CLParser.bc; fi
@@ -68,8 +67,7 @@ pre-install:
 	if test -e libCLNodeTreePlus.so.1.0.0; then install -m 755 libCLNodeTreePlus.so.1.0.0 $(HOME)/.clover2/vicl; cp -a libCLNodeTreePlus.so $(HOME)/.clover2/vicl; fi
 	install -m 644 CLNodeTreeInt.oclcl $(HOME)/.clover2/vicl
 	if test -e libCLNodeTreeInt.so.1.0.0; then install -m 755 libCLNodeTreeInt.so.1.0.0 $(HOME)/.clover2/vicl; cp -a libCLNodeTreeInt.so $(HOME)/.clover2/vicl; fi
-	install -m 644 CLNodeTreeBase.oclcl $(HOME)/.clover2/vicl
-	if test -e libCLNodeTreeBase.so.1.0.0; then install -m 755 libCLNodeTreeBase.so.1.0.0 $(HOME)/.clover2/vicl; cp -a libCLNodeTreeBase.so $(HOME)/.clover2/vicl; fi
+	install -m 644 CLNodeTreeBase.clm $(HOME)/.clover2/vicl
 	install -m 644 viclone.ocl $(HOME)/.clover2/vicl
 
 #########################################################

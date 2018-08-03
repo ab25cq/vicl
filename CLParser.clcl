@@ -61,82 +61,106 @@ interface CLNodeTree
 
     def show();
 
+    def equals(right:Self): bool;
+    def toString(): String;
+    def clone(): Self;
+
     enum {
-        IntType, PlusExp
+        IntType, PlusExp, StringType
     }
 }
 
-class CLNodeTreeBase
+module CLNodeTreeBase
 {
     kind:int;
-    left:CLNodeTree;
-    right:CLNodeTree;
-    middle:CLNodeTree;
+    left:CLNodeTree?;
+    right:CLNodeTree?;
+    middle:CLNodeTree?;
 
     sourceName:String;
     sourceLine:int;
 
     type:CLNodeType;
+
+    def show() {
+        self.toString().println();
+    }
 }
 
 class CLNodeTreeInt
 {
-    base:delegate CLNodeTreeBase;
+    include CLNodeTreeBase;
+
     value:int;
 
     def initialize(value:int, sname:String, sline:int) {
-        base = CLNodeTreeBase();
+        self.kind = CLNodeTree.IntType;
 
-        kind(CLNodeTree.IntType);
+        self.sourceName = sname;
+        self.sourceLine = sline;
 
-        sourceName(sname);
-        sourceLine(sline);
+        self.type = CLNodeType("int");
 
-        base.type(new CLNodeType("int"));
-
-        value = value;
+        self.value = value;
     }
 
-    def show() {
-        println("int value \{value}");
+    def toString():String {
+        "int value \{self.value}";
+    }
+
+    def equals(right:CLNodeTreeInt): bool {
+        self.type == right.type && self.value == right.value;
+    }
+}
+
+class CLNodeTreeString
+{
+    include CLNodeTreeBase;
+
+    value:String;
+
+    def initialize(value:String, sname:String, sline:int) {
+        self.kind = CLNodeTree.StringType;
+
+        self.sourceName = sname;
+        self.sourceLine = sline;
+
+        self.type = CLNodeType("String");
+
+        self.value = value;
+    }
+
+    def toString():String {
+        "String value \{self.value}";
+    }
+
+    def equals(right:CLNodeTreeString): bool {
+        self.type == right.type && self.value.equals(right.value);
     }
 }
 
 class CLNodeTreePlus
 {
-    base:delegate CLNodeTreeBase;
+    include CLNodeTreeBase;
 
-    def initialize(left:CLNodeTree, right:CLNodeTree, sname:String, sline:int) {
-        base = CLNodeTreeBase();
+    def initialize(left:CLNodeTree?, right:CLNodeTree?, sname:String, sline:int) {
+        self.kind = CLNodeTree.PlusExp;
 
-        kind(CLNodeTree.PlusExp);
+        self.sourceName = sname;
+        self.sourceLine = sline;
 
-        self.left(left);
-        self.right(right);
+        self.left = left;
+        self.right = right;
 
-        self.base.type(self.left().type());
-
-        sourceName(sname);
-        sourceLine(sline);
+        self.type = self.left.type();
     }
 
-    def show() {
-        println("plus tree");
-        println("<-- left -->");
-        if(left() != null) {
-            left().show();
-        }
-        else {
-            println("null");
-        }
+    def toString():String {
+        "plus tree left \{self.left?.toString()} right \{self.right?.toString}";
+    }
 
-        println("<-- right -->");
-        if(right() != null) {
-            right().show();
-        }
-        else {
-            println("null");
-        }
+    def equals(right:CLNodeTreePlus): bool {
+        self.type == right.type;
     }
 }
 
@@ -173,6 +197,21 @@ class CLParser
             p++;
         }
     }
+    def parseStringExpression():Tuple2<CLNodeTree?,Bool> {
+        result:CLNodeTree? = null;
+
+        while(p->byte == ';') {
+            result = expression();
+        }
+
+        if(p->byte == '}') {
+            p++;
+            skipSpacesAndLF();
+            return (null, true.toBool());
+        }
+
+        return (result, false.toBool());
+    }
 
     def expressionNode():CLNodeTree? {
         result:CLNodeTree? = null;
@@ -186,6 +225,88 @@ class CLParser
             skipSpacesAndLF();
 
             result = CLNodeTreeInt(value, sourceName, sourceLine);
+        }
+        elif(p->byte == '"') {
+            p++;
+
+            var value := "";
+            var string_expression := false;
+
+            while(true) {
+                if(p->byte == '"') {
+                    p++;
+                    skipSpacesAndLF();
+                    break;
+                }
+                elif(p->byte == '\\') {
+                    p++;
+
+                    when (p->byte.to_char) {
+                        case ('0') {
+                            value.append('\0');
+                            p++;
+                        }
+
+                        case ('{') {
+                            p++;
+
+                            end_flag := false;
+                            (result,end_flag) = parseStringExpression();
+
+                            end_flag.negative().if {
+                                string_expression = true;
+                            }
+                        }
+
+                        case ('n') {
+                            value.append('\n');
+                            p++;
+                        }
+
+                        case ('t') {
+                            value.append('\t');
+                            p++;
+                        }
+
+                        case ('r') {
+                            value.append('\r');
+                            p++;
+                        }
+
+                        case ('a') {
+                            value.append('\a');
+                            p++;
+                        }
+
+                        case ('\\') {
+                            value.append('\\');
+                            p++;
+                        }
+
+                        else {
+                            value.append(p->byte.to_char);
+                            p++;
+                        }
+                    }
+                }
+                elif(p->byte == '\0') {
+                    throw Exception("close \" to make string value");
+                }
+                else {
+                    if(p->byte == '\n') {
+                        sourceLine++
+                    }
+
+                    value.append(p->byte.to_char);
+                    p++;
+                }
+            }
+
+            skipSpacesAndLF();
+
+            string_expression.negative().if {
+                result = CLNodeTreeString(value, sourceName, sourceLine);
+            }
         }
         elif(p->byte == '(') {
             p++;
