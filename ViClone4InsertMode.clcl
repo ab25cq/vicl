@@ -206,7 +206,7 @@ class ViClone
                             cursorX-=tabSize;
                         }
                     }
-                    elif(fileName.match(/.+\.cl$/)) {
+                    elif(fileName?.match(/.+\.cl$/)) {
                         val str := methodNameCompletionForClover2().scan(/^(.+\()/).items(1);
                         str?.map { 
                             line.insert(cursorX + scrollTopX, str); 

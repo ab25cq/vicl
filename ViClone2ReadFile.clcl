@@ -2,7 +2,7 @@ include "ViClone.clcl"
 
 class ViClone
 {
-    var texts:EqualableList<String>;
+    var texts:SortableList<String>;
     var fileName:String?;
 
     def initialize() {
@@ -10,7 +10,7 @@ class ViClone
 
         ### read file ###
         if(Clover.ARGV.length() == 2) {
-            texts = EqualableList<String>();
+            texts = SortableList<String>();
             texts.add("");
             fileName = null;
         }
@@ -20,12 +20,12 @@ class ViClone
                 texts = fname.toPath().read().toString().split(/\n/);
 
                 if(texts.length() == 0) {
-                    texts = EqualableList<String>();
+                    texts = SortableList<String>();
                     texts.add("");
                 }
             }
             else {
-                texts = EqualableList<String>();
+                texts = SortableList<String>();
                 texts.add("");
             }
             fileName = fname.clone();

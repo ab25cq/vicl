@@ -66,7 +66,7 @@ interface CLNodeTree
     def clone(): Self;
 
     enum {
-        IntType, PlusExp, StringType
+        IntType, UIntType, CIntType, CUIntType, ByteType, UByteType, CByteType, CUByteType, ShortType, UShortType, CShortType, CUShortType, LongType, ULongType, CLongType, CULongType, PlusExp, MinusExp, StringType
     }
 }
 
@@ -93,7 +93,7 @@ class CLNodeTreeInt
 
     value:int;
 
-    def initialize(value:int, sname:String, sline:int) {
+    def initialize(value:long, sname:String, sline:int) {
         self.kind = CLNodeTree.IntType;
 
         self.sourceName = sname;
@@ -101,11 +101,37 @@ class CLNodeTreeInt
 
         self.type = CLNodeType("int");
 
-        self.value = value;
+        self.value = value.to_int;
     }
 
     def toString():String {
         "int value \{self.value}";
+    }
+
+    def equals(right:CLNodeTreeInt): bool {
+        self.type == right.type && self.value == right.value;
+    }
+}
+
+class CLNodeTreeUInt
+{
+    include CLNodeTreeBase;
+
+    value:uint;
+
+    def initialize(value:long, sname:String, sline:int) {
+        self.kind = CLNodeTree.UIntType;
+
+        self.sourceName = sname;
+        self.sourceLine = sline;
+
+        self.type = CLNodeType("uint");
+
+        self.value = value.to_uint;
+    }
+
+    def toString():String {
+        "uint value \{self.value}";
     }
 
     def equals(right:CLNodeTreeInt): bool {
@@ -164,6 +190,31 @@ class CLNodeTreePlus
     }
 }
 
+class CLNodeTreeMinus
+{
+    include CLNodeTreeBase;
+
+    def initialize(left:CLNodeTree?, right:CLNodeTree?, sname:String, sline:int) {
+        self.kind = CLNodeTree.MinusExp;
+
+        self.sourceName = sname;
+        self.sourceLine = sline;
+
+        self.left = left;
+        self.right = right;
+
+        self.type = self.left.type();
+    }
+
+    def toString():String {
+        "plus tree left \{self.left?.toString()} right \{self.right?.toString}";
+    }
+
+    def equals(right:CLNodeTreeMinus): bool {
+        self.type == right.type;
+    }
+}
+
 class CLParser
 {
     sourceBuffer:Buffer;
@@ -213,18 +264,167 @@ class CLParser
         return (result, false.toBool());
     }
 
-    def expressionNode():CLNodeTree? {
-        result:CLNodeTree? = null;
-
-        if(p->byte >= '0' && p->byte <= '9') {
-            value:int = 0;
+    def getNumber(): long throws Exception {
+        value := 0l;
+        if(isdigit(p->byte.to_char)) {
             while(p->byte >= '0' && p->byte <= '9') {
                 value = value * 10 + p->byte - '0';
                 p++;
             }
             skipSpacesAndLF();
+        }
+        else {
+            throw Exception("Require number");
+        }
 
+        value;
+    }
+
+    def getOctNumber(): long throws Exception {
+        str := "";
+
+        str.append('0');
+        while(p->byte >= '0' && p->byte <= '7') {
+            str.append(p->byte.to_char);
+            p++;
+        }
+        skipSpacesAndLF();
+
+        strtol(str, 0);
+    }
+    
+/*
+    def longToNode(value:long): CLNodeTree? {
+        result:CLNodeTree? = null;
+
+        if(p->byte == 'y') {
+            p++;
+            skipSpacesAndLF();
+
+            result = CLNodeTreeByte(value, sourceName, sourceLine);
+        }
+        elif(p->byte == 'Y') {
+            p++;
+            skipSpacesAndLF();
+
+            result = CLNodeTreeCByte(value, sourceName, sourceLine);
+        }
+        elif(p->byte == 'u' && (p+1)->byte == 'y') {
+            p += 2;
+            skipSpacesAndLF();
+
+            result = CLNodeTreeUByte(value, sourceName, sourceLine);
+        }
+        elif(p->byte == 'U' && (p+1)->byte == 'Y') {
+            p += 2;
+            skipSpacesAndLF();
+
+            result = CLNodeTreeCUByte(value, sourceName, sourceLine);
+        }
+        elif(p->byte == 's') {
+            p++;
+            skipSpacesAndLF();
+
+            result = CLNodeTreeShort(value, sourceName, sourceLine);
+        }
+        elif(p->byte == 'S') {
+            p++;
+            skipSpacesAndLF();
+
+            result = CLNodeTreeCShort(value, sourceName, sourceLine);
+        }
+        elif(p->byte == 'u' && (p+1)->byte == 's') {
+            p+=2;
+            skipSpacesAndLF();
+
+            result = CLNodeTreeUShort(value, sourceName, sourceLine);
+        }
+        elif(p->byte == 'U' && (p+1)->byte == 'S') {
+            p += 2;
+            skipSpacesAndLF();
+
+            result = CLNodeTreeCUShort(value, sourceName, sourceLine);
+        }
+        elif(p->byte == 'l') {
+            p++;
+            skipSpacesAndLF();
+
+            result = CLNodeTreeLong(value, sourceName, sourceLine);
+        }
+        elif(p->byte == 'L') {
+            p++;
+            skipSpacesAndLF();
+
+            result = CLNodeTreeCLong(value, sourceName, sourceLine);
+        }
+        elif(p->byte == 'u' && (p+1)->byte == 'l') {
+            p+=2;
+            skipSpacesAndLF();
+
+            result = CLNodeTreeULong(value, sourceName, sourceLine);
+        }
+        elif(p->byte == 'U' && (p+1)->byte == 'L') {
+            p+=2;
+            skipSpacesAndLF();
+
+            result = CLNodeTreeULong(value, sourceName, sourceLine);
+        }
+        elif(p->byte == 'u')  {
+            p++;
+            skipSpacesAndLF();
+
+            result = CLNodeTreeUInt(value, sourceName, sourceLine);
+        }
+        elif(p->byte == 'U') {
+            p++;
+            skipSpacesAndLF();
+
+            result = CLNodeTreeCUInt(value, sourceName, sourceLine);
+        }
+        elif(p->byte == 'I') {
+            p++;
+            skipSpacesAndLF();
+
+            result = CLNodeTreeCInt(value, sourceName, sourceLine);
+        }
+        else {
             result = CLNodeTreeInt(value, sourceName, sourceLine);
+        }
+
+        result;
+    }
+*/
+
+    def expressionNode():CLNodeTree? {
+        result:CLNodeTree? = null;
+
+        if(p->byte >= '0' && p->byte <= '9') {
+            var value := getNumber();
+            result = CLNodeTreeInt(value, sourceName, sourceLine);
+            #result = longToNode(value);
+        }
+        elif(p->byte == '-' && !((p+1)->byte == '=' || (p+1)->byte == '-' || (p+1)->byte == '>')) {
+            p++;
+            skipSpacesAndLF();
+
+            var value := -getNumber();
+            result = CLNodeTreeInt(value, sourceName, sourceLine);
+            #result = longToNode(value);
+        }
+        elif(p->byte == '+' && !((p+1)->byte == '=' || (p+1)->byte == '+')) {
+            p++;
+            skipSpacesAndLF();
+
+            var value := getNumber();
+            result = CLNodeTreeInt(value, sourceName, sourceLine);
+            #result = longToNode(value);
+        }
+        elif(p->byte == '0' && isdigit((p+1)->byte.to_char)) {
+            p++;
+
+            var value := getOctNumber();
+            result = CLNodeTreeInt(value, sourceName, sourceLine);
+            #result = longToNode(value);
         }
         elif(p->byte == '"') {
             p++;
@@ -346,6 +546,18 @@ class CLParser
 
                 result = CLNodeTreePlus(result, right, sourceName, sourceLine);
             }
+            elif(p->byte == '-') {
+                p++;
+                skipSpacesAndLF();
+
+                right := expressionNode();
+
+                if(right == null) {
+                    throw Exception("\{sourceName} \{sourceLine}: Right expression is null.");
+                }
+
+                result = CLNodeTreeMinus(result, right, sourceName, sourceLine);
+            }
             else {
                 break;
             }
@@ -361,7 +573,7 @@ class CLParser
     }
 
     def parse() {
-        p = sourceBuffer;
+        p = Buffer(sourceBuffer.buffer, sourceBuffer.size, false);
         sourceLine = 1;
 
         while(p->byte != '\0') {
@@ -375,7 +587,7 @@ class CLParser
     }
 
     def getType(): String {
-        p = sourceBuffer;
+        p = Buffer(sourceBuffer.buffer, sourceBuffer.size, false);
         sourceLine = 1;
 
         type := "";

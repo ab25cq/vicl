@@ -2,13 +2,13 @@ include "ViClone6Edit.clcl"
 
 class ViClone
 {
-    var undoTexts:EqualableList<EqualableList<String>>;
+    var undoTexts:SortableList<SortableList<String>>;
     var undoIndex:int;
 
     def initialize() {
         inherit();
 
-        undoTexts = EqualableList<EqualableList<String>>();
+        undoTexts = SortableList<SortableList<String>>();
         undoIndex = 0;
     }
 
