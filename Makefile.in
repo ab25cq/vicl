@@ -45,8 +45,8 @@ CLParser.oclcl: CLParser.clcl
 	if test -e CLNodeTreePlus.bc; then bclover2 CLNodeTreePlus.bc; fi
 	if test -e CLParser.bc; then bclover2 CLParser.bc; fi
 
-ViClone.oclcl: ViClone.clcl ViClone2ReadFile.clcl ViClone3View.clcl ViClone4InsertMode.clcl ViClone5CommandMode.clcl ViClone6Edit.clcl ViClone7Undo.clcl ViClone8MethodNameCompletion.clcl
-	cclover2 ViClone8MethodNameCompletion.clcl
+ViClone.oclcl: ViClone.clcl ViClone2ReadFile.clcl ViClone3View.clcl ViClone4InsertMode.clcl ViClone5CommandMode.clcl ViClone6Edit.clcl ViClone7Undo.clcl ViClone8MethodNameCompletion.clcl ViClone9SearchMode.clcl ViClone10MessageBox.clcl
+	cclover2 ViClone10MessageBox.clcl
 	if test -e ViClone.bc; then bclover2 ViClone.bc; fi
 
 viclone.ocl: viclone.cl

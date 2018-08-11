@@ -2,8 +2,12 @@ include "ViClone3View.clcl"
 
 class ViClone
 {
+    tabSize:int;
+     
     def initialize() {
         inherit();
+        
+        tabSize = 4; 
     }
 
     def enterNewLine(no_tails_getting:bool) {
@@ -247,6 +251,46 @@ class ViClone
         }
         else {
             inherit(key);
+        }
+    }
+
+    def clearStatusLine() {
+        var maxy = getmaxy();
+        var maxx = getmaxx();
+
+        var line := " ".multiply(maxx-1);
+
+        line.mvprintw(maxy-1, 0, "%s");
+    }
+
+    def view() {
+        inherit(); 
+
+        if(mode == INSERTMODE) {
+            maxy := getmaxy();
+
+            clearStatusLine();
+
+            if(texts.length() == 0) {
+                attron(A_REVERSE);
+                if(fileName == null) {
+                    mvprintw(maxy-1, 0, "INSERT  %d %d", array { scrollTopY+cursorY, scrollTopX+cursorX });
+                }
+                else {
+                    mvprintw(maxy-1, 0, "INSERT %s %d %d", array { fileName, scrollTopY+cursorY, scrollTopX+cursorX });
+                }
+                attroff(A_REVERSE);
+            }
+            else {
+                attron(A_REVERSE);
+                if(fileName == null) {
+                    mvprintw(maxy-1, 0, "INSERT  %d(%d%%) %d", array { scrollTopY+cursorY, scrollTopY+cursorY/texts.length(), scrollTopX+cursorX });
+                }
+                else {
+                    mvprintw(maxy-1, 0, "INSERT %s %d(%d%%) %d", array { fileName, scrollTopY+cursorY, scrollTopY+cursorY/texts.length(), scrollTopX+cursorX });
+                }
+                attroff(A_REVERSE);
+            }
         }
     }
 }

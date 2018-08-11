@@ -5,7 +5,7 @@ class ViClone
     var keyEvents: lambda[](ViClone, int, int);
     var mode: int;
 
-    enum { EDITMODE, INSERTMODE, COMMANDMODE }
+    enum { EDITMODE, INSERTMODE, COMMANDMODE, SEARCHMODE }
 
     def initialize() {
         endOfAplication = false;

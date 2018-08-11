@@ -1,0 +1,207 @@
+include "ViClone8MethodNameCompletion.clcl"
+
+class ViClone
+{
+    statusLineInSearchMode:String;
+    searchMode:int;
+
+    enum { SEARCHMODE_NORMAL, SEARCHMODE_REVERSE }
+
+    def initialize() {
+        inherit();
+
+        statusLineInSearchMode = "";
+
+        searchMode = SEARCHMODE_NORMAL;
+    }
+
+    def enterSearchMode(str:String="") {
+        mode = SEARCHMODE;
+
+        statusLineInSearchMode = str;
+    }
+
+    def searchString() {
+        if(searchMode == SEARCHMODE_NORMAL) {
+            var y = scrollTopY+cursorY;
+            var x = -1;
+            texts.subList(scrollTopY+cursorY, -1).each {
+                var match_point = -1;
+                if(y == scrollTopY+cursorY) {
+                    match_point = it.subString(scrollTopX+cursorX+1, -1).indexOf(statusLineInSearchMode);
+
+                    if(match_point != -1) {
+                        match_point += scrollTopX+cursorX+1;
+                    }
+                }
+                else {
+                    match_point = it.indexOf(statusLineInSearchMode);
+                }
+
+                if(match_point != -1) {
+                    x = match_point;
+                    break;
+                }
+                y++;
+            }
+
+            if(x == -1) {
+                messageBox("The search word is none");
+            }
+            else {
+                scrollTopY = y;
+                cursorY = 0;
+
+                scrollTopX = 0;
+                cursorX = x;
+
+                fixCursorAndScrollTop();
+            }
+        }
+        else {
+            var y = scrollTopY+cursorY;
+            var x = -1;
+            texts.subList(0, scrollTopY+cursorY).eachReverse {
+                var match_point = -1;
+                if(y == scrollTopY+cursorY) {
+                    match_point = it.subString(0, scrollTopX+cursorX).indexOf(statusLineInSearchMode);
+                }
+                else {
+                    match_point = it.indexOf(statusLineInSearchMode);
+                }
+
+                if(match_point != -1) {
+                    x = match_point;
+                    break;
+                }
+                y--;
+            }
+
+            if(x == -1) {
+                messageBox("The search word is none");
+            }
+            else {
+                scrollTopY = y-1;
+                cursorY = 0;
+
+                scrollTopX = 0;
+                cursorX = x;
+
+                fixCursorAndScrollTop();
+            }
+        }
+    }
+
+    def defaultKeyEvents() {
+        inherit();
+
+        ### Insert Mode ###
+        keyEvents['/'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            searchMode = SEARCHMODE_NORMAL;
+            enterSearchMode();
+        }
+        keyEvents['?'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            searchMode = SEARCHMODE_REVERSE;
+            enterSearchMode();
+        }
+        keyEvents['n'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            searchString();
+        }
+        keyEvents['*'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            val line = texts.items(scrollTopY+cursorY);
+
+            var str = "";
+
+            if(line != null) {
+                var x = cursorX;
+                var c = line.chars(scrollTopX+x);
+
+                if(c.isalpha()) {
+                    while(c.isalpha()) {
+                        str.append(c);
+                        x++; 
+                        c = line.chars(scrollTopX+x); 
+                    }
+                }
+                elif(c.isdigit()) {
+                    while(c.isdigit()) {
+                        str.append(c);
+                        x++; 
+                        c = line.chars(scrollTopX+x); 
+                    }
+                }
+                elif(c.isspace()) {
+                    while(c.isspace()) {
+                        str.append(c);
+                        x++; 
+                        c = line.chars(scrollTopX+x); 
+                    }
+                }
+                else {
+                    while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
+                        str.append(c);
+                        x++; 
+                        c = line.chars(scrollTopX+cursorX+x);
+                    }
+                }
+            }
+            enterSearchMode(str);
+        } 
+        keyEvents['N'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            var mode = searchMode;
+            if(searchMode == SEARCHMODE_NORMAL) {
+                searchMode = SEARCHMODE_REVERSE
+            }
+            else {
+                searchMode = SEARCHMODE_NORMAL
+            }
+            searchString();
+            searchMode = mode;
+        }
+    }
+
+    def searchMode(key:int) {
+        when(key) {
+            case (('H'-'A').to_int+1, KEY_BACKSPACE) {
+                statusLineInSearchMode.delete(-2);
+            }
+            case (KEY_ENTER, ('J'-'A').to_int+1) {
+                mode = EDITMODE;
+                searchString();
+            }
+            else {
+                if(key >= ' ' && key <= '~') {
+                    statusLineInSearchMode.append(key.to_char);
+                }
+            }
+        }
+    }
+
+    def runKeyEvents(key:int) {
+        if(mode == SEARCHMODE) {
+            searchMode(key);
+        }
+        else {
+            inherit(key);
+        }
+    }
+
+    def view() {
+        inherit();
+
+        if(mode == SEARCHMODE) {
+            clearStatusLine();
+
+            maxy := getmaxy();
+
+            attron(A_REVERSE);
+            if(searchMode == SEARCHMODE_NORMAL) {
+                statusLineInSearchMode.mvprintw(maxy-1, 0, "/%s");
+            }
+            else {
+                statusLineInSearchMode.mvprintw(maxy-1, 0, "?%s");
+            }
+            attroff(A_REVERSE);
+        }
+    }
+}

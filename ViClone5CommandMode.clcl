@@ -52,6 +52,19 @@ class ViClone
             }
         }
     }
+    def view() {
+        inherit();
+         
+        if(mode == COMMANDMODE) {
+            maxy := getmaxy();
+
+            clearStatusLine();
+
+            attron(A_REVERSE);
+            statusLineInCommandMode.mvprintw(maxy-1, 0, ":%s");
+            attroff(A_REVERSE);
+        }
+    }
 
     def defaultKeyEvents() {
         inherit();
