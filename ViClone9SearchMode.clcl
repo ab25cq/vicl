@@ -15,7 +15,9 @@ class ViClone
         searchMode = SEARCHMODE_NORMAL;
     }
 
-    def enterSearchMode(str:String="") {
+    def enterSearchMode(str:String="", search_mode:int=SEARCHMODE_NORMAL) {
+        searchMode = search_mode;
+
         mode = SEARCHMODE;
 
         statusLineInSearchMode = str;
@@ -61,13 +63,13 @@ class ViClone
         else {
             var y = scrollTopY+cursorY;
             var x = -1;
-            texts.subList(0, scrollTopY+cursorY).eachReverse {
+            texts.subList(0, scrollTopY+cursorY+1).eachReverse {
                 var match_point = -1;
                 if(y == scrollTopY+cursorY) {
-                    match_point = it.subString(0, scrollTopX+cursorX).indexOf(statusLineInSearchMode);
+                    match_point = it.subString(0, scrollTopX+cursorX).rindexOf(statusLineInSearchMode);
                 }
                 else {
-                    match_point = it.indexOf(statusLineInSearchMode);
+                    match_point = it.rindexOf(statusLineInSearchMode);
                 }
 
                 if(match_point != -1) {
@@ -81,7 +83,7 @@ class ViClone
                 messageBox("The search word is none");
             }
             else {
-                scrollTopY = y-1;
+                scrollTopY = y;
                 cursorY = 0;
 
                 scrollTopX = 0;
@@ -97,12 +99,10 @@ class ViClone
 
         ### Insert Mode ###
         keyEvents['/'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            searchMode = SEARCHMODE_NORMAL;
             enterSearchMode();
         }
         keyEvents['?'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            searchMode = SEARCHMODE_REVERSE;
-            enterSearchMode();
+            enterSearchMode("", SEARCHMODE_REVERSE);
         }
         keyEvents['n'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             searchString();
@@ -145,7 +145,48 @@ class ViClone
                     }
                 }
             }
-            enterSearchMode(str);
+            enterSearchMode(str, SEARCHMODE_NORMAL);
+        } 
+        keyEvents['#'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            val line = texts.items(scrollTopY+cursorY);
+
+            var str = "";
+
+            if(line != null) {
+                var x = cursorX;
+                var c = line.chars(scrollTopX+x);
+
+                if(c.isalpha()) {
+                    while(c.isalpha()) {
+                        str.append(c);
+                        x++; 
+                        c = line.chars(scrollTopX+x); 
+                    }
+                }
+                elif(c.isdigit()) {
+                    while(c.isdigit()) {
+                        str.append(c);
+                        x++; 
+                        c = line.chars(scrollTopX+x); 
+                    }
+                }
+                elif(c.isspace()) {
+                    while(c.isspace()) {
+                        str.append(c);
+                        x++; 
+                        c = line.chars(scrollTopX+x); 
+                    }
+                }
+                else {
+                    while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
+                        str.append(c);
+                        x++; 
+                        c = line.chars(scrollTopX+cursorX+x);
+                    }
+                }
+            }
+
+            enterSearchMode(str, SEARCHMODE_REVERSE);
         } 
         keyEvents['N'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             var mode = searchMode;
@@ -165,9 +206,12 @@ class ViClone
             case (('H'-'A').to_int+1, KEY_BACKSPACE) {
                 statusLineInSearchMode.delete(-2);
             }
+            case (('['-'A').to_int+1) {
+                mode = EDITMODE; 
+            } 
             case (KEY_ENTER, ('J'-'A').to_int+1) {
-                mode = EDITMODE;
                 searchString();
+                mode = EDITMODE; 
             }
             else {
                 if(key >= ' ' && key <= '~') {
