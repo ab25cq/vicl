@@ -3,10 +3,12 @@ include "ViClone3View.clcl"
 class ViClone
 {
     tabSize:int;
+    var startPositionOfInsertMode:int;
      
     def initialize() {
         inherit();
         
+        startPositionOfInsertMode = 0;
         tabSize = 4; 
     }
 
@@ -84,11 +86,7 @@ class ViClone
 
             var maxx := getmaxx();
 
-            var original_line := texts.items(scrollTopY+cursorY);
-            if(original_line == null) {
-                original_line = "";
-            }
-            (line,over_max) := getLine(original_line);
+            (line,over_max) := getLine(scrollTopY+cursorY);
 
             if(line.length() > maxx-1) {
                 scrollTopX = line.length() - maxx +2;
@@ -125,7 +123,33 @@ class ViClone
                 mode = EDITMODE;
                 fixCursorAndScrollTop();
             }
+            
+            case (('V'-'A').to_int+1) {
+                key = getch(); 
+                 
+                var maxx := getmaxx();
+                var line := texts.items(cursorY + scrollTopY);
 
+                if(line != null) {
+                    var c := key.to_char;
+                    if(c == '\t') {
+                        line.insert(cursorX + scrollTopX, "\t");
+                        cursorX++; 
+                    } 
+                    elif(c.isalnum() || c == ' ' || c.isgraph())  {
+                        line.insert(cursorX + scrollTopX, c.toString());
+                        cursorX++;
+                    }
+                    
+                    if(cursorX >= maxx-1) {
+                        scrollTopX++;
+                        cursorX--; 
+                    } 
+                }
+                 
+            } 
+
+/*
             ### Backspace ###
             case (('H'-'A').to_int+1, KEY_BACKSPACE) {
                 var maxx := getmaxx();
@@ -159,11 +183,13 @@ class ViClone
                     }
                 }
             }
+*/
 
             case ('\n'.to_int) {
                 enterNewLine(false);
             }
 
+/*
             case (('D'-'A').to_int+1) {
                 var maxx := getmaxx();
                 var original_line := texts.items(cursorY + scrollTopY);
@@ -195,6 +221,7 @@ class ViClone
                 }
                 
             }
+*/
 
             case ('\t'.to_int) {
                 var maxx := getmaxx();

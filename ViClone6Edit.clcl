@@ -3,29 +3,7 @@ include "ViClone5CommandMode.clcl"
 class ViClone
 {
     def getCursorChar(): char {
-        result:char = '\0';
-        var maxy := getmaxy();
-        var visible_texts := texts.subList(scrollTopY, scrollTopY + maxy-1);
-
-        var y := 0;
-        visible_texts.each {
-            (line, over_maxx) := getLineInsideScreenSize(it, cursorY == y);
-
-            ### cursor ####
-            if(cursorY == y) {
-                try {
-                    result = line.chars(cursorX);
-                }
-                catch(e:Exception) {
-                    result = '\0';
-                }
-                break;
-            }
-
-            y++;
-        }
-
-        return result;
+        return texts.subList(scrollTopY, scrollTopY + getmaxy()-1).items(cursorY).chars(cursorX);
     }
 
     def defaultKeyEvents() {

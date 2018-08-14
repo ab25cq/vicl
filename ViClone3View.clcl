@@ -6,9 +6,7 @@ class ViClone
     var cursorY:int;
     var scrollTopY:int;
     var scrollTopX:int;
-    var startPositionOfInsertMode:int;
-
-    var statusLineInCommandMode:String;
+    var visibleTexts:SortableList<String>?;
 
     def initialize() {
         inherit();
@@ -17,143 +15,287 @@ class ViClone
         cursorY = 0;
         scrollTopY = 0;
         scrollTopX = 0;
-        startPositionOfInsertMode = 0;
 
-        statusLineInCommandMode = "";
+        visibleTexts = null;
     }
 
     def fixCursorAndScrollTop() {
-        var maxy := getmaxy()-1;
+        var maxy = getmaxy();
 
-        if(cursorY >= maxy) {
-            var scroll_size := cursorY - maxy + 1;
-
-            scrollTopY += scroll_size;
-            cursorY -= scroll_size;
-
-            if(scrollTopY >= texts.length()) {
-                scrollTopY = texts.length()-1;
+        if(scrollTopY+maxy-1 < texts.length()) {
+            if(cursorY >= maxy-2) {
+                val scroll_size = cursorY - maxy + 2;
+                scrollTopY += scroll_size;
+                cursorY -= scroll_size;
             }
 
-            if(scrollTopY < 0) {
-                scrollTopY = 0;
-            }
-        }
+            if(cursorY < 0) {
+                val scroll_size = -cursorY;
 
-        if(cursorY < 0) {
-            var scroll_size := -cursorY;
-
-            cursorY = 0;
-            scrollTopY -= scroll_size;
-
-            if(scrollTopY >= texts.length()) {
-                scrollTopY = texts.length()-1;
-            }
-
-            if(scrollTopY < 0) {
-                scrollTopY = 0;
+                cursorY = 0;
+                scrollTopY -= scroll_size;
             }
         }
+        else {
+            if(cursorY >= texts.length() -scrollTopY) {
+                cursorY = texts.length()-scrollTopY-1;
+            }
 
-        if(cursorY >= maxy) {
-            cursorY = maxy -1;
-        }
+            if(cursorY < 0) {
+                if(scrollTopY > 0) {
+                    val scroll_size = -cursorY;
 
-        if(scrollTopY + maxy >= texts.length()) {
-            var maxy2 := texts.length() - scrollTopY;
-
-            if(cursorY >= maxy2) {
-                cursorY = maxy2-1;
+                    cursorY = 0;
+                    scrollTopY -= scroll_size;
+                }
+                else {
+                    cursorY = 0;
+                }
             }
         }
 
-        if(cursorY < 0) {
-            cursorY = 0;
+        if(scrollTopY >= texts.length()) {
+            scrollTopY = texts.length()-1;
         }
 
-        var original_line := texts.items(scrollTopY+cursorY);
-        if(original_line == null) {
-            original_line = "";
+        if(scrollTopY < 0) {
+            scrollTopY = 0;
         }
 
-        (line, over_maxx) := getLineInsideScreenSize(original_line, false);
+        (line, over_maxx) := getLine(scrollTopY+cursorY);
 
-        var maxx := getmaxx();
+        val maxx := getmaxx()-1;
 
         if(line.equals("")) {
             scrollTopX = 0;
             cursorX = 0;
         }
-        elif(cursorX >= maxx-1) {
+        
+        if(cursorX >= line.length() && line.length() != 0) {
+            cursorX = line.length()-1;
+        }
+
+        if(cursorX >= maxx-1) {
             if(over_maxx) {
-                var scroll_size := cursorX - maxx + 1;
+                val scroll_size = cursorX - maxx + 1;
 
                 cursorX -= scroll_size + 1;
                 scrollTopX += scroll_size + 1;
 
-                if(scrollTopX >= original_line.length()-maxx+1) {
-                    scrollTopX = original_line.length()-maxx+1;
+                if(scrollTopX >= line.length()-maxx+1) {
+                    scrollTopX = line.length()-maxx+1;
                 }
             }
             else {
                 cursorX = line.length()-1;
             }
         }
-        elif(cursorX >= line.length() && line.length() != 0) {
-            cursorX = line.length()-1;
-        }
-    }
-    def getLine(original_line:String):Tuple2<String,Bool> {
-        var result := "";
-        for(i:=0; i<original_line.length(); i++) {
-            var c := original_line.chars(i);
 
-            if(c == '\t') {
-                result.append("⇨");
+        if(cursorX < 0) {
+            if(over_maxx) {
+                val scroll_size = -cursorX;
+
+                cursorX = 0;
+                scrollTopX -= scroll_size;
+
+                if(scrollTopX < 0) {
+                    scrollTopX = 0;
+                }
             }
             else {
-                result.append(c);
+                cursorX = 0;
             }
         }
 
-        var maxx := getmaxx();
-
-        return (result, result.length() >= maxx-1);
+        visibleTexts = texts.subList(scrollTopY, scrollTopY + maxy-1);
     }
-    def getLineInsideScreenSize(original_line: String, cursor_line:bool):Tuple2<String,Bool> {
-        var maxx := getmaxx();
 
-        var start_line := 0;
-        if(cursor_line) {
-            start_line = scrollTopX;
+    def getLine(line_num:int):Tuple2<String,Bool> {
+        val result = (texts.items(line_num)?:"").sub(/./g) {
+            if(it.equals("\t")) {
+                "⇨";
+            }
+            elif(iscntrl(it.chars(0))) {
+                "↓";
+            }
+            else {
+                it;
+            }
         }
 
-        var result := "";
-        var n := 0;
-        for(i:=start_line; i<original_line.length(); i++) {
-            var c := original_line.chars(i);
+        return (result, result.length() >= getmaxx()-1);
+    }
 
-            if(c == '\t') {
-                if(n >= maxx-1) {
+    def forwardWord():Tuple4<Integer, Integer, Integer,Integer> {
+        (line,over_maxx) := getLine(scrollTopY+cursorY);
+
+        var c = line?.chars(scrollTopX+cursorX):'\0';
+
+        var x = cursorX;
+        var y = cursorY;
+        var scrolltop_x = scrollTopX;
+        var scrolltop_y = scrollTopY;
+
+        if(c.isalpha()) {
+            while(c.isalpha()) {
+                x++;
+
+                if(scrolltop_x+x >= line.length()-1) {
+                    x = 0;
+                    y++;
+                    scrolltop_x = 0;
                     break;
                 }
 
-                result.append("⇨");
-                n += 2;
+                c = line?.chars(scrolltop_x+x):'\0';
             }
-            else {
-                if(n >= maxx-1) {
+        }
+        elif(c.isdigit()) {
+            while(c.isdigit()) {
+                x++;
+
+                if(scrolltop_x+x >= line.length()-1) {
+                    x = 0;
+                    y++;
+                    scrolltop_x = 0;
                     break;
                 }
 
-                result.append(c);
-                n++;
+                c = line?.chars(scrolltop_x+x):'\0';
+            }
+        }
+        elif(c.isspace()) {
+            while(c.isspace()) {
+                x++;
+
+                if(scrolltop_x+x >= line.length()-1) {
+                    x = 0;
+                    y++;
+                    scrolltop_x = 0;
+                    break;
+                }
+
+                c = line?.chars(scrolltop_x+x):'\0';
+            }
+        }
+        elif(c != '\0') {
+            while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
+                x++;
+
+                if(scrolltop_x+x >= line.length()-1) {
+                    x = 0;
+                    y++;
+                    scrolltop_x = 0;
+                    break;
+                }
+
+                c = line?.chars(scrolltop_x+x):'\0';
             }
         }
 
-        var over_maxx := i != original_line.length();
+        return (x, y, scrolltop_x, scrolltop_y);
+    }
 
-        return (result, over_maxx);
+    def backwardWord():Tuple4<Integer, Integer, Integer,Integer> {
+        (line,over_maxx) := getLine(scrollTopY+cursorY);
+
+        var x = cursorX;
+        var y = cursorY;
+        var scrolltop_x = scrollTopX;
+        var scrolltop_y = scrollTopY;
+
+        var c = line?.chars(scrollTopX+cursorX):'\0';
+
+        if(line.equals("")) {
+            x = 9999;
+            y--;
+        }
+        else {
+            var c = line.chars(scrolltop_x+x)?:'\0';
+
+            if(c.isalpha()) {
+                while(c.isalpha()) {
+                    x--;
+
+                    if(scrolltop_x+x < 0) {
+                        if(y == 0) {
+                            x = 0;
+                            scrolltop_x = 0;
+                        }
+                        else {
+                            x = 9999;
+                            y--;
+                            scrolltop_x = 0;
+                        }
+                        break;
+                    }
+
+                    c = line?.chars(scrollTopX+cursorX):'\0';
+                }
+            }
+            elif(c.isdigit()) {
+                while(c.isdigit()) {
+                    x--;
+
+                    if(scrolltop_x+x < 0) {
+                        if(y == 0) {
+                            x = 0;
+                            scrolltop_x = 0;
+                        }
+                        else {
+                            x = 9999;
+                            y--;
+                            scrolltop_x = 0;
+                        }
+                        break;
+                    }
+
+                    c = line?.chars(scrollTopX+cursorX):'\0';
+                }
+            }
+            elif(c.isspace()) {
+                while(c.isspace()) {
+                    x--;
+
+                    if(scrolltop_x+x < 0) {
+                        if(y == 0) {
+                            x = 0;
+                            scrolltop_x = 0;
+                        }
+                        else {
+                            x = 9999;
+                            y--;
+                            scrolltop_x = 0;
+                        }
+                        break;
+                    }
+
+                    c = line?.chars(scrollTopX+cursorX):'\0';
+                }
+            }
+            elif(c != '\0') {
+                while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
+                    x--;
+
+                    if(scrolltop_x+x < 0) {
+                        if(y == 0) {
+                            x = 0;
+                            scrolltop_x = 0;
+                        }
+                        else {
+                            x = 9999;
+                            y--;
+                            scrolltop_x = 0;
+                        }
+                        break;
+                    }
+
+                    c = line?.chars(scrollTopX+cursorX):'\0';
+                }
+            }
+        }
+
+        return (x, y, scrolltop_x, scrolltop_y);
     }
 
     def defaultKeyEvents() {
@@ -162,426 +304,69 @@ class ViClone
         keyEvents['j'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             cursorY++;
 
-            var maxy := getmaxy()-1;
-
-            if(cursorY >= maxy) {
-                scrollTopY++;
-                cursorY--;
-            }
-
-            if(scrollTopY + cursorY >= texts.length()) {
-                scrollTopY--;
-                cursorY--;
-
-                if(scrollTopY < 0) {
-                    scrollTopY = 0;
-                }
-                if(cursorY < 0) {
-                    cursorY = 0;
-                }
-            }
-
-            var original_line := texts.items(scrollTopY+cursorY);
-            if(original_line == null) {
-                original_line = "";
-            }
-
-            (line, over_maxx) := getLineInsideScreenSize(original_line, false);
-
-            if(line.equals("")) {
-                cursorX = 0;
-            }
-            else {
-                if(cursorX >= line.length()) {
-                    cursorX = line.length()-1;
-                }
-            }
-
-            scrollTopX = 0;
+            fixCursorAndScrollTop();
         }
         keyEvents['k'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             cursorY--;
 
-            var maxy := getmaxy()-1;
-
-            if(cursorY < 0) {
-                scrollTopY--;
-                cursorY++;
-            }
-
-            if(scrollTopY < 0) {
-                scrollTopY = 0;
-            }
-
-            var original_line := texts.items(scrollTopY+cursorY);
-            if(original_line == null) {
-                original_line = "";
-            }
-            (line, over_maxx) := getLineInsideScreenSize(original_line, false);
-
-            if(line.equals("")) {
-                cursorX = 0;
-            }
-            else {
-                if(cursorX >= line.length()) {
-                    cursorX = line.length()-1;
-                }
-            }
-
-            scrollTopX = 0;
+            fixCursorAndScrollTop();
         }
         keyEvents['h'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             cursorX--;
 
-            if(cursorX < 0) {
-                scrollTopX -= -cursorX;
-
-                if(scrollTopX < 0) {
-                    scrollTopX = 0;
-                }
-
-                cursorX = 0;
-            }
+            fixCursorAndScrollTop();
         }
         keyEvents['l'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             cursorX++;
 
-            var maxx := getmaxx();
-
-            var original_line = texts.items(scrollTopY+cursorY)? : "";
-
-            (line, over_maxx) := getLineInsideScreenSize(original_line, false);
-
-            if(line.equals("")) {
-                cursorX = 0;
-            }
-            elif(cursorX >= maxx-1) {
-                if(over_maxx) {
-                    cursorX--;
-                    scrollTopX++;
-
-                    if(scrollTopX >= original_line.length()-maxx+1) {
-                        scrollTopX = original_line.length()-maxx+1;
-                    }
-                }
-                else {
-                    cursorX = line.length()-1;
-                }
-            }
-            elif(cursorX >= line.length()) {
-                cursorX = line.length()-1;
-            }
+            fixCursorAndScrollTop();
         }
         keyEvents['w'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            var original_line := texts.items(scrollTopY+cursorY);
-            if(original_line == null) {
-                original_line = "";
-            }
+            (x, y, scrolltop_x, scrolltop_y) := forwardWord();
 
-            (line,over_maxx) := getLine(original_line);
+            cursorX = x;
+            cursorY = y;
+            scrollTopX = scrolltop_x;
+            scrollTopY = scrolltop_y;
 
-            if(original_line != null) {
-                if(line.equals("")) {
-                    cursorX = 0;
-                    cursorY++;
-                    scrollTopX = 0;
-                }
-                else {
-                    var c := line.chars(scrollTopX+cursorX);
-
-                    if(c.isalpha()) {
-                        while(c.isalpha()) {
-                            cursorX++;
-
-                            if(scrollTopX+cursorX >= line.length()-1) {
-                                cursorX = 0;
-                                cursorY++;
-                                scrollTopX = 0;
-                                break;
-                            }
-
-                            c = line.chars(scrollTopX+cursorX);
-                        }
-                    }
-                    elif(c.isdigit()) {
-                        while(c.isdigit()) {
-                            cursorX++;
-
-                            if(scrollTopX+cursorX >= line.length()-1) {
-                                cursorX = 0;
-                                cursorY++;
-                                scrollTopX = 0;
-                                break;
-                            }
-
-                            c = line.chars(scrollTopX+cursorX);
-                        }
-                    }
-                    elif(c.isspace()) {
-                        while(c.isspace()) {
-                            cursorX++;
-
-                            if(scrollTopX+cursorX >= line.length()-1) {
-                                cursorX = 0;
-                                cursorY++;
-                                scrollTopX = 0;
-                                break;
-                            }
-
-                            c = line.chars(scrollTopX+cursorX);
-                        }
-                    }
-                    else {
-                        while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
-                            cursorX++;
-
-                            if(scrollTopX+cursorX >= line.length()-1) {
-                                cursorX = 0;
-                                cursorY++;
-                                scrollTopX = 0;
-                                break;
-                            }
-
-                            c = line.chars(scrollTopX+cursorX);
-                        }
-                    }
-                }
-
-                var maxx := getmaxx();
-
-                if(line.equals("")) {
-                    cursorX = 0;
-                }
-                elif(cursorX >= maxx-1) {
-                    if(over_maxx) {
-                        if(scrollTopX >= original_line.length()-maxx+1) {
-                            cursorX = 0;
-                            cursorY++;
-                            scrollTopX = 0;
-                        }
-                        else {
-                            var scroll_size := cursorX - maxx + 1;
-
-                            cursorX-=scroll_size + 1;
-                            scrollTopX+=scroll_size + 1;
-
-                            if(scrollTopX >= original_line.length()-maxx+1) {
-                                scrollTopX = original_line.length()-maxx+1;
-                            }
-                        }
-                    }
-                    else {
-                        cursorX = line.length()-1;
-                    }
-
-                    if(cursorX >= maxx-1) {
-                        cursorX = 0;
-                        scrollTopX = 0;
-                        cursorY++;
-                    }
-                }
-                elif(cursorX >= line.length()) {
-                    cursorX = line.length()-1;
-                    scrollTopX = 0;
-                }
-
-                var maxy := getmaxy()-1;
-
-                if(cursorY >= maxy) {
-                    scrollTopY++;
-                    cursorY--;
-                }
-
-                if(scrollTopY + cursorY >= texts.length()) {
-                    scrollTopY--;
-                    cursorY--;
-
-                    if(scrollTopY < 0) {
-                        scrollTopY = 0;
-                    }
-                    if(cursorY < 0) {
-                        cursorY = 0;
-                    }
-                }
-            }
+            fixCursorAndScrollTop();
         }
         keyEvents['b'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            var original_line := texts.items(scrollTopY+cursorY);
-            if(original_line == null) {
-                original_line = "";
-            }
+            (x, y, scrolltop_x, scrolltop_y) := backwardWord();
 
-            (line,over_maxx) := getLine(original_line);
+            cursorX = x;
+            cursorY = y;
+            scrollTopX = scrolltop_x;
+            scrollTopY = scrolltop_y;
 
-            if(original_line != null) {
-                if(line.equals("")) {
-                    cursorX = 9999;
-                    cursorY--;
-                }
-                else {
-                    var c := line.chars(scrollTopX+cursorX);
-
-                    if(c.isalpha()) {
-                        while(c.isalpha()) {
-                            cursorX--;
-
-                            if(scrollTopX+cursorX < 0) {
-                                if(cursorY == 0) {
-                                    cursorX = 0;
-                                    scrollTopX = 0;
-                                }
-                                else {
-                                    cursorX = 9999;
-                                    cursorY--;
-                                    scrollTopX = 0;
-                                }
-                                break;
-                            }
-
-                            c = line.chars(scrollTopX+cursorX);
-                        }
-                    }
-                    elif(c.isdigit()) {
-                        while(c.isdigit()) {
-                            cursorX--;
-
-                            if(scrollTopX+cursorX < 0) {
-                                if(cursorY == 0) {
-                                    cursorX = 0;
-                                    scrollTopX = 0;
-                                }
-                                else {
-                                    cursorX = 9999;
-                                    cursorY--;
-                                    scrollTopX = 0;
-                                }
-                                break;
-                            }
-
-                            c = line.chars(scrollTopX+cursorX);
-                        }
-                    }
-                    elif(c.isspace()) {
-                        while(c.isspace()) {
-                            cursorX--;
-
-                            if(scrollTopX+cursorX < 0) {
-                                if(cursorY == 0) {
-                                    cursorX = 0;
-                                    scrollTopX = 0;
-                                }
-                                else {
-                                    cursorX = 9999;
-                                    cursorY--;
-                                    scrollTopX = 0;
-                                }
-                                break;
-                            }
-
-                            c = line.chars(scrollTopX+cursorX);
-                        }
-                    }
-                    else {
-                        while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
-                            cursorX--;
-
-                            if(scrollTopX+cursorX < 0) {
-                                if(cursorY == 0) {
-                                    cursorX = 0;
-                                    scrollTopX = 0;
-                                }
-                                else {
-                                    cursorX = 9999;
-                                    cursorY--;
-                                    scrollTopX = 0;
-                                }
-                                break;
-                            }
-
-                            c = line.chars(scrollTopX+cursorX);
-                        }
-                    }
-                }
-
-                if(cursorX < 0) {
-                    scrollTopX -= -cursorX;
-                    cursorX = 0;
-                }
-
-                var maxx := getmaxx();
-
-                original_line = texts.items(scrollTopY+cursorY);
-                if(original_line == null) {
-                    original_line = "";
-                }
-                (line, over_maxx) = getLineInsideScreenSize(original_line, false);
-
-                if(line.equals("")) {
-                    cursorX = 0;
-                }
-                elif(cursorX >= maxx-1) {
-                    if(over_maxx) {
-                        var scroll_size := cursorX - maxx + 1;
-
-                        cursorX -= scroll_size + 1;
-                        scrollTopX += scroll_size + 1;
-
-                        if(scrollTopX >= original_line.length()-maxx+1) {
-                            scrollTopX = original_line.length()-maxx+1;
-                        }
-                    }
-                    else {
-                        cursorX = line.length()-1;
-                    }
-                }
-                elif(cursorX >= line.length()) {
-                    cursorX = line.length()-1;
-                }
-
-                if(cursorY < 0) {
-                    scrollTopY--;
-                    cursorY = 0;
-                }
-
-                if(scrollTopY < 0) {
-                    scrollTopY = 0;
-                }
-
-                if(scrollTopY + cursorY >= texts.length()) {
-                    scrollTopY-= scrollTopY + cursorY - texts.length();
-                }
-            }
+            fixCursorAndScrollTop();
         }
         keyEvents['0'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             cursorX = 0;
             scrollTopX = 0;
         }
         keyEvents['$'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            var maxx := getmaxx();
+            cursorX = 9999;
 
-            var original_line := texts.items(scrollTopY+cursorY);
-            if(original_line == null) {
-                original_line = "";
-            }
-            (line, over_maxx) := getLineInsideScreenSize(original_line, false);
-
-            if(line.equals("")) {
+            fixCursorAndScrollTop();
+        }
+        keyEvents['G'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            cursorX = 0;
+            cursorY = 999999
+            fixCursorAndScrollTop();
+        }
+        keyEvents['g'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            if(key2 == 'g'.to_int) {
                 cursorX = 0;
-            }
-            elif(over_maxx) {
-                cursorX = line.length()-1;
-                scrollTopX = original_line.length()-maxx+1;
-            }
-            else {
-                cursorX = line.length()-1;
+                cursorY = 0;
+                scrollTopY = 0;
+                scrollTopX = 0;
             }
         }
 
         keyEvents[('D'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {  # Control-D
-            var maxy := getmaxy()-1;
-            self.cursorY += maxy / 2;
-
-            scrollTopX = 0;
+            val maxy = getmaxy();
+            cursorY += maxy / 2;
 
             fixCursorAndScrollTop();
 
@@ -589,31 +374,15 @@ class ViClone
             view();
         }
         keyEvents[('U'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {  # Control-U
-            var maxy := getmaxy()-1;
-            self.cursorY -= maxy / 2;
-
-            scrollTopX = 0;
+            val maxy = getmaxy();
+            cursorY -= maxy / 2;
 
             fixCursorAndScrollTop();
 
             clear();
             view();
         }
-        keyEvents['G'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            var maxy := getmaxy();
-            cursorX = 0;
-            scrollTopY = texts.length()-1 -maxy;
-            cursorY = maxy -1;
-            fixCursorAndScrollTop();
-        }
-        keyEvents['g'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            if(key2 == 'g'.to_int) {
-                scrollTopY = 0;
-                cursorY = 0;
-                cursorX = 0;
-                fixCursorAndScrollTop();
-            }
-        }
+
         keyEvents[('L'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {  # Control-L
             clear();
             view();
@@ -621,106 +390,51 @@ class ViClone
     }
 
     def view() {
-         clearWithoutBlink();
+        clearWithoutBlink();
 
-         var maxx := getmaxx();
-         var maxy := getmaxy();
+        val maxx = getmaxx();
+        val maxy = getmaxy();
 
-         var visible_texts := texts.subList(scrollTopY, scrollTopY + maxy-1);
+        var y = 0;
 
-         var y := 0;
-         visible_texts.each {
-             (line, over_maxx) := getLineInsideScreenSize(it, cursorY == y);
+        (visibleTexts?.nothing():texts.subList(scrollTopY, scrollTopY + maxy-1)).each {
+            (line, over_maxx) := getLine(y+scrollTopY);
 
-             ### cursor ####
-             if(cursorY == y) {
-                 if(line.length() == 0) {
-                     attron(A_REVERSE);
-                     " ".mvprintw(y,0, "%s");
-                     attroff(A_REVERSE);
-                 }
-                 else {
-                     line.subString(0, cursorX).mvprintw(y, 0, "%s");
+            ### cursor line ####
+            if(cursorY == y) {
+                if(line.length() == 0) {
+                    attron(A_REVERSE);
+                    " ".mvprintw(y,0, "%s");
+                    attroff(A_REVERSE);
+                }
+                else {
+                    line.subString(scrollTopX, scrollTopX+cursorX).mvprintw(y, 0, "%s");
 
-                     var c := line.chars(cursorX);
+                    val c = line.chars(scrollTopX+cursorX);
 
-                     attron(A_REVERSE);
-                     c.toString().mvprintw(y, cursorX, "%s");
-                     attroff(A_REVERSE);
+                    attron(A_REVERSE);
+                    c.toString().mvprintw(y, cursorX, "%s");
+                    attroff(A_REVERSE);
 
-                     line.subString(cursorX+1, -1).mvprintw(y, cursorX+1, "%s");
+                    if(line.length()-scrollTopX > maxx-1) {
+                        line.subString(scrollTopX+cursorX+1, scrollTopX+(maxx-1)).mvprintw(y, cursorX+1, "%s");
+                    }
+                    else {
+                        line.subString(scrollTopX+cursorX+1, -1).mvprintw(y, cursorX+1, "%s");
+                    }
+                }
+            }
+            ### visible line ###
+            else {
+                line.subString(0, maxx-1).mvprintw(y, 0, "%s");
+            }
 
-                     if(c == '(') {
-                         var nest := 0;
-                         var y2 := 0;
-                         var find_cursor := false;
-
-                         visible_texts.each {
-                             (line, over_maxx) := getLineInsideScreenSize(it, false);
-
-                             var x2 := 0;
-                             it.each {
-                                 var c := it;
-
-                                 if(y2 == cursorY && x2 == cursorX) {
-                                     find_cursor = true;
-                                 }
-                                 elif(find_cursor) {
-                                     if(c == '(') {
-                                         nest++;
-                                     }
-                                     elif(c == ')') {
-                                         if(nest == 0) {
-                                             attron(A_BOLD);
-                                             c.toString().mvprintw(y2, x2, "%s");
-                                             attroff(A_BOLD);
-                                             return;
-                                         }
- 
-                                         nest--;
-                                     }
-                                 }
-
-                                 x2++;
-                             }
-
-                             y2++;
-                         }
-                     }
-                     elif(c == '{') {
-                     }
-                 }
-             }
-             ### visible line ###
-             else {
-                 if(line.length() != 0) {
-                     line.mvprintw(y, 0, "%s");
-                 }
-             }
-
-             y++;
+            y++;
        }
 
-       if(texts.length() == 0) {
-           attron(A_REVERSE);
-           if(fileName == null) {
-               mvprintw(maxy-1, 0, " %d %d undo(%d:%d)", array { scrollTopY+cursorY, scrollTopX+cursorX, undoIndex, undoTexts.length() });
-           }
-           else {
-               mvprintw(maxy-1, 0, "%s %d %d undo(%d:%d)", array { fileName, scrollTopY+cursorY, scrollTopX+cursorX, undoIndex, undoTexts.length() });
-           }
-           attroff(A_REVERSE);
-       }
-       else {
-           attron(A_REVERSE);
-           if(fileName == null) {
-               mvprintw(maxy-1, 0, " %d(%d%%) %d undo(%d:%d)", array { scrollTopY+cursorY, scrollTopY+cursorY/texts.length(), scrollTopX+cursorX, undoIndex, undoTexts.length() });
-           }
-           else {
-               mvprintw(maxy-1, 0, "%s %d(%d%%) %d undo(%d:%d)", array { fileName, scrollTopY+cursorY, scrollTopY+cursorY/texts.length(), scrollTopX+cursorX, undoIndex, undoTexts.length() });
-           }
-           attroff(A_REVERSE);
-       }
+       attron(A_REVERSE);
+       mvprintw(maxy-1, 0, "%s %d %d undo(%d:%d) size(%d,%d) cursor(%d,%d) scroll(%d,%d)", array { (self.fileName?.nothing():""), scrollTopY+cursorY, scrollTopX+cursorX, undoIndex, undoTexts.length(), maxx, maxy, cursorX, cursorY, scrollTopX, scrollTopY });
+       attroff(A_REVERSE);
     }
 
     def runKeyEvents(key:int) {

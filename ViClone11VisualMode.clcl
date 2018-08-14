@@ -1,0 +1,96 @@
+include "ViClone10MessageBox.clcl"
+
+class ViClone
+{
+/*
+    visualModeStart:Tuple2<Integer, Integer>
+     
+    def initialize() {
+        inherit();
+
+        visualModeStart = (0, 0)
+    }
+
+    def enterVisualMode() {
+        mode = VISUALMODE;
+
+        visualModeStart = (scrollTopX+cursorX, scrollTopY+cursorY);
+    }
+    def defaultKeyEvents() {
+        inherit();
+
+        ### Insert Mode ###
+        keyEvents['V'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            enterVisualMode();
+        }
+    }
+
+    def visualMode(key:int) {
+        when(key) {
+            case (('['-'A').to_int+1) {
+                mode = EDITMODE;
+                fixCursorAndScrollTop();
+            }
+            
+            case ('j', KEY_DOWN) {
+                runKeyEvents(key);
+            }
+            
+            case ('k', KEY_UP) {
+                runKeyEvents(key);
+            }
+            
+            case ('l', KEY_RIGHT) {
+                runKeyEvents(key);
+            }
+            
+            case ('h', KEY_LEFT) {
+                runKeyEvents(key);
+            }
+        }
+    }
+
+    def view() {
+        inherit(); 
+
+        if(mode == VISUALMODE) {
+
+
+
+            clearStatusLine();
+
+            maxy := getmaxy();
+
+            if(texts.length() == 0) {
+                attron(A_REVERSE);
+                if(fileName == null) {
+                    mvprintw(maxy-1, 0, "VISUAL  %d %d", array { scrollTopY+cursorY, scrollTopX+cursorX });
+                }
+                else {
+                    mvprintw(maxy-1, 0, "VISUAL %s %d %d", array { fileName, scrollTopY+cursorY, scrollTopX+cursorX });
+                }
+                attroff(A_REVERSE);
+            }
+            else {
+                attron(A_REVERSE);
+                if(fileName == null) {
+                    mvprintw(maxy-1, 0, "VISUAL  %d(%d%%) %d", array { scrollTopY+cursorY, scrollTopY+cursorY/texts.length(), scrollTopX+cursorX });
+                }
+                else {
+                    mvprintw(maxy-1, 0, "VISUAL %s %d(%d%%) %d", array { fileName, scrollTopY+cursorY, scrollTopY+cursorY/texts.length(), scrollTopX+cursorX });
+                }
+                attroff(A_REVERSE);
+            }
+        }
+    }
+
+    def runKeyEvents(key:int) {
+        if(mode == VISUALMODE) {
+            visualMode(key);
+        }
+        else {
+            inherit(key);
+        }
+    }
+*/
+}

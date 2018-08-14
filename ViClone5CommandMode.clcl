@@ -3,10 +3,12 @@ include "ViClone4InsertMode.clcl"
 class ViClone
 {
     var modifiedText:bool;
+    var statusLineInCommandMode:String;
 
     def initialize() {
         inherit();
 
+        statusLineInCommandMode = "";
         modifiedText = false;
     }
 

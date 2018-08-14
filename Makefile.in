@@ -32,7 +32,7 @@ CXXFLAGS=@CXXFLAGS@
 ##########################################################
 all: vicl
 
-vicl: CLParser.oclcl Clover.oclcl ViClone.oclcl viclone.ocl pre-install
+vicl: CLParser.oclcl Clover.oclcl ViClone.oclcl viclone.ocl preinstall
 
 Clover.oclcl: Fundamental.clcl CLParser.clcl
 	cclover2 -core Fundamental.clcl
@@ -45,14 +45,15 @@ CLParser.oclcl: CLParser.clcl
 	if test -e CLNodeTreePlus.bc; then bclover2 CLNodeTreePlus.bc; fi
 	if test -e CLParser.bc; then bclover2 CLParser.bc; fi
 
-ViClone.oclcl: ViClone.clcl ViClone2ReadFile.clcl ViClone3View.clcl ViClone4InsertMode.clcl ViClone5CommandMode.clcl ViClone6Edit.clcl ViClone7Undo.clcl ViClone8MethodNameCompletion.clcl ViClone9SearchMode.clcl ViClone10MessageBox.clcl
-	cclover2 ViClone10MessageBox.clcl
+ViClone.oclcl: ViClone.clcl ViClone2ReadFile.clcl ViClone3View.clcl ViClone4InsertMode.clcl ViClone5CommandMode.clcl ViClone6Edit.clcl ViClone7Undo.clcl ViClone8MethodNameCompletion.clcl ViClone9SearchMode.clcl ViClone10MessageBox.clcl ViClone11VisualMode.clcl
+	cclover2 ViClone11VisualMode.clcl
 	if test -e ViClone.bc; then bclover2 ViClone.bc; fi
 
 viclone.ocl: viclone.cl
 	cclover2 viclone.cl
+	install -m 644 viclone.ocl $(HOME)/.clover2/viclone.ocl
 
-pre-install:
+preinstall:
 	mkdir -p $(HOME)/.clover2/vicl
 	install -m 644 Clover.oclcl $(HOME)/.clover2/vicl
 	if test -e libClover.so.1.0.0; then install -m 755 libClover.so.1.0.0 $(HOME)/.clover2/vicl; cp -a libClover.so $(HOME)/.clover2/vicl; fi
@@ -112,4 +113,3 @@ distclean: clean
 ########################################################
 test: 
 	@echo "Compile to test code..."
-
