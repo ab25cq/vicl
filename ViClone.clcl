@@ -4,6 +4,7 @@ class ViClone
     var endOfAplication:bool;
     var keyEvents: lambda[](ViClone, int, int);
     var mode: int;
+    var runningCurses:static bool;
 
     enum { EDITMODE, INSERTMODE, COMMANDMODE, SEARCHMODE, VISUALMODE }
 
@@ -16,6 +17,7 @@ class ViClone
 
         defaultKeyEvents();
 
+        runningCurses = true;
         initscr();
         keypad(stdscr, true);
         noecho();
@@ -27,5 +29,6 @@ class ViClone
 
     def finalize() {
         endwin();
+        runningCurses = false;
     }
 }

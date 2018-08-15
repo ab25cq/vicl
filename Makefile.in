@@ -32,7 +32,7 @@ CXXFLAGS=@CXXFLAGS@
 ##########################################################
 all: vicl
 
-vicl: CLParser.oclcl Clover.oclcl ViClone.oclcl viclone.ocl preinstall
+vicl: CLParser.oclcl ViClone.oclcl viclone.ocl Clover.oclcl preinstall 
 
 Clover.oclcl: Fundamental.clcl CLParser.clcl
 	cclover2 -core Fundamental.clcl
