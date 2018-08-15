@@ -136,60 +136,66 @@ class ViClone
         var scrolltop_x = scrollTopX;
         var scrolltop_y = scrollTopY;
 
-        if(c.isalpha()) {
-            while(c.isalpha()) {
-                x++;
-
-                if(scrolltop_x+x >= line.length()-1) {
-                    x = 0;
-                    y++;
-                    scrolltop_x = 0;
-                    break;
-                }
-
-                c = line?.chars(scrolltop_x+x):'\0';
-            }
+        if(line.equals("")) {
+            x = 0;
+            y++;
         }
-        elif(c.isdigit()) {
-            while(c.isdigit()) {
-                x++;
+        else {
+            if(c.isalpha()) {
+                while(c.isalpha()) {
+                    x++;
 
-                if(scrolltop_x+x >= line.length()-1) {
-                    x = 0;
-                    y++;
-                    scrolltop_x = 0;
-                    break;
+                    if(scrolltop_x+x >= line.length()-1) {
+                        x = 0;
+                        y++;
+                        scrolltop_x = 0;
+                        break;
+                    }
+
+                    c = line?.chars(scrolltop_x+x):'\0';
                 }
-
-                c = line?.chars(scrolltop_x+x):'\0';
             }
-        }
-        elif(c.isspace()) {
-            while(c.isspace()) {
-                x++;
+            elif(c.isdigit()) {
+                while(c.isdigit()) {
+                    x++;
 
-                if(scrolltop_x+x >= line.length()-1) {
-                    x = 0;
-                    y++;
-                    scrolltop_x = 0;
-                    break;
+                    if(scrolltop_x+x >= line.length()-1) {
+                        x = 0;
+                        y++;
+                        scrolltop_x = 0;
+                        break;
+                    }
+
+                    c = line?.chars(scrolltop_x+x):'\0';
                 }
-
-                c = line?.chars(scrolltop_x+x):'\0';
             }
-        }
-        elif(c != '\0') {
-            while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
-                x++;
+            elif(c.isspace()) {
+                while(c.isspace()) {
+                    x++;
 
-                if(scrolltop_x+x >= line.length()-1) {
-                    x = 0;
-                    y++;
-                    scrolltop_x = 0;
-                    break;
+                    if(scrolltop_x+x >= line.length()-1) {
+                        x = 0;
+                        y++;
+                        scrolltop_x = 0;
+                        break;
+                    }
+
+                    c = line?.chars(scrolltop_x+x):'\0';
                 }
+            }
+            elif(c != '\0') {
+                while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
+                    x++;
 
-                c = line?.chars(scrolltop_x+x):'\0';
+                    if(scrolltop_x+x >= line.length()-1) {
+                        x = 0;
+                        y++;
+                        scrolltop_x = 0;
+                        break;
+                    }
+
+                    c = line?.chars(scrolltop_x+x):'\0';
+                }
             }
         }
 
@@ -230,7 +236,7 @@ class ViClone
                         break;
                     }
 
-                    c = line?.chars(scrollTopX+cursorX):'\0';
+                    c = line?.chars(scrolltop_x+x):'\0';
                 }
             }
             elif(c.isdigit()) {
@@ -250,7 +256,7 @@ class ViClone
                         break;
                     }
 
-                    c = line?.chars(scrollTopX+cursorX):'\0';
+                    c = line?.chars(scrolltop_x+x):'\0';
                 }
             }
             elif(c.isspace()) {
@@ -270,7 +276,7 @@ class ViClone
                         break;
                     }
 
-                    c = line?.chars(scrollTopX+cursorX):'\0';
+                    c = line?.chars(scrolltop_x+x):'\0';
                 }
             }
             elif(c != '\0') {
@@ -290,7 +296,7 @@ class ViClone
                         break;
                     }
 
-                    c = line?.chars(scrollTopX+cursorX):'\0';
+                    c = line?.chars(scrolltop_x+x):'\0';
                 }
             }
         }
