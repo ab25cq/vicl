@@ -396,7 +396,8 @@ class ViClone
     }
 
     def view() {
-        clearWithoutBlink();
+        #clearWithoutBlink();
+        clear();
 
         val maxx = getmaxx();
         val maxy = getmaxy();
