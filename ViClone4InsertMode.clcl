@@ -287,7 +287,7 @@ class ViClone
 
         var line := " ".multiply(maxx-1);
 
-        line.mvprintw(maxy-1, 0, "%s");
+        mvprintw(maxy-1, 0, line);
     }
 
     def view() {

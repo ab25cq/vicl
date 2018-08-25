@@ -2,7 +2,7 @@ vicl := ViClone();
 
 while(!vicl.endOfAplication) {
     vicl.view();
-    refresh();
+    ViClone.refresh();
 
     key := vicl.input();
 

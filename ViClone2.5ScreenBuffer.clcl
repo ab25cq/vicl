@@ -1,0 +1,134 @@
+include "ViClone2ReadFile.clcl"
+
+class ViClone
+{
+    var screenBuffer: static char[];
+    var screenBufferX: static int;
+    var screenBufferY: static int;
+
+    var screenBufferMax: static int;
+
+    var screenBufferBefore: static char[];
+
+    var screenBufferAttr: static int[];
+    var screenBufferAttrBefore: static int[];
+
+    var screenBufferAttrNow: static int;
+
+    def initialize():static {
+        screenBufferMax = 512;
+
+        screenBuffer = char[screenBufferMax*screenBufferMax];
+
+        for(i:=0; i<screenBuffer.length; i++) {
+            screenBuffer[i] = ' ';
+        }
+
+        screenBufferBefore = char[screenBufferMax*screenBufferMax];
+
+        for(j:=0; j<screenBufferBefore.length; j++) {
+            screenBufferBefore[j] = ' ';
+        }
+
+        screenBufferAttr = int[screenBufferMax*screenBufferMax];
+
+        for(k:=0; k<screenBufferAttr.length; k++) {
+            screenBufferAttr[k] = 0;
+        }
+
+        screenBufferAttrBefore = int[screenBufferMax*screenBufferMax];
+
+        for(l:=0; l<screenBufferAttrBefore.length; l++) {
+            screenBufferAttrBefore[l] = 0;
+        }
+
+        screenBufferX = 0;
+        screenBufferY = 0;
+
+        screenBufferAttrNow = 0;
+    }
+
+    def initialize() {
+        inherit();
+    }
+
+    def clear():static {
+        System.clear();
+
+        for(i:=0; i<screenBuffer.length; i++) {
+            screenBuffer[i] = ' ';
+        }
+
+        for(j:=0; j<screenBufferBefore.length; j++) {
+            screenBufferBefore[j] = ' ';
+        }
+
+        for(k:=0; k<screenBufferAttr.length; k++) {
+            screenBufferAttr[k] = 0;
+        }
+
+        for(l:=0; l<screenBufferAttrBefore.length; l++) {
+            screenBufferAttrBefore[l] = 0;
+        }
+    }
+
+    def refresh():static {
+        var maxx = getmaxx()-1;
+        var maxy = getmaxy();
+
+        for(y:=0; y<maxy; y++) {
+            for(x:=0; x<maxx; x++) {
+                if(screenBuffer[y*screenBufferMax+x] != screenBufferBefore[y*screenBufferMax+x]
+                    || screenBufferAttr[y*screenBufferMax+x] != screenBufferAttrBefore[y*screenBufferMax+x]) 
+                {
+                    System.attron(screenBufferAttr[y*screenBufferMax+x]);
+                    System.mvprintw(y, x, screenBuffer[y*screenBufferMax+x].toString());
+                    System.attroff(screenBufferAttr[y*screenBufferMax+x]);
+
+                    screenBufferBefore[y*screenBufferMax+x] = screenBuffer[y*screenBufferMax+x];
+                    screenBufferAttrBefore[y*screenBufferMax+x] = screenBufferAttr[y*screenBufferMax+x];
+                }
+            }
+        }
+
+        System.move(maxy-1, maxx-1);
+
+        System.refresh();
+    }
+
+    def printw(str:String):static {
+        for(i:=0; i<str.length(); i++) {
+            screenBuffer[screenBufferY*screenBufferMax+screenBufferX+i] = str.chars(i);
+            screenBufferAttr[screenBufferY*screenBufferMax+screenBufferX+i] = screenBufferAttrNow;
+        }
+
+        screenBufferX += str.length();
+    }
+
+    def attron(attr:int):static {
+        screenBufferAttrNow |= attr;
+    }
+
+    def attroff(attr:int):static {
+        screenBufferAttrNow &= ~attr;
+    }
+
+    def printw(format:String, params:Array<Object>):static {
+        str := sprintf(format, params);
+        printw(str);
+    }
+
+    def move(y:int, x:int):static {
+        screenBufferX = x;
+        screenBufferY = y;
+    }
+
+    def mvprintw(y:int, x:int, str:String):static {
+        move(y, x);
+        printw(str);
+    }
+    def mvprintw(y:int, x:int, str:String, params:Array<Object>):static {
+        move(y, x);
+        printw(str, params);
+    }
+}

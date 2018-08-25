@@ -4,7 +4,7 @@ class ViClone
 {
     def messageBox(str:String) {
         clear();
-        str.mvprintw(0, 0, "%s");
+        mvprintw(0, 0, str);
         refresh();
 
         getch();

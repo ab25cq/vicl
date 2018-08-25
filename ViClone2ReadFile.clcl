@@ -44,10 +44,10 @@ class ViClone
 
         for(i:=0; i<maxy; i++) {
             if(i == maxy -1) {
-                line2.mvprintw(i, 0, "%s");
+                mvprintw(i,0, line2);
             }
             else {
-                line.mvprintw(i, 0, "%s");
+                mvprintw(i, 0, line);
             }
         }
     }
@@ -153,7 +153,7 @@ class ViClone
     }
     def messageBox(message:String) {
         clearWithoutBlink();
-        message.mvprintw(0,0, "%s");
+        mvprintw(0,0, message);
         refresh();
 
         getch();
@@ -205,5 +205,9 @@ class ViClone
                 }
             }
         }
+    }
+
+    def refresh():static {
+        System.refresh();
     }
 }

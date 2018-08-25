@@ -115,7 +115,7 @@ class ViClone
             if(it.equals("\t")) {
                 "⇨";
             }
-            elif(iscntrl(it.chars(0))) {
+            elif(iscntrl(it.chars(0)?.nothing():"\0")) {
                 "↓";
             }
             else {
@@ -396,8 +396,8 @@ class ViClone
     }
 
     def view() {
-        #clearWithoutBlink();
-        clear();
+        clearWithoutBlink();
+        #clear();
 
         val maxx = getmaxx();
         val maxy = getmaxy();
@@ -411,29 +411,29 @@ class ViClone
             if(cursorY == y) {
                 if(line.length() == 0) {
                     attron(A_REVERSE);
-                    " ".mvprintw(y,0, "%s");
+                    mvprintw(y,0, " ");
                     attroff(A_REVERSE);
                 }
                 else {
-                    line.subString(scrollTopX, scrollTopX+cursorX).mvprintw(y, 0, "%s");
+                    mvprintw(y, 0, line.subString(scrollTopX, scrollTopX+cursorX));
 
                     val c = line.chars(scrollTopX+cursorX);
 
                     attron(A_REVERSE);
-                    c.toString().mvprintw(y, cursorX, "%s");
+                    mvprintw(y, cursorX, c.toString());
                     attroff(A_REVERSE);
 
                     if(line.length()-scrollTopX > maxx-1) {
-                        line.subString(scrollTopX+cursorX+1, scrollTopX+(maxx-1)).mvprintw(y, cursorX+1, "%s");
+                        mvprintw(y, cursorX+1, line.subString(scrollTopX+cursorX+1, scrollTopX+(maxx-1)));
                     }
                     else {
-                        line.subString(scrollTopX+cursorX+1, -1).mvprintw(y, cursorX+1, "%s");
+                        mvprintw(y, cursorX+1, line.subString(scrollTopX+cursorX+1, -1));
                     }
                 }
             }
             ### visible line ###
             else {
-                line.subString(0, maxx-1).mvprintw(y, 0, "%s");
+                mvprintw(y, 0, line.subString(0, maxx-1));
             }
 
             y++;

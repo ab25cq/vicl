@@ -240,10 +240,10 @@ class ViClone
 
             attron(A_REVERSE);
             if(searchMode == SEARCHMODE_NORMAL) {
-                statusLineInSearchMode.mvprintw(maxy-1, 0, "/%s");
+                mvprintw(maxy-1, 0, "/%s", array { statusLineInSearchMode });
             }
             else {
-                statusLineInSearchMode.mvprintw(maxy-1, 0, "?%s");
+                mvprintw(maxy-1, 0, "?%s", array { statusLineInSearchMode });
             }
             attroff(A_REVERSE);
         }

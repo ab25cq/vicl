@@ -2,26 +2,48 @@ include "ViClone10MessageBox.clcl"
 
 class ViClone
 {
-/*
-    visualModeStart:Tuple2<Integer, Integer>
+    visualModeStart:int;
+    clipBoard:SortableList<String>;
      
     def initialize() {
         inherit();
 
-        visualModeStart = (0, 0)
+        visualModeStart = 0;
+
+        clipBoard = SortableList<String>();
     }
 
     def enterVisualMode() {
         mode = VISUALMODE;
 
-        visualModeStart = (scrollTopX+cursorX, scrollTopY+cursorY);
+        visualModeStart = scrollTopY+cursorY;
     }
+
+    def pasteBeforeCursor() {
+        val line = scrollTopY + cursorY;
+        texts.insert(line-1, clipBoard);
+    }
+    def pasteAfterCursor() {
+        val line = scrollTopY + cursorY;
+        texts.insert(line+1, clipBoard);
+    }
+
     def defaultKeyEvents() {
         inherit();
 
         ### Insert Mode ###
         keyEvents['V'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             enterVisualMode();
+        }
+        keyEvents['p'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            pasteAfterCursor();
+
+            fixCursorAndScrollTop();
+        }
+        keyEvents['P'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            pasteBeforeCursor();
+
+            fixCursorAndScrollTop();
         }
     }
 
@@ -32,34 +54,105 @@ class ViClone
                 fixCursorAndScrollTop();
             }
             
-            case ('j', KEY_DOWN) {
-                runKeyEvents(key);
+            case ('j'.to_int, KEY_DOWN) {
+                cursorY++;
+
+                fixCursorAndScrollTop();
             }
             
-            case ('k', KEY_UP) {
-                runKeyEvents(key);
+            case ('k'.to_int, KEY_UP) {
+                cursorY--;
+
+                fixCursorAndScrollTop();
             }
             
-            case ('l', KEY_RIGHT) {
-                runKeyEvents(key);
+            case ('l'.to_int, KEY_RIGHT) {
+                cursorX++;
+
+                fixCursorAndScrollTop();
             }
             
-            case ('h', KEY_LEFT) {
-                runKeyEvents(key);
+            case ('h'.to_int, KEY_LEFT) {
+                cursorX--;
+
+                fixCursorAndScrollTop();
+            }
+
+            case ('y'.to_int) {
+                val line = scrollTopY + cursorY;
+
+                if(visualModeStart < line) {
+                    clipBoard = texts.subList(visualModeStart, line+1);
+                }
+                else {
+                    clipBoard = texts.subList(line, visualModeStart+1);
+                }
+
+                mode = EDITMODE;
+                fixCursorAndScrollTop();
             }
         }
     }
 
     def view() {
-        inherit(); 
-
         if(mode == VISUALMODE) {
+            clearWithoutBlink();
 
+            val maxx = getmaxx();
+            val maxy = getmaxy();
 
+            var y = 0;
 
-            clearStatusLine();
+            var cursor_line = scrollTopY+cursorY;
 
-            maxy := getmaxy();
+            (visibleTexts?.nothing():texts.subList(scrollTopY, scrollTopY + maxy-1)).each {
+                (line, over_maxx) := getLine(y+scrollTopY);
+
+                val y2 = y + scrollTopY;
+
+                if((y2 >= visualModeStart && y2 <= cursor_line)
+                    || (y2 >= cursor_line && y2 <= visualModeStart))
+                {
+                    attron(A_REVERSE);
+                }
+
+                ### cursor line ####
+                if(cursorY == y) {
+                    if(line.length() == 0) {
+                        attron(A_REVERSE);
+                        mvprintw(y,0, " ");
+                        attroff(A_REVERSE);
+                    }
+                    else {
+                        mvprintw(y, 0, line.subString(scrollTopX, scrollTopX+cursorX));
+
+                        val c = line.chars(scrollTopX+cursorX);
+
+                        attron(A_BOLD);
+                        mvprintw(y, cursorX, c.toString());
+                        attroff(A_BOLD);
+
+                        if(line.length()-scrollTopX > maxx-1) {
+                            mvprintw(y, cursorX+1, line.subString(scrollTopX+cursorX+1, scrollTopX+(maxx-1)));
+                        }
+                        else {
+                            mvprintw(y, cursorX+1, line.subString(scrollTopX+cursorX+1, -1));
+                        }
+                    }
+                }
+                ### visible line ###
+                else {
+                    mvprintw(y, 0, line.subString(0, maxx-1));
+                }
+
+                if((y2 >= visualModeStart && y2 <= cursor_line)
+                    || (y2 >= cursor_line && y2 <= visualModeStart))
+                {
+                    attroff(A_REVERSE);
+                }
+
+                y++;
+           }
 
             if(texts.length() == 0) {
                 attron(A_REVERSE);
@@ -82,6 +175,9 @@ class ViClone
                 attroff(A_REVERSE);
             }
         }
+        else {
+            inherit();
+        }
     }
 
     def runKeyEvents(key:int) {
@@ -92,5 +188,4 @@ class ViClone
             inherit(key);
         }
     }
-*/
 }

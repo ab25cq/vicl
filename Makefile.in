@@ -82,13 +82,7 @@ install:
 # uninstall
 #########################################################
 uninstall:
-	rm -f ~/.clover2/Clover.oclcl
-	rm -f ~/.clover2/libClover.so.1.0.0
-	rm -f ~/.clover2/libClover.so
-	rm -f ~/.clover2/viclone.ocl
-	rm -f ~/.clover2/ViClone.oclcl
-	rm -f ~/.clover2/libViClone.so.1.0.0
-	rm -f ~/.clover2/libViClone.so
+	rm -rf ~/.clover2/vicl
 	rm -f "$(DESTDIR)"/bin/vicl
 
 #########################################################

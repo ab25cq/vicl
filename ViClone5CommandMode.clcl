@@ -63,7 +63,7 @@ class ViClone
             clearStatusLine();
 
             attron(A_REVERSE);
-            statusLineInCommandMode.mvprintw(maxy-1, 0, ":%s");
+            mvprintw(maxy-1, 0, ":%s", array { statusLineInCommandMode });
             attroff(A_REVERSE);
         }
     }
