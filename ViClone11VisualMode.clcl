@@ -20,12 +20,22 @@ class ViClone
     }
 
     def pasteBeforeCursor() {
+        addUndoText();
+
         val line = scrollTopY + cursorY;
         texts.insert(line-1, clipBoard);
+
+        fixCursorAndScrollTop();
     }
     def pasteAfterCursor() {
+        addUndoText();
+
         val line = scrollTopY + cursorY;
         texts.insert(line+1, clipBoard);
+
+        cursorY += clipBoard.length();
+
+        fixCursorAndScrollTop();
     }
 
     def defaultKeyEvents() {
@@ -86,6 +96,25 @@ class ViClone
                 }
                 else {
                     clipBoard = texts.subList(line, visualModeStart+1);
+                }
+
+                mode = EDITMODE;
+                fixCursorAndScrollTop();
+            }
+
+            case ('d'.to_int) {
+                addUndoText();
+
+                val line = scrollTopY + cursorY;
+
+                if(visualModeStart < line) {
+                    clipBoard = texts.subList(visualModeStart, line+1);
+                    texts.deleteWithRange(visualModeStart, line+1);
+                    cursorY -= line - visualModeStart;
+                }
+                else {
+                    clipBoard = texts.subList(line, visualModeStart+1);
+                    texts.deleteWithRange(line, visualModeStart+1);
                 }
 
                 mode = EDITMODE;
