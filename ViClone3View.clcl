@@ -440,7 +440,11 @@ class ViClone
        }
 
        attron(A_REVERSE);
-       mvprintw(maxy-1, 0, "%s %d %d undo(%d:%d) size(%d,%d) cursor(%d,%d) scroll(%d,%d)", array { (self.fileName?.nothing():""), scrollTopY+cursorY, scrollTopX+cursorX, undoIndex, undoTexts.length(), maxx, maxy, cursorX, cursorY, scrollTopX, scrollTopY });
+       try {
+           mvprintw(maxy-1, 0, "%s %d %d undo(%d:%d) size(%d,%d) cursor(%d,%d) scroll(%d,%d)", array { (self.fileName?.nothing():""), scrollTopY+cursorY, scrollTopX+cursorX, undoIndex, undoTexts.length(), maxx, maxy, cursorX, cursorY, scrollTopX, scrollTopY });
+       }
+       catch (e:Exception) {
+       }
        attroff(A_REVERSE);
     }
 

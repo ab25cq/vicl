@@ -4,17 +4,22 @@ class ViClone
 {
     var undoTexts:SortableList<SortableList<String>>;
     var undoIndex:int;
+    var undoCurosrPosition:EqualableList<Tuple4<Integer, Integer, Integer, Integer>>;
 
     def initialize() {
         inherit();
 
         undoTexts = SortableList<SortableList<String>>();
         undoIndex = 0;
+
+        undoCurosrPosition = EqualableList<Tuple4<Integer, Integer, Integer, Integer>>();
     }
 
     def addUndoText() {
         undoTexts.deleteWithRange(undoIndex, -1);
         undoTexts.add(texts.clone());
+        undoCurosrPosition.deleteWithRange(undoIndex, -1);
+        undoCurosrPosition.add((scrollTopY, scrollTopX, cursorY, cursorX));
         undoIndex++;
     }
 
@@ -29,13 +34,31 @@ class ViClone
             if(undoIndex > 0) {
                 undoIndex--;
                 texts = undoTexts.items(undoIndex);
+                
+                (scrolltop_y, scrolltop_x, cursor_y, cursor_x) := undoCurosrPosition.items(undoIndex);
+
+                scrollTopY = scrolltop_y;
+                scrollTopX = scrolltop_x;
+                cursorY = cursor_y;
+                cursorX = cursor_x;
             }
+
+            fixCursorAndScrollTop();
         }
         keyEvents[('R'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {
             if(undoIndex < undoTexts.length()-1) {
                 undoIndex++;
                 texts = undoTexts.items(undoIndex);
+                
+                (scrolltop_y, scrolltop_x, cursor_y, cursor_x) := undoCurosrPosition.items(undoIndex);
+
+                scrollTopY = scrolltop_y;
+                scrollTopX = scrolltop_x;
+                cursorY = cursor_y;
+                cursorX = cursor_x;
             }
+
+            fixCursorAndScrollTop();
         }
     }
 }

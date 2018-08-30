@@ -1,7 +1,6 @@
 if(true) {
     println("HELLO WORLD");
     println("AAA"); 
-    println("CCC"); 
     println("DDD"); 
 }
 else {
@@ -17,4 +16,3 @@ println(
     , "CCC"
     , "DDD" 
     , "EEE");
-println("CCC");

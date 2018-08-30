@@ -98,6 +98,9 @@ class ViClone
                 case ('d'.to_int) {
                     var original_line := texts.items(cursorY + scrollTopY);
 
+                    clearClipBoard();
+                    addClipBoard(texts.items(scrollTopY+cursorY));
+
                     if(original_line.identifyWith(null).negative()) {
                         texts.deleteAt(scrollTopY+cursorY);
                     }

@@ -19,11 +19,18 @@ class ViClone
         visualModeStart = scrollTopY+cursorY;
     }
 
+    def clearClipBoard() {
+        clipBoard.clear();
+    }
+    def addClipBoard(line:String) {
+        clipBoard.add(line);
+    }
+
     def pasteBeforeCursor() {
         addUndoText();
 
         val line = scrollTopY + cursorY;
-        texts.insert(line-1, clipBoard);
+        texts.insert(line, clipBoard);
 
         fixCursorAndScrollTop();
     }
@@ -47,13 +54,9 @@ class ViClone
         }
         keyEvents['p'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             pasteAfterCursor();
-
-            fixCursorAndScrollTop();
         }
         keyEvents['P'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             pasteBeforeCursor();
-
-            fixCursorAndScrollTop();
         }
     }
 
