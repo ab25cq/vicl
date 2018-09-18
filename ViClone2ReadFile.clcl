@@ -35,22 +35,6 @@ class ViClone
         }
     }
 
-    def clearWithoutBlink() {
-        var maxx := getmaxx();
-        var maxy := getmaxy();
-
-        var line := " ".multiply(maxx);
-        var line2 := " ".multiply(maxx-1);
-
-        for(i:=0; i<maxy; i++) {
-            if(i == maxy -1) {
-                mvprintw(i,0, line2);
-            }
-            else {
-                mvprintw(i, 0, line);
-            }
-        }
-    }
     def inputStringLine(message:String, default_string:String=""):String {
         var result := default_string.clone();
 
@@ -158,6 +142,10 @@ class ViClone
 
         getch();
     }
+
+    def getCursorPositionDir():String {
+        "\{getenv("HOME")}/.clover2/vicl/cpos/";
+    } 
     def writeToFile():bool {
         if(fileName == null) {
             fileName = inputStringLine("input file name:");
@@ -194,6 +182,17 @@ class ViClone
                 return false;
             }
         }
+
+         
+        try {          
+            if(access(getCursorPositionDir(), X_OK) != 0) {
+                mkdir(getCursorPositionDir(), 0755);
+            }
+            
+            path := getCursorPositionDir().append(fileName);
+            scrollTopY.toString().write(path);
+        } catch(e:Exception) {
+        }         
 
         return true;
     }

@@ -13,31 +13,6 @@ class ViClone
             var c := getCursorChar();
 
             if(c == '(') {
-                nest := 0;
-                y := 0;
-                texts.subList(scrollTopY+cursorY, -1).each { |line:String|
-                    x := 0;
-                    line.each { |c2:char|
-                        if(x > scrollTopX+cursorX) {
-                            if(c2 == '(') {
-                                nest++;
-                            }
-                            elif(c2 == ')') {
-                                if(nest == 0) {
-                                    cursorX = x - scrollTopX;
-                                    cursorY = y + scrollTopY + cursorY;
-                                }
-                                nest--;
-                            }
-                        }
-
-                        x++;
-                    }
-
-                    y++;
-                }
-
-                fixCursorAndScrollTop();
             }
         }
 

@@ -30,7 +30,7 @@ class ViClone
         addUndoText();
 
         val line = scrollTopY + cursorY;
-        texts.insert(line, clipBoard);
+        texts.insert(line, clipBoard.clone());
 
         fixCursorAndScrollTop();
     }
@@ -38,7 +38,7 @@ class ViClone
         addUndoText();
 
         val line = scrollTopY + cursorY;
-        texts.insert(line+1, clipBoard);
+        texts.insert(line+1, clipBoard.clone());
 
         cursorY += clipBoard.length();
 
@@ -122,6 +122,40 @@ class ViClone
 
                 mode = EDITMODE;
                 fixCursorAndScrollTop();
+            }
+            case (('D'-'A').to_int+1) {
+                val maxy = getmaxy();
+                cursorY += maxy / 2;
+
+                fixCursorAndScrollTop();
+            }
+            case (('U'-'A').to_int+1) {
+                val maxy = getmaxy();
+                cursorY -= maxy / 2;
+
+                fixCursorAndScrollTop();
+            }
+            case ('>'.to_int) {
+                addUndoText();
+
+                texts.subList(visualModeStart, cursorY+scrollTopY+1).each {
+                    it.insert(0, "    ");
+                } 
+                
+                fixCursorAndScrollTop(); 
+            }
+            case ('<'.to_int) {
+                addUndoText();
+
+                y := visualModeStart; 
+                
+                lines := texts.subList(visualModeStart, cursorY+scrollTopY+1).map {
+                    it.sub(/^    /, "");
+                } 
+                
+                texts.deleteWithRange(visualModeStart, cursorY+scrollTopY+1).insert(visualModeStart, lines); 
+                
+                fixCursorAndScrollTop(); 
             }
         }
     }

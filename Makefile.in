@@ -97,7 +97,7 @@ permission:
 # clean
 ########################################################
 clean:
-	rm -fR core.* core a.out *.oclcl *.bc *.s *.o *.ocl *.clm src/*.dwo *.ll *.so.1.0.0 *.so
+	rm -fR core.* core a.out *.oclcl *.bc *.s *.o *.ocl *.clm src/*.dwo *.ll *.so.1.0.0 *.so vgcore*
 
 distclean: clean
 	rm -fR Makefile autom4te.cache

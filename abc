@@ -1,0 +1,21 @@
+==15861== Memcheck, a memory error detector
+==15861== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+==15861== Using Valgrind-3.12.0.SVN and LibVEX; rerun with -h for copyright info
+==15861== Command: clover2 /home/ab25cq/.clover2/vicl/viclone.ocl ViClone3View.clcl
+==15861== 
+==15861== 
+==15861== HEAP SUMMARY:
+==15861==     in use at exit: 8,475,666 bytes in 11,048 blocks
+==15861==   total heap usage: 2,981,144 allocs, 2,970,096 frees, 13,380,901,475 bytes allocated
+==15861== 
+==15861== LEAK SUMMARY:
+==15861==    definitely lost: 0 bytes in 0 blocks
+==15861==    indirectly lost: 0 bytes in 0 blocks
+==15861==      possibly lost: 0 bytes in 0 blocks
+==15861==    still reachable: 8,475,666 bytes in 11,048 blocks
+==15861==         suppressed: 0 bytes in 0 blocks
+==15861== Reachable blocks (those to which a pointer was found) are not shown.
+==15861== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==15861== 
+==15861== For counts of detected and suppressed errors, rerun with: -v
+==15861== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

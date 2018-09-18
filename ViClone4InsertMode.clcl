@@ -149,107 +149,46 @@ class ViClone
                  
             } 
 
-/*
             ### Backspace ###
             case (('H'-'A').to_int+1, KEY_BACKSPACE) {
-                var maxx := getmaxx();
-                var original_line := texts.items(cursorY + scrollTopY);
-                if(original_line == null) {
-                    original_line = "";
-                }
-                (line,over_max) := getLine(original_line);
+                val line = texts.items(scrollTopY + cursorY);
+                
+                if(line != null) {
+                    line.delete(scrollTopX + cursorX -1);
+                    cursorX--; 
+                } 
 
-                if(original_line != null) {
-                    try {
-                        if(scrollTopX+cursorX > 0 && cursorX + scrollTopX > startPositionOfInsertMode) {
-                            original_line.chars(cursorX + scrollTopX);
-
-                            cursorX--;
-                            original_line.delete(cursorX + scrollTopX);
-
-                            if(cursorX < 0) {
-                                scrollTopX--;
-                                cursorX++;
-
-                                if(scrollTopX < 0) {
-                                    scrollTopX = 0;
-                                    cursorX = 0;
-                                }
-                            }
-                        }
-                    }
-                    catch(e:Exception) {
-                        fixCursorAndScrollTop();
-                    }
-                }
+                fixCursorAndScrollTop();
             }
-*/
+            
+            case (('D'-'A').to_int+1) {
+                val line = texts.items(scrollTopY + cursorY);
+                
+                if(line != null) {
+                    4.times { 
+                        line.delete(scrollTopX + cursorX -1);
+                        cursorX -= 4; 
+                    } 
+                } 
+
+                fixCursorAndScrollTop();
+            } 
 
             case ('\n'.to_int) {
                 enterNewLine(false);
             }
 
-/*
-            case (('D'-'A').to_int+1) {
-                var maxx := getmaxx();
-                var original_line := texts.items(cursorY + scrollTopY);
-                if(original_line == null) {
-                    original_line = "";
-                }
-                (line,over_max) := getLine(original_line);
-
-                if(original_line != null) {
-                    try {
-                        if(scrollTopX+cursorX > 0) {
-                            cursorX-=4;
-                            original_line.delete((cursorX + scrollTopX)..(cursorX + scrollTopX+4));
-
-                            if(cursorX < 0) {
-                                scrollTopX--;
-                                cursorX++;
-
-                                if(scrollTopX < 0) {
-                                    scrollTopX = 0;
-                                    cursorX = 0;
-                                }
-                            }
-                        }
-                    }
-                    catch(e:Exception) {
-                        fixCursorAndScrollTop();
-                    }
-                }
-                
-            }
-*/
-
-            case ('\t'.to_int) {
-                var maxx := getmaxx();
+            case (('I'-'A').to_int+1) {
                 var line := texts.items(cursorY + scrollTopY);
 
                 if(line != null) {
-                    if(line.match(/^\s*$/)) {
-                        line.insert(cursorX + scrollTopX, " ".multiply(tabSize));
-                        cursorX+=tabSize;
-
-                        if(cursorX >= maxx-1) {
-                            scrollTopX += tabSize;
-                            cursorX-=tabSize;
-                        }
-                    }
-                    elif(fileName?.match(/.+\.cl$/)) {
-                        val str := methodNameCompletionForClover2().scan(/^(.+\()/).items(1);
-                        str?.map { 
-                            line.insert(cursorX + scrollTopX, str); 
-                            cursorX += str.length();
-
-                            if(cursorX >= maxx-1) {
-                                scrollTopX += tabSize;
-                                cursorX-=tabSize;
-                            }
-                        }
-                    }
+                    4.times { 
+                        line.insert(cursorX + scrollTopX, " ");
+                        cursorX++;
+                    } 
                 }
+
+                fixCursorAndScrollTop();
             }
             else {
                 var maxx := getmaxx();

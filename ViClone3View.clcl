@@ -8,23 +8,56 @@ class ViClone
     var scrollTopX:int;
     var visibleTexts:SortableList<String>?;
 
+    var SpaceString1: String;
+    var SpaceString2: String;
+
+    var MaxX:int;
+    var MaxY:int;
+
     def initialize() {
         inherit();
 
         cursorX = 0;
         cursorY = 0;
-        scrollTopY = 0;
+        scrollTopY = 0; #(getCursorPositionDir().append(fileName).toPath()?.read().toString():"0").to_int();
         scrollTopX = 0;
 
-        visibleTexts = null;
+        makeMaxxy();
+        makeSpaces();
+
+        makeVisibleTexts();
+    }
+
+    def makeMaxxy() {
+        MaxX = getmaxx();
+        MaxY = getmaxy();
+    }
+
+    def makeVisibleTexts() {
+        visibleTexts = texts.subList(scrollTopY, scrollTopY + MaxY-1).map {
+            var result = "";
+            it.each {
+                if(it == '\t') {
+                    result.append("⇨");
+                }
+                elif(iscntrl(it)) {
+                    result.append("↓");
+                }
+                else {
+                    result.append(it);
+                }
+            }
+
+            result;
+        }
     }
 
     def fixCursorAndScrollTop() {
-        var maxy = getmaxy();
+        var scrolltop_y_before = scrollTopY;
 
-        if(scrollTopY+maxy-1 < texts.length()) {
-            if(cursorY >= maxy-2) {
-                val scroll_size = cursorY - maxy + 2;
+        if(scrollTopY+MaxY-1 < texts.length()) {
+            if(cursorY >= MaxY-2) {
+                val scroll_size = cursorY - MaxY + 2;
                 scrollTopY += scroll_size;
                 cursorY -= scroll_size;
             }
@@ -62,9 +95,10 @@ class ViClone
             scrollTopY = 0;
         }
 
-        (line, over_maxx) := getLine(scrollTopY+cursorY);
+        var line = visibleTexts.items(cursorY);
+        var over_maxx = line.length() >= MaxX-1;
 
-        val maxx := getmaxx()-1;
+        val maxx = MaxX-1;
 
         if(line.equals("")) {
             scrollTopX = 0;
@@ -107,7 +141,9 @@ class ViClone
             }
         }
 
-        visibleTexts = texts.subList(scrollTopY, scrollTopY + maxy-1);
+        if(scrolltop_y_before != scrollTopY) {
+            makeVisibleTexts();
+        }
     }
 
     def getLine(line_num:int):Tuple2<String,Bool> {
@@ -115,7 +151,7 @@ class ViClone
             if(it.equals("\t")) {
                 "⇨";
             }
-            elif(iscntrl(it.chars(0)?.nothing():"\0")) {
+            elif(iscntrl(it?.chars(0)?:'\0')) {
                 "↓";
             }
             else {
@@ -123,11 +159,12 @@ class ViClone
             }
         }
 
-        return (result, result.length() >= getmaxx()-1);
+        return (result, result.length() >= MaxX-1);
     }
 
     def forwardWord():Tuple4<Integer, Integer, Integer,Integer> {
-        (line,over_maxx) := getLine(scrollTopY+cursorY);
+        var line = visibleTexts.items(cursorY);
+        var over_maxx = line.length() >= MaxX-1;
 
         var c = line?.chars(scrollTopX+cursorX):'\0';
 
@@ -203,7 +240,8 @@ class ViClone
     }
 
     def backwardWord():Tuple4<Integer, Integer, Integer,Integer> {
-        (line,over_maxx) := getLine(scrollTopY+cursorY);
+        var line = visibleTexts.items(cursorY);
+        var over_maxx = line.length() >= MaxX-1;
 
         var x = cursorX;
         var y = cursorY;
@@ -371,8 +409,7 @@ class ViClone
         }
 
         keyEvents[('D'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {  # Control-D
-            val maxy = getmaxy();
-            cursorY += maxy / 2;
+            cursorY += MaxY / 2;
 
             fixCursorAndScrollTop();
 
@@ -380,8 +417,7 @@ class ViClone
             view();
         }
         keyEvents[('U'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {  # Control-U
-            val maxy = getmaxy();
-            cursorY -= maxy / 2;
+            cursorY -= MaxY / 2;
 
             fixCursorAndScrollTop();
 
@@ -395,45 +431,58 @@ class ViClone
         }
     }
 
-    def view() {
-        clearWithoutBlink();
-        #clear();
+    def makeSpaces() {
+        SpaceString1 = " ".multiply(MaxX);
+        SpaceString2 = " ".multiply(MaxX-1);
+    }
 
-        val maxx = getmaxx();
-        val maxy = getmaxy();
+    def clearWithoutBlink() {
+        for(i:=0; i<MaxY; i++) {
+            if(i == MaxY -1) {
+                mvprintw(i,0, SpaceString2);
+            }
+            else {
+                mvprintw(i, 0, SpaceString1);
+            }
+        }
+    }
+
+    def view() {
+        #clearWithoutBlink();
+        clear(); 
 
         var y = 0;
 
-        (visibleTexts?.nothing():texts.subList(scrollTopY, scrollTopY + maxy-1)).each {
-            (line, over_maxx) := getLine(y+scrollTopY);
+        visibleTexts.each {
+            over_maxx := it.length() >= MaxX-1;
 
             ### cursor line ####
             if(cursorY == y) {
-                if(line.length() == 0) {
+                if(it.length() == 0) {
                     attron(A_REVERSE);
                     mvprintw(y,0, " ");
                     attroff(A_REVERSE);
                 }
                 else {
-                    mvprintw(y, 0, line.subString(scrollTopX, scrollTopX+cursorX));
+                    mvprintw(y, 0, it.subString(scrollTopX, scrollTopX+cursorX));
 
-                    val c = line.chars(scrollTopX+cursorX);
+                    val c = it.chars(scrollTopX+cursorX);
 
                     attron(A_REVERSE);
                     mvprintw(y, cursorX, c.toString());
                     attroff(A_REVERSE);
 
-                    if(line.length()-scrollTopX > maxx-1) {
-                        mvprintw(y, cursorX+1, line.subString(scrollTopX+cursorX+1, scrollTopX+(maxx-1)));
+                    if(it.length()-scrollTopX > MaxX-1) {
+                        mvprintw(y, cursorX+1, it.subString(scrollTopX+cursorX+1, scrollTopX+(MaxX-1)));
                     }
                     else {
-                        mvprintw(y, cursorX+1, line.subString(scrollTopX+cursorX+1, -1));
+                        mvprintw(y, cursorX+1, it.subString(scrollTopX+cursorX+1, -1));
                     }
                 }
             }
             ### visible line ###
             else {
-                mvprintw(y, 0, line.subString(0, maxx-1));
+                mvprintw(y, 0, it.subString(0, MaxX-1));
             }
 
             y++;
@@ -441,7 +490,7 @@ class ViClone
 
        attron(A_REVERSE);
        try {
-           mvprintw(maxy-1, 0, "%s %d %d undo(%d:%d) size(%d,%d) cursor(%d,%d) scroll(%d,%d)", array { (self.fileName?.nothing():""), scrollTopY+cursorY, scrollTopX+cursorX, undoIndex, undoTexts.length(), maxx, maxy, cursorX, cursorY, scrollTopX, scrollTopY });
+           mvprintw(MaxY-1, 0, "%s %d %d undo(%d:%d) size(%d,%d) cursor(%d,%d) scroll(%d,%d)", array { (self.fileName?.nothing():""), scrollTopY+cursorY, scrollTopX+cursorX, undoIndex, undoTexts.length(), MaxX, MaxY, cursorX, cursorY, scrollTopX, scrollTopY });
        }
        catch (e:Exception) {
        }

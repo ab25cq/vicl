@@ -1,8 +1,16 @@
-dd --> p,P
-V,d --> p,P
+%
+[[
 
-VisualMode
+Insert Mode
+    C-w
 
-ViClone3View 
-     b
-     test
+Visual Mode
+    
+:sp
+
+cursor scrolltop saved with each texts
+
+cw
+dw
+
+zz
