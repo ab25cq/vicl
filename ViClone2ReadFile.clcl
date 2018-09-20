@@ -4,18 +4,34 @@ class ViClone
 {
     var texts:SortableList<String>;
     var fileName:String?;
+    var argmentLineNum:int;
 
     def initialize() {
         inherit();
-
+        
+        argmentLineNum = -1;
+        Clover.ARGV.each {
+            if(it.match(/\+\d+/)) {
+                argmentLineNum = it.scan(/\+(\d+)/).items(1).to_int(); 
+            }
+        } 
+        
+        var argv = String[Clover.ARGV.length]();
+        var argc = 0;
+        Clover.ARGV.each {
+            if(it.match(/\+\d+/).negative()) {
+                argv[argc++] = it;
+            }
+        }
+        
         ### read file ###
-        if(Clover.ARGV.length() == 2) {
+        if(argc == 2) {
             texts = SortableList<String>();
             texts.add("");
             fileName = null;
         }
-        elif(Clover.ARGV.length() == 3) {
-            var fname := Clover.ARGV.items(2);
+        elif(argc == 3) {
+            var fname := argv.items(2);
             if(access(fname, R_OK) == 0) {
                 texts = fname.toPath().read().toString().split(/\n/);
 
@@ -146,6 +162,19 @@ class ViClone
     def getCursorPositionDir():String {
         "\{getenv("HOME")}/.clover2/vicl/cpos/";
     } 
+
+    def quitViClone() {
+        try {          
+            if(access(getCursorPositionDir(), X_OK) != 0) {
+                mkdir(getCursorPositionDir(), 0755);
+            }
+            
+            path := getCursorPositionDir().append(fileName);
+            (scrollTopY+cursorY+1).toString().write(path);
+        } catch(e:Exception) {
+        }         
+    }
+
     def writeToFile():bool {
         if(fileName == null) {
             fileName = inputStringLine("input file name:");
@@ -182,17 +211,6 @@ class ViClone
                 return false;
             }
         }
-
-         
-        try {          
-            if(access(getCursorPositionDir(), X_OK) != 0) {
-                mkdir(getCursorPositionDir(), 0755);
-            }
-            
-            path := getCursorPositionDir().append(fileName);
-            scrollTopY.toString().write(path);
-        } catch(e:Exception) {
-        }         
 
         return true;
     }

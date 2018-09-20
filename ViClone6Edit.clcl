@@ -31,7 +31,8 @@ class ViClone
 
                 texts.deleteAt(scrollTopY+cursorY+1);
 
-                fixCursorAndScrollTop();
+                makeVisibleTexts();
+                fixCursorAndScrollTop(scrollTopY);
             }
         }
         keyEvents['d'.to_int] = lambda(self:ViClone, key:int, key2:int) {
@@ -69,6 +70,9 @@ class ViClone
                             }
                         }
                     }
+
+                    makeVisibleTexts();                     
+                    fixCursorAndScrollTop(scrollTopY);
                 }
                 case ('d'.to_int) {
                     var original_line := texts.items(cursorY + scrollTopY);
@@ -86,7 +90,8 @@ class ViClone
                         cursorX = 0;
                     }
 
-                    fixCursorAndScrollTop();
+                    makeVisibleTexts();                     
+                    fixCursorAndScrollTop(scrollTopY);
                 }
             }
         }
@@ -98,7 +103,8 @@ class ViClone
 
                 original_line.delete(cursorX + scrollTopX);
 
-                fixCursorAndScrollTop();
+                makeVisibleTexts();
+                fixCursorAndScrollTop(scrollTopY);
             }
         }
         keyEvents['D'.to_int] = lambda(self:ViClone, key:int, key2:int) {
@@ -109,7 +115,8 @@ class ViClone
 
                 original_line.delete(cursorX + scrollTopX, -1);
 
-                fixCursorAndScrollTop();
+                makeVisibleTexts();
+                fixCursorAndScrollTop(scrollTopY);
             }
         }
     }

@@ -51,13 +51,15 @@ class ViClone
                 messageBox("The search word is none");
             }
             else {
+                var scrolltop_y_before = scrollTopY;
+
                 scrollTopY = y;
                 cursorY = 0;
 
                 scrollTopX = 0;
                 cursorX = x;
 
-                fixCursorAndScrollTop();
+                fixCursorAndScrollTop(scrolltop_y_before);
             }
         }
         else {
@@ -83,13 +85,15 @@ class ViClone
                 messageBox("The search word is none");
             }
             else {
+                var scrolltop_y_before = scrollTopY;
+
                 scrollTopY = y;
                 cursorY = 0;
 
                 scrollTopX = 0;
                 cursorX = x;
 
-                fixCursorAndScrollTop();
+                fixCursorAndScrollTop(scrolltop_y_before);
             }
         }
     }

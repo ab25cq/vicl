@@ -38,6 +38,8 @@ class ViClone
                 }
                 elif(statusLineInCommandMode.match(/q/) && statusLineInCommandMode.match(/!/)) {
                     endOfAplication = true;
+
+                    quitViClone();
                 }
                 elif(statusLineInCommandMode.match(/w/)) {
                     writeToFile().if {
@@ -48,6 +50,7 @@ class ViClone
                     if(!modifiedText) {
                         endOfAplication = true;
                     }
+                    quitViClone();
                 }
 
                 mode = EDITMODE;

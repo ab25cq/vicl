@@ -43,7 +43,7 @@ class ViClone
                 cursorX = cursor_x;
             }
 
-            fixCursorAndScrollTop();
+            makeVisibleTexts();
         }
         keyEvents[('R'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {
             if(undoIndex < undoTexts.length()-1) {
@@ -58,7 +58,7 @@ class ViClone
                 cursorX = cursor_x;
             }
 
-            fixCursorAndScrollTop();
+            makeVisibleTexts();
         }
     }
 }

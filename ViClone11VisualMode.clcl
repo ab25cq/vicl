@@ -32,7 +32,7 @@ class ViClone
         val line = scrollTopY + cursorY;
         texts.insert(line, clipBoard.clone());
 
-        fixCursorAndScrollTop();
+        fixCursorAndScrollTop(scrollTopY);
     }
     def pasteAfterCursor() {
         addUndoText();
@@ -42,7 +42,7 @@ class ViClone
 
         cursorY += clipBoard.length();
 
-        fixCursorAndScrollTop();
+        fixCursorAndScrollTop(scrollTopY);
     }
 
     def defaultKeyEvents() {
@@ -64,31 +64,31 @@ class ViClone
         when(key) {
             case (('['-'A').to_int+1) {
                 mode = EDITMODE;
-                fixCursorAndScrollTop();
+                fixCursorAndScrollTop(scrollTopY);
             }
             
             case ('j'.to_int, KEY_DOWN) {
                 cursorY++;
 
-                fixCursorAndScrollTop();
+                fixCursorAndScrollTop(scrollTopY);
             }
             
             case ('k'.to_int, KEY_UP) {
                 cursorY--;
 
-                fixCursorAndScrollTop();
+                fixCursorAndScrollTop(scrollTopY);
             }
             
             case ('l'.to_int, KEY_RIGHT) {
                 cursorX++;
 
-                fixCursorAndScrollTop();
+                fixCursorAndScrollTop(scrollTopY);
             }
             
             case ('h'.to_int, KEY_LEFT) {
                 cursorX--;
 
-                fixCursorAndScrollTop();
+                fixCursorAndScrollTop(scrollTopY);
             }
 
             case ('y'.to_int) {
@@ -102,7 +102,8 @@ class ViClone
                 }
 
                 mode = EDITMODE;
-                fixCursorAndScrollTop();
+
+                fixCursorAndScrollTop(scrollTopY);
             }
 
             case ('d'.to_int) {
@@ -121,19 +122,19 @@ class ViClone
                 }
 
                 mode = EDITMODE;
-                fixCursorAndScrollTop();
+                fixCursorAndScrollTop(scrollTopY);
             }
             case (('D'-'A').to_int+1) {
                 val maxy = getmaxy();
                 cursorY += maxy / 2;
 
-                fixCursorAndScrollTop();
+                fixCursorAndScrollTop(scrollTopY);
             }
             case (('U'-'A').to_int+1) {
                 val maxy = getmaxy();
                 cursorY -= maxy / 2;
 
-                fixCursorAndScrollTop();
+                fixCursorAndScrollTop(scrollTopY);
             }
             case ('>'.to_int) {
                 addUndoText();
@@ -142,7 +143,7 @@ class ViClone
                     it.insert(0, "    ");
                 } 
                 
-                fixCursorAndScrollTop(); 
+                fixCursorAndScrollTop(scrollTopY);
             }
             case ('<'.to_int) {
                 addUndoText();
@@ -155,7 +156,7 @@ class ViClone
                 
                 texts.deleteWithRange(visualModeStart, cursorY+scrollTopY+1).insert(visualModeStart, lines); 
                 
-                fixCursorAndScrollTop(); 
+                fixCursorAndScrollTop(scrollTopY);
             }
         }
     }

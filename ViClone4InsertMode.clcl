@@ -13,6 +13,8 @@ class ViClone
     }
 
     def enterNewLine(no_tails_getting:bool) {
+        var scrolltop_y_before = scrollTopY;
+
         var maxx := getmaxx();
         var maxy := getmaxy();
 
@@ -47,7 +49,9 @@ class ViClone
         spaces.append(tails);
         texts.insert(cursorY+scrollTopY, spaces);
 
-        fixCursorAndScrollTop();
+        makeVisibleTexts();
+
+        fixCursorAndScrollTop(scrolltop_y_before);
 
         startPositionOfInsertMode = cursorX + scrollTopX;
     }
@@ -121,7 +125,6 @@ class ViClone
         when(key) {
             case (('['-'A').to_int+1) {
                 mode = EDITMODE;
-                fixCursorAndScrollTop();
             }
             
             case (('V'-'A').to_int+1) {
@@ -157,8 +160,6 @@ class ViClone
                     line.delete(scrollTopX + cursorX -1);
                     cursorX--; 
                 } 
-
-                fixCursorAndScrollTop();
             }
             
             case (('D'-'A').to_int+1) {
@@ -170,8 +171,6 @@ class ViClone
                         cursorX -= 4; 
                     } 
                 } 
-
-                fixCursorAndScrollTop();
             } 
 
             case ('\n'.to_int) {
@@ -187,8 +186,6 @@ class ViClone
                         cursorX++;
                     } 
                 }
-
-                fixCursorAndScrollTop();
             }
             else {
                 var maxx := getmaxx();
@@ -208,6 +205,7 @@ class ViClone
                 }
             }
         }
+        makeVisibleTexts();
     }
 
     def runKeyEvents(key:int) {
