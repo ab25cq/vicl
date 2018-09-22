@@ -3,11 +3,4 @@
 "BBB".
 "CCC".
 
-
-adasfasdfasdfadsfasdfadsfasdfasfadslkfaslfadlskadlfaj
-{ {  
-}  }
-if() {
-}
-else {
-}
+asdfafasfdsaf.asdfasfa
