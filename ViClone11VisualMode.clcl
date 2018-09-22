@@ -32,6 +32,7 @@ class ViClone
         val line = scrollTopY + cursorY;
         texts.insert(line, clipBoard.clone());
 
+        makeVisibleTexts();
         fixCursorAndScrollTop(scrollTopY);
     }
     def pasteAfterCursor() {
@@ -42,6 +43,7 @@ class ViClone
 
         cursorY += clipBoard.length();
 
+        makeVisibleTexts();
         fixCursorAndScrollTop(scrollTopY);
     }
 
@@ -122,6 +124,7 @@ class ViClone
                 }
 
                 mode = EDITMODE;
+                makeVisibleTexts(); 
                 fixCursorAndScrollTop(scrollTopY);
             }
             case (('D'-'A').to_int+1) {
@@ -143,6 +146,7 @@ class ViClone
                     it.insert(0, "    ");
                 } 
                 
+                makeVisibleTexts(); 
                 fixCursorAndScrollTop(scrollTopY);
             }
             case ('<'.to_int) {
@@ -156,6 +160,7 @@ class ViClone
                 
                 texts.deleteWithRange(visualModeStart, cursorY+scrollTopY+1).insert(visualModeStart, lines); 
                 
+                makeVisibleTexts(); 
                 fixCursorAndScrollTop(scrollTopY);
             }
         }
@@ -163,17 +168,14 @@ class ViClone
 
     def view() {
         if(mode == VISUALMODE) {
-            clearWithoutBlink();
-
-            val maxx = getmaxx();
-            val maxy = getmaxy();
+            clear(); 
 
             var y = 0;
 
             var cursor_line = scrollTopY+cursorY;
 
-            (visibleTexts?.nothing():texts.subList(scrollTopY, scrollTopY + maxy-1)).each {
-                (line, over_maxx) := getLine(y+scrollTopY);
+            visibleTexts.each {
+                over_maxx := it.length() >= MaxX-1;
 
                 val y2 = y + scrollTopY;
 
@@ -185,31 +187,27 @@ class ViClone
 
                 ### cursor line ####
                 if(cursorY == y) {
-                    if(line.length() == 0) {
-                        attron(A_REVERSE);
+                    if(it.length() == 0) {
                         mvprintw(y,0, " ");
-                        attroff(A_REVERSE);
                     }
                     else {
-                        mvprintw(y, 0, line.subString(scrollTopX, scrollTopX+cursorX));
+                        mvprintw(y, 0, it.subString(scrollTopX, scrollTopX+cursorX));
 
-                        val c = line.chars(scrollTopX+cursorX);
+                        val c = it.chars(scrollTopX+cursorX);
 
-                        attron(A_BOLD);
                         mvprintw(y, cursorX, c.toString());
-                        attroff(A_BOLD);
 
-                        if(line.length()-scrollTopX > maxx-1) {
-                            mvprintw(y, cursorX+1, line.subString(scrollTopX+cursorX+1, scrollTopX+(maxx-1)));
+                        if(it.length()-scrollTopX > MaxX-1) {
+                            mvprintw(y, cursorX+1, it.subString(scrollTopX+cursorX+1, scrollTopX+(MaxX-1)));
                         }
                         else {
-                            mvprintw(y, cursorX+1, line.subString(scrollTopX+cursorX+1, -1));
+                            mvprintw(y, cursorX+1, it.subString(scrollTopX+cursorX+1, -1));
                         }
                     }
                 }
                 ### visible line ###
                 else {
-                    mvprintw(y, 0, line.subString(0, maxx-1));
+                    mvprintw(y, 0, it.subString(0, MaxX-1));
                 }
 
                 if((y2 >= visualModeStart && y2 <= cursor_line)
@@ -221,26 +219,13 @@ class ViClone
                 y++;
            }
 
-            if(texts.length() == 0) {
-                attron(A_REVERSE);
-                if(fileName == null) {
-                    mvprintw(maxy-1, 0, "VISUAL  %d %d", array { scrollTopY+cursorY, scrollTopX+cursorX });
-                }
-                else {
-                    mvprintw(maxy-1, 0, "VISUAL %s %d %d", array { fileName, scrollTopY+cursorY, scrollTopX+cursorX });
-                }
-                attroff(A_REVERSE);
-            }
-            else {
-                attron(A_REVERSE);
-                if(fileName == null) {
-                    mvprintw(maxy-1, 0, "VISUAL  %d(%d%%) %d", array { scrollTopY+cursorY, scrollTopY+cursorY/texts.length(), scrollTopX+cursorX });
-                }
-                else {
-                    mvprintw(maxy-1, 0, "VISUAL %s %d(%d%%) %d", array { fileName, scrollTopY+cursorY, scrollTopY+cursorY/texts.length(), scrollTopX+cursorX });
-                }
-                attroff(A_REVERSE);
-            }
+           attron(A_REVERSE);
+           try {
+               mvprintw(MaxY-1, 0, "%s %d %d undo(%d:%d) size(%d,%d) cursor(%d,%d) scroll(%d,%d)", array { (self.fileName?.nothing():""), scrollTopY+cursorY, scrollTopX+cursorX, undoIndex, undoTexts.length(), MaxX, MaxY, cursorX, cursorY, scrollTopX, scrollTopY });
+           }
+           catch (e:Exception) {
+           }
+           attroff(A_REVERSE);
         }
         else {
             inherit();

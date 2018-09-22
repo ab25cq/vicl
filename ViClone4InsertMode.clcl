@@ -149,7 +149,8 @@ class ViClone
                         cursorX--; 
                     } 
                 }
-                 
+                
+                makeVisibleTexts();
             } 
 
             ### Backspace ###
@@ -160,6 +161,24 @@ class ViClone
                     line.delete(scrollTopX + cursorX -1);
                     cursorX--; 
                 } 
+                
+                makeVisibleTexts();
+            }
+
+            ### delete Back word ###
+            case (('W'-'A').to_int+1, KEY_BACKSPACE) {
+                val line = texts.items(scrollTopY + cursorY);
+
+                (x, y, scroll_x, scroll_y) := backwardWord(-1);
+                
+                if(line != null) {
+                    (cursorX - x).times {
+                        line.delete(scrollTopX + cursorX -1);
+                        cursorX--; 
+                    }
+                } 
+                
+                makeVisibleTexts();
             }
             
             case (('D'-'A').to_int+1) {
@@ -168,13 +187,17 @@ class ViClone
                 if(line != null) {
                     4.times { 
                         line.delete(scrollTopX + cursorX -1);
-                        cursorX -= 4; 
                     } 
+                    cursorX -= 4; 
                 } 
+                
+                makeVisibleTexts();
             } 
 
             case ('\n'.to_int) {
                 enterNewLine(false);
+                
+                makeVisibleTexts();
             }
 
             case (('I'-'A').to_int+1) {
@@ -186,18 +209,21 @@ class ViClone
                         cursorX++;
                     } 
                 }
+                
+                makeVisibleTexts();
             }
             else {
-                var maxx := getmaxx();
-                var line := texts.items(cursorY + scrollTopY);
+                var line = texts.items(cursorY + scrollTopY);
+                var vline = visibleTexts.items(cursorY);
 
-                if(line != null) {
+                if(line != null && vline != null) {
                     var c := key.to_char;
                     if(c.isalnum() || c == ' ' || c.isgraph()) {
                         line.insert(cursorX + scrollTopX, c.toString());
+                        vline.insert(cursorX + scrollTopX, c.toString());
                         cursorX++;
 
-                        if(cursorX >= maxx-1) {
+                        if(cursorX >= MaxX-1) {
                             scrollTopX++;
                             cursorX--;
                         }
@@ -205,7 +231,6 @@ class ViClone
                 }
             }
         }
-        makeVisibleTexts();
     }
 
     def runKeyEvents(key:int) {

@@ -196,16 +196,16 @@ class ViClone
         return (result, result.length() >= MaxX-1);
     }
 
-    def forwardWord():Tuple4<Integer, Integer, Integer,Integer> {
+    def forwardWord(offset:int=0):Tuple4<Integer, Integer, Integer,Integer> {
         var line = visibleTexts.items(cursorY);
         var over_maxx = line.length() >= MaxX-1;
 
-        var c = line?.chars(scrollTopX+cursorX):'\0';
-
-        var x = cursorX;
+        var x = cursorX + offset;
         var y = cursorY;
         var scrolltop_x = scrollTopX;
         var scrolltop_y = scrollTopY;
+
+        var c = line?.chars(scrolltop_x+x):'\0';
 
         if(line.equals("")) {
             x = 0;
@@ -273,16 +273,16 @@ class ViClone
         return (x, y, scrolltop_x, scrolltop_y);
     }
 
-    def backwardWord():Tuple4<Integer, Integer, Integer,Integer> {
+    def backwardWord(offset:int=0):Tuple4<Integer, Integer, Integer,Integer> {
         var line = visibleTexts.items(cursorY);
         var over_maxx = line.length() >= MaxX-1;
 
-        var x = cursorX;
+        var x = cursorX + offset;
         var y = cursorY;
         var scrolltop_x = scrollTopX;
         var scrolltop_y = scrollTopY;
 
-        var c = line?.chars(scrollTopX+cursorX):'\0';
+        var c = line?.chars(scrolltop_x+x):'\0';
 
         if(line.equals("")) {
             x = 9999;
@@ -553,7 +553,7 @@ class ViClone
             if(keyEvents[key] != null) {
                 var key2 := 0;
                 when(key) {
-                    case ('d'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int) {
+                    case ('d'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int, 'z'.to_int) {
                         key2 = getch();
                     }
                 }

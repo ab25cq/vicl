@@ -5,15 +5,137 @@ class ViClone
     def getCursorChar(): char {
         return texts.subList(scrollTopY, scrollTopY + getmaxy()-1).items(cursorY).chars(cursorX);
     }
+    
+    def forwardBrace(head_char:char, tail_char:char): Tuple2<Integer, Integer> {
+        var line_num = cursorY + scrollTopY; 
+        var cursor_num = -1; 
+        var nest = 0; 
+        texts.subList(cursorY + scrollTopY, -1).each {
+            if(line_num == cursorY + scrollTopY) {
+                for(i:=cursorX+scrollTopX+1; i<it.length(); i++) {
+                    if(it.chars(i) == head_char) {
+                        nest++; 
+                    } 
+                    elif(it.chars(i) == tail_char) {
+                        if(nest == 0) {
+                            cursor_num = i;
+                            break; 
+                        } 
+                        nest--;
+                    } 
+                } 
+            } 
+            else { 
+                for(i:=0; i<it.length(); i++) {
+                    if(it.chars(i) == head_char) {
+                        nest++; 
+                    } 
+                    elif(it.chars(i) == tail_char) {
+                        if(nest == 0) {
+                            cursor_num = i;
+                            break; 
+                        } 
+                        nest--;
+                    } 
+                } 
+            }             
+            
+            if(cursor_num != -1) {
+                break; 
+            } 
+            
+            line_num++; 
+        } 
+        
+        return (line_num, cursor_num); 
+    } 
+    def backwordBrace(head_char:char, tail_char:char): Tuple2<Integer, Integer> {
+        var line_num = cursorY + scrollTopY; 
+        var cursor_num = -1; 
+        var nest = 0; 
+        texts.subList(0, cursorY + scrollTopY+1).reverse().each {
+            if(line_num == cursorY + scrollTopY) {
+                for(i:=cursorX+scrollTopX-1; i>=0; i--) {
+                    if(it.chars(i) == head_char) {
+                        nest++; 
+                    } 
+                    elif(it.chars(i) == tail_char) {
+                        if(nest == 0) {
+                            cursor_num = i;
+                            break; 
+                        } 
+                        nest--;
+                    } 
+                } 
+            } 
+            else { 
+                for(i:=it.length()-1; i>=0; i--) {
+                    if(it.chars(i) == head_char) {
+                        nest++; 
+                    } 
+                    elif(it.chars(i) == tail_char) {
+                        if(nest == 0) {
+                            cursor_num = i;
+                            break; 
+                        } 
+                        nest--;
+                    } 
+                } 
+            }             
+            
+            if(cursor_num != -1) {
+                break; 
+            } 
+            
+            line_num--; 
+        } 
+        
+        return (line_num, cursor_num); 
+    } 
 
     def defaultKeyEvents() {
         inherit();
 
         keyEvents['%'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            var c := getCursorChar();
+            var c = getCursorChar();
 
+            var line_num = -1;
+            var cursor_num = -1;
+            
             if(c == '(') {
+                (line_num, cursor_num) = forwardBrace('(', ')');
             }
+            elif(c == '{') {
+                (line_num, cursor_num) = forwardBrace('{', '}');
+            }
+            elif(c == '}') {
+                (line_num, cursor_num) = backwordBrace('}', '{');
+            }
+            elif(c == ')') {
+                (line_num, cursor_num) = backwordBrace(')', '(');
+            }
+            
+            if(line_num != -1 && cursor_num != -1) { 
+                if(line_num >= scrollTopY  && line_num < scrollTopY + MaxY-1) {
+                    cursorY = line_num - scrollTopY;
+                    scrollTopX = 0;
+                    cursorX = cursor_num; 
+                }
+                else {
+                    scrollTopY = line_num -10;
+                    cursorY = 10;
+                    scrollTopX = 0;
+                    cursorX = cursor_num; 
+
+                    if(scrollTopY < 0) {
+                        cursorY += scrollTopY;
+                        scrollTopY = 0;
+                    }
+                }
+                
+                makeVisibleTexts();
+                fixCursorAndScrollTop(scrollTopY);
+            } 
         }
 
         keyEvents['J'.to_int] = lambda(self:ViClone, key:int, key2:int) {
@@ -98,13 +220,12 @@ class ViClone
         keyEvents['x'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             var original_line := texts.items(cursorY + scrollTopY);
 
-            if(original_line.identifyWith(null).negative()) {
+            if(original_line != null) {
                 addUndoText();
 
                 original_line.delete(cursorX + scrollTopX);
 
                 makeVisibleTexts();
-                fixCursorAndScrollTop(scrollTopY);
             }
         }
         keyEvents['D'.to_int] = lambda(self:ViClone, key:int, key2:int) {
@@ -117,6 +238,29 @@ class ViClone
 
                 makeVisibleTexts();
                 fixCursorAndScrollTop(scrollTopY);
+            }
+        }
+        keyEvents['z'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            when(key2) {
+                case ('z'.to_int) {
+                    var n = scrollTopY + cursorY;
+                     
+                    cursorY = MaxY / 2; 
+                    scrollTopY = n - cursorY;
+                     
+                    makeVisibleTexts();
+                    fixCursorAndScrollTop(scrollTopY);
+                }
+
+                case (KEY_ENTER, ('J'-'A').to_int+1) {
+                    var n = scrollTopY + cursorY;
+                     
+                    cursorY = 0;
+                    scrollTopY = n;
+                     
+                    makeVisibleTexts();
+                    fixCursorAndScrollTop(scrollTopY);
+                }
             }
         }
     }

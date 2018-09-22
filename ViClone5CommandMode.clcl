@@ -25,6 +25,7 @@ class ViClone
             }
             case (('['-'A').to_int+1) {
                 mode = EDITMODE;
+                statusLineInCommandMode = "";
                 addUndoText();
             }
             case (('H'-'A').to_int+1, KEY_BACKSPACE) {
@@ -54,6 +55,7 @@ class ViClone
                 }
 
                 mode = EDITMODE;
+                statusLineInCommandMode = "";
             }
         }
     }
@@ -66,7 +68,7 @@ class ViClone
             clearStatusLine();
 
             attron(A_REVERSE);
-            mvprintw(maxy-1, 0, ":%s", array { statusLineInCommandMode });
+            mvprintw(maxy-1, 0, ":\{statusLineInCommandMode}");
             attroff(A_REVERSE);
         }
     }
