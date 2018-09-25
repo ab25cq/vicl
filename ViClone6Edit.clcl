@@ -247,6 +247,11 @@ class ViClone
                      
                     cursorY = MaxY / 2; 
                     scrollTopY = n - cursorY;
+                    
+                    if(scrollTopY < 0) {
+                        cursorY += scrollTopY; 
+                        scrollTopY = 0; 
+                    } 
                      
                     makeVisibleTexts();
                     fixCursorAndScrollTop(scrollTopY);
