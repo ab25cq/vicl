@@ -168,7 +168,9 @@ class ViClone
 
     def view() {
         if(mode == VISUALMODE) {
-            clear(); 
+            clearWithoutBlink(); 
+            
+            dirView(); 
 
             var y = 0;
 
@@ -188,26 +190,26 @@ class ViClone
                 ### cursor line ####
                 if(cursorY == y) {
                     if(it.length() == 0) {
-                        mvprintw(y,0, " ");
+                        mvprintw(y,0+dirPaneLength, " ");
                     }
                     else {
-                        mvprintw(y, 0, it.subString(scrollTopX, scrollTopX+cursorX));
+                        mvprintw(y, 0+dirPaneLength, it.subString(scrollTopX, scrollTopX+cursorX));
 
                         val c = it.chars(scrollTopX+cursorX);
 
-                        mvprintw(y, cursorX, c.toString());
+                        mvprintw(y, cursorX+dirPaneLength, c.toString());
 
                         if(it.length()-scrollTopX > MaxX-1) {
-                            mvprintw(y, cursorX+1, it.subString(scrollTopX+cursorX+1, scrollTopX+(MaxX-1)));
+                            mvprintw(y, cursorX+1+dirPaneLength, it.subString(scrollTopX+cursorX+1, scrollTopX+(MaxX-1)));
                         }
                         else {
-                            mvprintw(y, cursorX+1, it.subString(scrollTopX+cursorX+1, -1));
+                            mvprintw(y, cursorX+1+dirPaneLength, it.subString(scrollTopX+cursorX+1, -1));
                         }
                     }
                 }
                 ### visible line ###
                 else {
-                    mvprintw(y, 0, it.subString(0, MaxX-1));
+                    mvprintw(y, 0+dirPaneLength, it.subString(0, MaxX-1));
                 }
 
                 if((y2 >= visualModeStart && y2 <= cursor_line)

@@ -1,7 +1,9 @@
-include "ViClone2ReadFile.clcl"
+include "ViClone2DirPane.clcl"
 
 class ViClone
 {
+    var texts:SortableList<String>;
+
     var cursorX:int;
     var cursorY:int;
     var scrollTopY:int;
@@ -14,8 +16,41 @@ class ViClone
     var MaxX:int;
     var MaxY:int;
 
-    def initialize() {
-        inherit();
+    def saveCursorPos() {
+        try {          
+            if(access(getCursorPositionDir(), X_OK) != 0) {
+                mkdir(getCursorPositionDir(), 0755);
+            }
+            
+            path := getCursorPositionDir().append(fileName);
+            (scrollTopY+cursorY+1).toString().write(path);
+        } catch(e:Exception) {
+        }         
+    }
+
+    def readFile(fname:String) {
+        if(fname == null) {
+            texts = SortableList<String>();
+            texts.add("");
+             
+            fileName = null;
+        }
+        elif(access(fname, R_OK) == 0) {
+            texts = fname.toPath().read().toString().split(/\n/);
+
+            if(texts.length() == 0) {
+                texts = SortableList<String>();
+                texts.add("");
+            }
+             
+            fileName = fname.clone();
+        }
+        else {
+            texts = SortableList<String>();
+            texts.add("");
+             
+            fileName = null;
+        }
 
         var file_line_num = (getCursorPositionDir().append(fileName).toPath()?.read().toString():"-1").to_int();
         cursorX = 0;
@@ -42,22 +77,37 @@ class ViClone
                 argmentLineNum = 0;
             }
 
-            cursorY = MaxY / 2;
-            scrollTopY = argmentLineNum - cursorY;
+            cursorY = argmentLineNum;
+
+            scrollTopY = cursorY - (MaxY-2) /2;
+            
+            cursorY -= scrollTopY;
 
             if(scrollTopY < 0) {
+                cursorY += scrollTopY;
                 scrollTopY = 0;
-                cursorY = argmentLineNum;
             }
 
             fixCursorAndScrollTop(scrollTopY);
 
             makeVisibleTexts();
         }
+        
+        if(fileName != null) { 
+            setDirCursor(fileName); 
+        } 
+
+        argmentLineNum = -1;
+    }
+    
+    def initialize() {
+        inherit();
+
+        readFile(fileName);
     }
 
     def makeMaxxy() {
-        MaxX = getmaxx();
+        MaxX = getmaxx() - dirPaneLength;
         MaxY = getmaxy();
     }
 
@@ -383,11 +433,13 @@ class ViClone
             var scrolltop_y_before = scrollTopY;
 
             cursorY++;
+            scrollTopX = 0; 
 
             fixCursorAndScrollTop(scrolltop_y_before);
         }
         keyEvents['k'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             cursorY--;
+            scrollTopX = 0; 
 
             fixCursorAndScrollTop(scrollTopY);
         }
@@ -465,6 +517,7 @@ class ViClone
             var scrolltop_y_before = scrollTopY;
 
             cursorY += MaxY / 2;
+            scrollTopX = 0; 
 
             fixCursorAndScrollTop(scrolltop_y_before);
         }
@@ -472,6 +525,7 @@ class ViClone
             var scrolltop_y_before = scrollTopY;
 
             cursorY -= MaxY / 2;
+            scrollTopX = 0; 
 
             fixCursorAndScrollTop(scrolltop_y_before);
         }
@@ -484,13 +538,17 @@ class ViClone
     }
 
     def makeSpaces() {
-        SpaceString1 = " ".multiply(MaxX);
-        SpaceString2 = " ".multiply(MaxX-1);
+        var maxx = getmaxx();
+
+        SpaceString1 = " ".multiply(maxx);
+        SpaceString2 = " ".multiply(maxx-1);
     }
 
     def clearWithoutBlink() {
-        for(i:=0; i<MaxY; i++) {
-            if(i == MaxY -1) {
+        var maxy = getmaxy();
+
+        for(i:=0; i<maxy-1; i++) {
+            if(i == maxy -1) {
                 mvprintw(i,0, SpaceString2);
             }
             else {
@@ -500,10 +558,12 @@ class ViClone
     }
 
     def view() {
-        clear(); 
+        clearWithoutBlink(); 
+        
+        dirView(); 
 
         var y = 0;
-
+        
         visibleTexts.each {
             over_maxx := it.length() >= MaxX-1;
 
@@ -511,29 +571,29 @@ class ViClone
             if(cursorY == y) {
                 if(it.length() == 0) {
                     attron(A_REVERSE);
-                    mvprintw(y,0, " ");
+                    mvprintw(y,0+dirPaneLength, " ");
                     attroff(A_REVERSE);
                 }
                 else {
-                    mvprintw(y, 0, it.subString(scrollTopX, scrollTopX+cursorX));
+                    mvprintw(y, 0+dirPaneLength, it.subString(scrollTopX, scrollTopX+cursorX));
 
                     val c = it.chars(scrollTopX+cursorX);
 
                     attron(A_REVERSE);
-                    mvprintw(y, cursorX, c.toString());
+                    mvprintw(y, cursorX+dirPaneLength, c.toString());
                     attroff(A_REVERSE);
 
                     if(it.length()-scrollTopX > MaxX-1) {
-                        mvprintw(y, cursorX+1, it.subString(scrollTopX+cursorX+1, scrollTopX+(MaxX-1)));
+                        mvprintw(y, cursorX+1+dirPaneLength, it.subString(scrollTopX+cursorX+1, scrollTopX+(MaxX-1)));
                     }
                     else {
-                        mvprintw(y, cursorX+1, it.subString(scrollTopX+cursorX+1, -1));
+                        mvprintw(y, cursorX+1+dirPaneLength, it.subString(scrollTopX+cursorX+1, -1));
                     }
                 }
             }
             ### visible line ###
             else {
-                mvprintw(y, 0, it.subString(0, MaxX-1));
+                mvprintw(y, 0+dirPaneLength, it.subString(0, MaxX-1));
             }
 
             y++;
@@ -559,6 +619,9 @@ class ViClone
                 }
                 keyEvents[key](self, key, key2);
             }
+        }
+        else {
+            inherit(key);
         }
     }
 }

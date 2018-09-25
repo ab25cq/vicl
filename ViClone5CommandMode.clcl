@@ -35,23 +35,26 @@ class ViClone
                 if(statusLineInCommandMode.match(/w/) && statusLineInCommandMode.match(/q/)) {
                     writeToFile().if {
                         endOfAplication = true;
+                        saveCursorPos();
                     }
                 }
                 elif(statusLineInCommandMode.match(/q/) && statusLineInCommandMode.match(/!/)) {
                     endOfAplication = true;
 
-                    quitViClone();
+                    saveCursorPos();
                 }
                 elif(statusLineInCommandMode.match(/w/)) {
                     writeToFile().if {
                         modifiedText = false;
+                        saveCursorPos();
                     }
                 }
                 elif(statusLineInCommandMode.match(/q/)) {
                     if(!modifiedText) {
                         endOfAplication = true;
                     }
-                    quitViClone();
+
+                    saveCursorPos();
                 }
 
                 mode = EDITMODE;
