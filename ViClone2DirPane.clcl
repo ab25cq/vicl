@@ -16,7 +16,9 @@ class ViClone
         dirScrollTop = 0; 
         dirCursor = 0; 
         
-        dirPaneLength = 20; 
+        var maxx = getmaxx(); 
+        
+        dirPaneLength = maxx/4;
         
         changeDirectory(getcwd());
     }

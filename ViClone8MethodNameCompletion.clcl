@@ -8,24 +8,24 @@ class ViClone
 
     def methodNameCompletionForClover2(): String
     {
-        var source := "";
+        var source = "";
         for(i:=0; i<texts.length() && i<scrollTopY+cursorY-1; i++) {
             source.append(texts.items(i));
         }
         if(scrollTopY+cursorY >= 0 && scrollTopY+cursorY < texts.length()) {
-            var cursor_line := texts.items(scrollTopY+cursorY);
+            var cursor_line = texts.items(scrollTopY+cursorY);
             source.append(cursor_line.subString(0, scrollTopX + cursorX));
         }
 
-        var index := source.rindexOf(".");
+        var index = source.rindexOf(".");
         source = source.subString(0, index);
 
-        var parser := CLParser(source, fileName);
-        var type_name := parser.getTypeWithBoxing();
+        var parser = CLParser(source, fileName);
+        var type_name = parser.getTypeWithBoxing();
 
         if(!type_name.equals("")) {
-            var klass := Class(type_name);
-            var methods := klass.getMethods().map { it.methodNameAndParams() };
+            var klass = Class(type_name);
+            var methods = klass.getMethods().map { it.methodNameAndParams() };
 
             return selectStrings("[klass.className]", methods).map { if(it == -1) { "" } else { methods.items(it); } }
         }

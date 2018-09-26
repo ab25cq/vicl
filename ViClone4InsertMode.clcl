@@ -204,10 +204,14 @@ class ViClone
                 var line := texts.items(cursorY + scrollTopY);
 
                 if(line != null) {
+                    line.insert(cursorX + scrollTopX, methodNameCompletionForClover2());
+                     
+                    /* 
                     4.times { 
                         line.insert(cursorX + scrollTopX, " ");
                         cursorX++;
                     } 
+                    */ 
                 }
                 
                 makeVisibleTexts();
