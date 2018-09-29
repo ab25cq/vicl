@@ -162,39 +162,30 @@ class ViClone
 
             when(key2) {
                 case ('e'.to_int, 'w'.to_int) {
-                    var line := texts.items(scrollTopY+cursorY);
-
-                    if(line.identifyWith(null).negative()) {
-                        var c := line.chars(scrollTopX+cursorX);
-
-                        if(c.isalpha()) {
-                            while(c.isalpha()) {
-                                line.delete(scrollTopX+cursorX);
-                                c = line.chars(scrollTopX+cursorX);
-                            }
+                    (x,y,scrolltop_x, scrolltop_y) := forwardWord(0); 
+                 
+                    var line = texts.items(scrollTopY+cursorY);
+                    
+                    if(y > cursorY) {
+                        line.delete(scrollTopX+cursorX, -1);
+    
+                        makeVisibleTexts();                     
+                        fixCursorAndScrollTop(scrollTopY);
+            
+                        cursorX++;
+            
+                        if(cursorX >= MaxX-1) {
+                            scrollTopX++;
+                            cursorX--;
                         }
-                        elif(c.isdigit()) {
-                            while(c.isdigit()) {
-                                line.delete(scrollTopX+cursorX);
-                                c = line.chars(scrollTopX+cursorX);
-                            }
-                        }
-                        elif(c.isspace()) {
-                            while(c.isspace()) {
-                                line.delete(scrollTopX+cursorX);
-                                c = line.chars(scrollTopX+cursorX);
-                            }
-                        }
-                        else {
-                            while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
-                                line.delete(scrollTopX+cursorX);
-                                c = line.chars(scrollTopX+cursorX);
-                            }
-                        }
-                    }
-
-                    makeVisibleTexts();                     
-                    fixCursorAndScrollTop(scrollTopY);
+                    } 
+                    else { 
+                        line.delete(scrollTopX+cursorX, scrolltop_x+x); 
+    
+                        makeVisibleTexts();                     
+                        fixCursorAndScrollTop(scrollTopY);
+                    } 
+                     
                 }
                 case ('d'.to_int) {
                     var original_line := texts.items(cursorY + scrollTopY);

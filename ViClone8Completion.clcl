@@ -1,0 +1,54 @@
+include "ViClone7Undo.clcl"
+
+class ViClone
+{
+    def initialize() {
+        inherit();
+    }
+    
+    def completion() {
+        var words = texts.join("\n").scan(/[a-zA-Z_]+/);
+        var line = texts.items(scrollTopY + cursorY);
+
+        ### getting inputing word ###
+        var inputing_text = "";
+        for(i:= cursorX+scrollTopX-1; i >= 0; i--) {
+            if(line.chars(i).isalnum()) {
+                inputing_text.insert(0, line.chars(i)); 
+            } 
+            else {
+                break; 
+            } 
+        }
+        if(i < 0) {
+            i = 0;
+        }
+        candidates := words.select { 
+                it.indexOf(inputing_text) == 0 
+                && !it.equals(inputing_text)
+            }.sort().uniq();
+
+        if(candidates.length() == 0) {
+        }
+        elif(candidates.length() == 1) {
+            selected_string := candidates.items(0);
+
+            line.delete(i, scrollTopX + cursorX+1); 
+            line.insert(i+1, selected_string);
+            cursorX += selected_string.length() 
+                - (scrollTopX + cursorX - i)
+        }
+        else {
+            index := selectStrings(line, candidates);
+
+            if(index != -1) {
+                selected_string 
+                    := candidates.items(index);
+                line.delete(i, scrollTopX + cursorX+1); 
+                line.insert(i+1, selected_string);
+                cursorX += selected_string.length() 
+                    - (scrollTopX + cursorX - i)
+            }
+        }
+    } 
+}

@@ -9,6 +9,8 @@ class ViClone
     var dirCursor:int; 
     
     var dirPaneLength: int; 
+    
+    var visibleDirPane: bool
       
     def initialize() {
         inherit();
@@ -18,7 +20,7 @@ class ViClone
         
         var maxx = getmaxx(); 
         
-        dirPaneLength = maxx/4;
+        visibleDirPane = false; 
         
         changeDirectory(getcwd());
     }
@@ -63,31 +65,48 @@ class ViClone
             dirScrollTop = 0; 
         } 
     } 
+    
+    def dirPaneOn() {
+        mode = DIRMODE;
+        visibleDirPane = true;
+        var maxx = getmaxx();
+        dirPaneLength = maxx/2;
+        makeMaxxy(); 
+    } 
+    
+    def dirPaneOff() {
+        visibleDirPane = false;
+        dirPaneLength = 0; 
+        makeMaxxy(); 
+        mode = EDITMODE; 
+    } 
 
     def defaultKeyEvents() {
         inherit();
 
         keyEvents[('W'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {  # Control-W
-            mode = DIRMODE;
+            dirPaneOn(); 
         }
     }
     
     def dirView() {
-        for(i:=0; i<MaxY-1; i++) {
-            if(dirCursor == i) {
-                if(i+dirScrollTop < fileNames.length()) {
-                    attron(A_REVERSE); 
-                    mvprintw(i, 0, "%-\{dirPaneLength-1}s", array { fileNames.items(i+dirScrollTop).subString(0, dirPaneLength-1) });
-                    attroff(A_REVERSE); 
+        if(visibleDirPane) { 
+            for(i:=0; i<MaxY-1; i++) {
+                if(dirCursor == i) {
+                    if(i+dirScrollTop < fileNames.length()) {
+                        attron(A_REVERSE); 
+                        mvprintw(i, 0, "%-\{dirPaneLength-1}s", array { fileNames.items(i+dirScrollTop).subString(0, dirPaneLength-1) });
+                        attroff(A_REVERSE); 
+                    }
+                    mvprintw(i, dirPaneLength-1, "|");
                 }
-                mvprintw(i, dirPaneLength-1, "|");
-            }
-            else {
-                if(i+dirScrollTop < fileNames.length()) {
-                    mvprintw(i, 0, "%-\{dirPaneLength-1}s|", array { fileNames.items(i+dirScrollTop).subString(0, dirPaneLength-1) });
-                }
-                else { 
-                    mvprintw(i, 0, " ".multiply(dirPaneLength-1).append("|"));
+                else {
+                    if(i+dirScrollTop < fileNames.length()) {
+                        mvprintw(i, 0, "%-\{dirPaneLength-1}s|", array { fileNames.items(i+dirScrollTop).subString(0, dirPaneLength-1) });
+                    }
+                    else { 
+                        mvprintw(i, 0, " ".multiply(dirPaneLength-1).append("|"));
+                    } 
                 } 
             } 
         } 
@@ -166,13 +185,13 @@ class ViClone
                 } 
             }
             case (('W'-'A').to_int+1,('['-'A').to_int+1) {
-                mode = EDITMODE; 
+                dirPaneOff(); 
             }
             case ('\n'.to_int) {
                 writeToFile().if {
                     saveCursorPos();
                     readFile(fileNames.items(dirScrollTop+dirCursor));
-                    mode = EDITMODE; 
+                    dirPaneOff(); 
                 }
             }
         }

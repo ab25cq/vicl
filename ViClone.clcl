@@ -94,19 +94,23 @@ class ViClone
         return result;
     }
     # result is -1 --> canceled to select
-    def selectStrings(message:String, strings:List<String>):int {
-        var result := -1;
+    def selectStrings(message:String, strings:SortableList<String>):int {
+        var result = -1;
 
-        var cursor := 0;
-        var scroll_top := 0;
-        var maxy := getmaxy();
+        var cursor = 0;
+        var scroll_top = 0;
+        var maxy = getmaxy();
 
         while(true) {
             clearWithoutBlink();
 
-            var n := 0;
-            mvprintw(0, 0, message);
-            strings.subList(scroll_top, scroll_top+maxy-1).each {
+            var n = 0;
+            mvprintw(0, 0
+                , message
+                    .add(" select number \{strings.length()}"));
+            strings.subList(scroll_top
+                    , scroll_top+maxy-1).each 
+            {
                 if(cursor == n) {
                     attron(A_REVERSE);
                     mvprintw(n+1, 0, it);
@@ -178,7 +182,7 @@ class ViClone
             fileName = inputStringLine("input file name:");
             
             if(access(fileName, F_OK) == 0) {
-                var n := selectStrings("overwite to \{fileName}?", list { "yes", "no" });
+                var n := selectStrings("overwite to \{fileName}?", slist { "yes", "no" });
 
                 if(n == 0) {
                     if(access(fileName, W_OK) == 0) {

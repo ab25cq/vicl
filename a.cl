@@ -1,6 +1,8 @@
-(1+1).
-"AAA".
-"BBB".
-"CCC".
+printf("HELLO WORLD\n");
 
-asdfafasfdsaf.asdfasfa
+strcmp("AAA", "BBB");
+
+'a'.alnum();
+
+printf
+strcmp

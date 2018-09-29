@@ -110,9 +110,34 @@ class ViClone
             enterInsertMode();
         }
         keyEvents['c'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            addUndoText();
+             
             when(key2) {
                 case ('e'.to_int, 'w'.to_int) {
-                    keyEvents['d'.to_int](self, 'd'.to_int, 'w'.to_int);
+                    (x,y,scrolltop_x, scrolltop_y) := forwardWord(0); 
+                 
+                    var line = texts.items(scrollTopY+cursorY);
+                    
+                    if(y > cursorY) {
+                        line.delete(scrollTopX+cursorX, -1);
+    
+                        makeVisibleTexts();                     
+                        fixCursorAndScrollTop(scrollTopY);
+            
+                        cursorX++;
+            
+                        if(cursorX >= MaxX-1) {
+                            scrollTopX++;
+                            cursorX--;
+                        }
+                    } 
+                    else { 
+                        line.delete(scrollTopX+cursorX, scrolltop_x+x); 
+    
+                        makeVisibleTexts();                     
+                        fixCursorAndScrollTop(scrollTopY);
+                    } 
+                     
                     enterInsertMode();
                 }
                 case ('d'.to_int) {
@@ -177,6 +202,7 @@ class ViClone
                         cursorX--; 
                     }
                 } 
+                cursorX++; 
                 
                 makeVisibleTexts();
             }
@@ -201,17 +227,13 @@ class ViClone
             }
 
             case (('I'-'A').to_int+1) {
-                var line := texts.items(cursorY + scrollTopY);
+                addUndoText();
+
+                var line = texts
+                    .items(cursorY+scrollTopY);
 
                 if(line != null) {
-                    line.insert(cursorX + scrollTopX, methodNameCompletionForClover2());
-                     
-                    /* 
-                    4.times { 
-                        line.insert(cursorX + scrollTopX, " ");
-                        cursorX++;
-                    } 
-                    */ 
+                    completion();
                 }
                 
                 makeVisibleTexts();

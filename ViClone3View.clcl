@@ -98,6 +98,8 @@ class ViClone
         } 
 
         argmentLineNum = -1;
+    
+        clearUndoText();
     }
     
     def initialize() {
@@ -262,8 +264,8 @@ class ViClone
             y++;
         }
         else {
-            if(c.isalpha()) {
-                while(c.isalpha()) {
+            if(c.isalpha() || c == '_') {
+                while(c.isalpha() || c == '_') {
                     x++;
 
                     if(scrolltop_x+x >= line.length()-1) {
@@ -272,7 +274,6 @@ class ViClone
                         scrolltop_x = 0;
                         break;
                     }
-
                     c = line?.chars(scrolltop_x+x):'\0';
                 }
             }
@@ -322,7 +323,7 @@ class ViClone
 
         return (x, y, scrolltop_x, scrolltop_y);
     }
-
+    
     def backwardWord(offset:int=0):Tuple4<Integer, Integer, Integer,Integer> {
         var line = visibleTexts.items(cursorY);
         var over_maxx = line.length() >= MaxX-1;
@@ -341,8 +342,8 @@ class ViClone
         else {
             var c = line.chars(scrolltop_x+x)?:'\0';
 
-            if(c.isalpha()) {
-                while(c.isalpha()) {
+            if(c.isalpha() || c == '_') {
+                while(c.isalpha() || c == '_') {
                     x--;
 
                     if(scrolltop_x+x < 0) {
@@ -571,20 +572,27 @@ class ViClone
             if(cursorY == y) {
                 if(it.length() == 0) {
                     attron(A_REVERSE);
-                    mvprintw(y,0+dirPaneLength, " ");
+                    mvprintw(y,0+dirPaneLength
+                        , " ");
                     attroff(A_REVERSE);
                 }
                 else {
-                    mvprintw(y, 0+dirPaneLength, it.subString(scrollTopX, scrollTopX+cursorX));
+                    mvprintw(y, 0+dirPaneLength
+                        , it.subString(scrollTopX
+                        , scrollTopX+cursorX));
 
-                    val c = it.chars(scrollTopX+cursorX);
+                    val c = it.chars(
+                        scrollTopX+cursorX);
 
                     attron(A_REVERSE);
-                    mvprintw(y, cursorX+dirPaneLength, c.toString());
+                    mvprintw(y
+                        , cursorX+dirPaneLength
+                        , c.toString());
                     attroff(A_REVERSE);
 
                     if(it.length()-scrollTopX > MaxX-1) {
-                        mvprintw(y, cursorX+1+dirPaneLength, it.subString(scrollTopX+cursorX+1, scrollTopX+(MaxX-1)));
+                        mvprintw(y
+                            , cursorX+1+dirPaneLength, it.subString(scrollTopX+cursorX+1, scrollTopX+(MaxX-1)));
                     }
                     else {
                         mvprintw(y, cursorX+1+dirPaneLength, it.subString(scrollTopX+cursorX+1, -1));

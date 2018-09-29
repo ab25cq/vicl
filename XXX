@@ -1,0 +1,4 @@
+i -1 scrollTopX + cursorX 3
+i 0 scrollTopX + cursorX 3i 0 scrollTopX + cursorX 4i 0 scrollTopX + cursorX 3i 0 scrollTopX + cursorX 3i 0 scrollTopX + cursorX 3line pri texts printf("HELLO WORLD\n");  strcmp("AAA", "BBB");  'a'.alnum();  printf pri
+i 0 scrollTopX + cursorX 3line  texts printf("HELLO WORLD\n");  strcmp("AAA", "BBB");  'a'.alnum();  printf 
+select_string printfselect_string printf

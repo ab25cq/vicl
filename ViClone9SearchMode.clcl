@@ -1,4 +1,4 @@
-include "ViClone8MethodNameCompletion.clcl"
+include "ViClone8Completion.clcl"
 
 class ViClone
 {
