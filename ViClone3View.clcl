@@ -537,7 +537,7 @@ class ViClone
             view();
         }
     }
-
+    
     def makeSpaces() {
         var maxx = getmaxx();
 
