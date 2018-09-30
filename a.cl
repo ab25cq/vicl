@@ -6,3 +6,6 @@ strcmp("AAA", "BBB");
 
 printf
 strcmp
+
+alnum
+

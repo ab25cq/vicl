@@ -105,9 +105,8 @@ class ViClone
             clearWithoutBlink();
 
             var n = 0;
-            mvprintw(0, 0
-                , message
-                    .add(" select number \{strings.length()}"));
+            mvprintw(0, 0 , message);
+
             strings.subList(scroll_top
                     , scroll_top+maxy-1).each 
             {

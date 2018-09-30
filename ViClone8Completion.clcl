@@ -23,6 +23,10 @@ class ViClone
         if(i < 0) {
             i = 0;
         }
+        else {
+            i++;
+        }
+
         candidates := words.select { 
                 it.indexOf(inputing_text) == 0 
                 && !it.equals(inputing_text)
@@ -34,7 +38,7 @@ class ViClone
             selected_string := candidates.items(0);
 
             line.delete(i, scrollTopX + cursorX+1); 
-            line.insert(i+1, selected_string);
+            line.insert(i, selected_string);
             cursorX += selected_string.length() 
                 - (scrollTopX + cursorX - i)
         }
@@ -44,8 +48,8 @@ class ViClone
             if(index != -1) {
                 selected_string 
                     := candidates.items(index);
-                line.delete(i, scrollTopX + cursorX+1); 
-                line.insert(i+1, selected_string);
+                line.delete(i+1, scrollTopX + cursorX+1); 
+                line.insert(i, selected_string);
                 cursorX += selected_string.length() 
                     - (scrollTopX + cursorX - i)
             }

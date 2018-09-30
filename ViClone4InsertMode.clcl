@@ -233,7 +233,15 @@ class ViClone
                     .items(cursorY+scrollTopY);
 
                 if(line != null) {
-                    completion();
+                    if(line.match(/^\s+$/)) {
+                        4.times { 
+                            line.insert(cursorX + scrollTopX, " ");
+                            cursorX++;
+                        } 
+                    }
+                    else {
+                        completion();
+                    }
                 }
                 
                 makeVisibleTexts();
