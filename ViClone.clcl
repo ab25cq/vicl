@@ -6,7 +6,8 @@ class ViClone
     var mode: int;
     var runningCurses:static bool;
 
-    enum { EDITMODE, INSERTMODE, COMMANDMODE, SEARCHMODE, VISUALMODE, DIRMODE }
+    enum { EDITMODE, INSERTMODE, COMMANDMODE, SEARCHMODE
+            , VISUALMODE, DIRMODE }
 
     var fileName:String?;
     var argmentLineNum:int;
@@ -16,7 +17,8 @@ class ViClone
 
         mode = EDITMODE;
 
-        keyEvents = new lambda[KEY_MAX](ViClone, int, int)();
+        keyEvents 
+            = new lambda[KEY_MAX](ViClone, int, int)();
 
         defaultKeyEvents();
 
@@ -28,7 +30,8 @@ class ViClone
         argmentLineNum = -1;
         Clover.ARGV.each {
             if(it.match(/\+\d+/)) {
-                argmentLineNum = it.scan(/\+(\d+)/).items(1).to_int(); 
+                argmentLineNum 
+                    = it.scan(/\+(\d+)/).items(1).to_int(); 
             }
         } 
         
@@ -48,7 +51,8 @@ class ViClone
             fileName = argv.items(2);
         }
         else {
-            throw Exception("vi clone can't edit multiple files");
+            throw 
+            Exception("vi clone can't edit multiple files");
         }
     }
 
@@ -61,7 +65,9 @@ class ViClone
         runningCurses = false;
     }
 
-    def inputStringLine(message:String, default_string:String=""):String {
+    def inputStringLine(message:String
+                   , default_string:String=""):String 
+    {
         var result := default_string.clone();
 
         while(true) {
@@ -132,7 +138,7 @@ class ViClone
                 case (KEY_UP, 'k'.to_int) {
                     cursor--;
                 }
-                case (KEY_DOWN, 'j'.to_int) {
+                case (KEY_DOWN, 'j'.to_int, ('I'-'A').to_int + 1) {
                     cursor++;
                 }
                 case (('J'-'A').to_int + 1) {

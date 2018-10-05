@@ -75,13 +75,17 @@ class ViClone
             addUndoText();
 
             var maxx := getmaxx();
-
-            cursorX++;
-
-            if(cursorX >= maxx-1) {
-                scrollTopX++;
-                cursorX--;
-            }
+            
+            line := texts.items(scrollTopY+cursorY);
+            
+            if(scrollTopX + cursorX < line.length()) {
+                cursorX++;
+    
+                if(cursorX >= maxx-1) {
+                    scrollTopX++;
+                    cursorX--;
+                }
+            } 
 
             enterInsertMode();
         }
@@ -191,18 +195,27 @@ class ViClone
             }
 
             ### delete Back word ###
-            case (('W'-'A').to_int+1, KEY_BACKSPACE) {
-                val line = texts.items(scrollTopY + cursorY);
+            case (('W'-'A').to_int+1) {
+                line := texts.items(scrollTopY + cursorY);
 
-                (x, y, scroll_x, scroll_y) := backwardWord(-1);
+                (x, y, scroll_x, scroll_y) 
+                    := backwardWord(-1);
                 
                 if(line != null) {
-                    (cursorX - x).times {
-                        line.delete(scrollTopX + cursorX -1);
-                        cursorX--; 
-                    }
+                    if(y < cursorY) {
+                        line.setValue(""); 
+                        cursorX = 0;
+                        scrollTopX = 0;
+                    } 
+                    else { 
+                        (cursorX - x).times {
+                            line.delete(
+                                scrollTopX+cursorX-1);
+                            cursorX--; 
+                        }
+                    } 
                 } 
-                cursorX++; 
+                #cursorX++; 
                 
                 makeVisibleTexts();
             }
@@ -212,9 +225,9 @@ class ViClone
                 
                 if(line != null) {
                     4.times { 
-                        line.delete(scrollTopX + cursorX -1);
+                        line.delete(scrollTopX+cursorX-1);
+                        cursorX --; 
                     } 
-                    cursorX -= 4; 
                 } 
                 
                 makeVisibleTexts();
@@ -233,9 +246,13 @@ class ViClone
                     .items(cursorY+scrollTopY);
 
                 if(line != null) {
-                    if(line.match(/^\s+$/)) {
+                    if(line
+                       .subString(0, scrollTopX+cursorX)
+                       .match(/^\s*$/)) 
+                    {
                         4.times { 
-                            line.insert(cursorX + scrollTopX, " ");
+                            line.insert(cursorX+scrollTopX
+                                        , " ");
                             cursorX++;
                         } 
                     }

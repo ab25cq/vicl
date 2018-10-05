@@ -27,7 +27,7 @@ class ViClone
         } catch(e:Exception) {
         }         
     }
-
+    
     def readFile(fname:String) {
         if(fname == null) {
             texts = SortableList<String>();
@@ -60,7 +60,7 @@ class ViClone
 
         makeMaxxy();
         makeSpaces();
-
+        
         makeVisibleTexts();
 
         if(argmentLineNum == -1) {
@@ -143,13 +143,13 @@ class ViClone
 
         if(scrollTopY+MaxY-1 < texts.length()) {
             if(cursorY >= MaxY-2) {
-                val scroll_size = cursorY - MaxY + 2;
+                scroll_size := cursorY - MaxY + 2;
                 scrollTopY += scroll_size;
                 cursorY -= scroll_size;
             }
 
             if(cursorY < 0) {
-                val scroll_size = -cursorY;
+                scroll_size := -cursorY;
 
                 cursorY = 0;
                 scrollTopY -= scroll_size;
@@ -181,49 +181,51 @@ class ViClone
             scrollTopY = 0;
         }
 
-        var line = visibleTexts.items(cursorY);
-        var over_maxx = line.length() >= MaxX-1;
+        line := texts.items(scrollTopY+cursorY);
 
-        val maxx = MaxX-1;
-
-        if(line.equals("")) {
+        if(line == null || line.equals("")) {
             scrollTopX = 0;
             cursorX = 0;
         }
-        
-        if(cursorX >= line.length() && line.length() != 0) {
-            cursorX = line.length()-1;
-        }
+        else {
+            var over_maxx = line.length() >= MaxX-1;
 
-        if(cursorX >= maxx-1) {
-            if(over_maxx) {
-                val scroll_size = cursorX - maxx + 1;
-
-                cursorX -= scroll_size + 1;
-                scrollTopX += scroll_size + 1;
-
-                if(scrollTopX >= line.length()-maxx+1) {
-                    scrollTopX = line.length()-maxx+1;
-                }
-            }
-            else {
+            val maxx = MaxX-1;
+            
+            if(cursorX >= line.length() && line.length() != 0) {
                 cursorX = line.length()-1;
             }
-        }
 
-        if(cursorX < 0) {
-            if(over_maxx) {
-                val scroll_size = -cursorX;
+            if(cursorX >= maxx-1) {
+                if(over_maxx) {
+                    val scroll_size = cursorX - maxx + 1;
 
-                cursorX = 0;
-                scrollTopX -= scroll_size;
+                    cursorX -= scroll_size + 1;
+                    scrollTopX += scroll_size + 1;
 
-                if(scrollTopX < 0) {
-                    scrollTopX = 0;
+                    if(scrollTopX >= line.length()-maxx+1) {
+                        scrollTopX = line.length()-maxx+1;
+                    }
+                }
+                else {
+                    cursorX = line.length()-1;
                 }
             }
-            else {
-                cursorX = 0;
+
+            if(cursorX < 0) {
+                if(over_maxx) {
+                    val scroll_size = -cursorX;
+
+                    cursorX = 0;
+                    scrollTopX -= scroll_size;
+
+                    if(scrollTopX < 0) {
+                        scrollTopX = 0;
+                    }
+                }
+                else {
+                    cursorX = 0;
+                }
             }
         }
 
@@ -231,7 +233,7 @@ class ViClone
             makeVisibleTexts();
         }
     }
-
+    
     def getLine(line_num:int):Tuple2<String,Bool> {
         val result = (texts.items(line_num)?:"").sub(/./g) {
             if(it.equals("\t")) {
@@ -326,7 +328,6 @@ class ViClone
     
     def backwardWord(offset:int=0):Tuple4<Integer, Integer, Integer,Integer> {
         var line = visibleTexts.items(cursorY);
-        var over_maxx = line.length() >= MaxX-1;
 
         var x = cursorX + offset;
         var y = cursorY;
@@ -422,6 +423,7 @@ class ViClone
                     c = line?.chars(scrolltop_x+x):'\0';
                 }
             }
+            x++; 
         }
 
         return (x, y, scrolltop_x, scrolltop_y);
@@ -471,7 +473,7 @@ class ViClone
 
             (x, y, scrolltop_x, scrolltop_y) := backwardWord();
 
-            cursorX = x;
+            cursorX = x -1;
             cursorY = y;
             scrollTopX = scrolltop_x;
             scrollTopY = scrolltop_y;

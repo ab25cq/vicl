@@ -162,7 +162,8 @@ class ViClone
 
             when(key2) {
                 case ('e'.to_int, 'w'.to_int) {
-                    (x,y,scrolltop_x, scrolltop_y) := forwardWord(0); 
+                    (x,y,scrolltop_x, scrolltop_y) 
+                        := forwardWord(0); 
                  
                     var line = texts.items(scrollTopY+cursorY);
                     
@@ -188,12 +189,13 @@ class ViClone
                      
                 }
                 case ('d'.to_int) {
-                    var original_line := texts.items(cursorY + scrollTopY);
+                    line:=texts.items(cursorY+scrollTopY);
 
                     clearClipBoard();
-                    addClipBoard(texts.items(scrollTopY+cursorY));
+                    addClipBoard(
+                        texts.items(scrollTopY+cursorY));
 
-                    if(original_line.identifyWith(null).negative()) {
+                    if(line != null) {
                         texts.deleteAt(scrollTopY+cursorY);
                     }
 
@@ -209,14 +211,17 @@ class ViClone
             }
         }
         keyEvents['x'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            var original_line := texts.items(cursorY + scrollTopY);
+            line := texts.items(cursorY + scrollTopY);
 
-            if(original_line != null) {
-                addUndoText();
+            if(line != null) {
+                if(cursorX + scrollTopX < line.length()) 
+                {
+                    addUndoText();
+                    
+                    line.delete(cursorX + scrollTopX);
 
-                original_line.delete(cursorX + scrollTopX);
-
-                makeVisibleTexts();
+                    makeVisibleTexts();
+                } 
             }
         }
         keyEvents['D'.to_int] = lambda(self:ViClone, key:int, key2:int) {

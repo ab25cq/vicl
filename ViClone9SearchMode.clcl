@@ -25,33 +25,34 @@ class ViClone
 
     def searchString() {
         if(searchMode == SEARCHMODE_NORMAL) {
-            var y = scrollTopY+cursorY;
-            var x = -1;
-            texts.subList(scrollTopY+cursorY, -1).each {
-                var match_point = -1;
-                if(y == scrollTopY+cursorY) {
-                    match_point = it.subString(scrollTopX+cursorX+1, -1).indexOf(statusLineInSearchMode);
-
-                    if(match_point != -1) {
-                        match_point += scrollTopX+cursorX+1;
-                    }
-                }
-                else {
-                    match_point = it.indexOf(statusLineInSearchMode);
-                }
-
-                if(match_point != -1) {
-                    x = match_point;
-                    break;
-                }
-                y++;
+            y := scrollTopY + cursorY;
+            x := texts.items(y)
+                .subString(scrollTopX + cursorX + 1, -1)
+                .indexOf(statusLineInSearchMode);
+             
+            if(x != -1) { 
+                x += scrollTopX + cursorX + 1; 
             }
-
+            else { 
+                for(y = scrollTopY+cursorY+1;
+                    y < texts.length();
+                    y++)
+                { 
+                    it := texts.items(y);
+                     
+                    x = it.indexOf(statusLineInSearchMode);
+                    
+                    if(x != -1) {
+                        break; 
+                    } 
+                }
+            } 
+            
             if(x == -1) {
                 messageBox("The search word is none");
             }
             else {
-                var scrolltop_y_before = scrollTopY;
+                scrolltop_y_before := scrollTopY;
 
                 scrollTopY = y;
                 cursorY = 0;
@@ -63,35 +64,38 @@ class ViClone
             }
         }
         else {
-            var y = scrollTopY+cursorY;
-            var x = -1;
-            texts.subList(0, scrollTopY+cursorY+1).eachReverse {
-                var match_point = -1;
-                if(y == scrollTopY+cursorY) {
-                    match_point = it.subString(0, scrollTopX+cursorX).rindexOf(statusLineInSearchMode);
+            y := scrollTopY + cursorY;
+            x := texts.items(y)
+                .subString(0, scrollTopX + cursorX)
+                .rindexOf(statusLineInSearchMode);
+                 
+            if(x == -1) { 
+                for(y=scrollTopY+cursorY-1;
+                    y >= 0;
+                    y--)
+                {
+                    it := texts.items(y);
+                     
+                    x = it.rindexOf(statusLineInSearchMode);
+    
+                    if(x != -1) {
+                        break;
+                    }
                 }
-                else {
-                    match_point = it.rindexOf(statusLineInSearchMode);
-                }
-
-                if(match_point != -1) {
-                    x = match_point;
-                    break;
-                }
-                y--;
-            }
+            } 
 
             if(x == -1) {
                 messageBox("The search word is none");
             }
             else {
-                var scrolltop_y_before = scrollTopY;
+                scrolltop_y_before := scrollTopY;
 
                 scrollTopY = y;
                 cursorY = 0;
 
                 scrollTopX = 0;
-                cursorX = x;
+                cursorX = x 
+                    - statusLineInSearchMode.length()+1
 
                 fixCursorAndScrollTop(scrolltop_y_before);
             }
@@ -112,44 +116,26 @@ class ViClone
             searchString();
         }
         keyEvents['*'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            val line = texts.items(scrollTopY+cursorY);
+            line := texts.items(scrollTopY+cursorY);
 
-            var str = "";
+            str := "";
 
             if(line != null) {
-                var x = cursorX;
-                var c = line.chars(scrollTopX+x);
+                x := cursorX;
+                c := line.chars(scrollTopX+x);
 
-                if(c.isalpha()) {
-                    while(c.isalpha()) {
+                if(c.isalnum() || c == '_') {
+                    while((c.isalnum() || c == '_')
+                        && (scrollTopX+x < line.length())) 
+                    {
                         str.append(c);
                         x++; 
                         c = line.chars(scrollTopX+x); 
                     }
-                }
-                elif(c.isdigit()) {
-                    while(c.isdigit()) {
-                        str.append(c);
-                        x++; 
-                        c = line.chars(scrollTopX+x); 
-                    }
-                }
-                elif(c.isspace()) {
-                    while(c.isspace()) {
-                        str.append(c);
-                        x++; 
-                        c = line.chars(scrollTopX+x); 
-                    }
-                }
-                else {
-                    while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
-                        str.append(c);
-                        x++; 
-                        c = line.chars(scrollTopX+cursorX+x);
-                    }
+                     
+                    enterSearchMode(str, SEARCHMODE_NORMAL);
                 }
             }
-            enterSearchMode(str, SEARCHMODE_NORMAL);
         } 
         keyEvents['#'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             val line = texts.items(scrollTopY+cursorY);

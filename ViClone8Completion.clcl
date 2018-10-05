@@ -7,13 +7,15 @@ class ViClone
     }
     
     def completion() {
-        var words = texts.join("\n").scan(/[a-zA-Z_]+/);
-        var line = texts.items(scrollTopY + cursorY);
-
+        words := texts.join("\n").scan(/[a-zA-Z_]+/);
+        line := texts.items(scrollTopY + cursorY);
+        
         ### getting inputing word ###
         var inputing_text = "";
         for(i:= cursorX+scrollTopX-1; i >= 0; i--) {
-            if(line.chars(i).isalnum()) {
+            if(line.chars(i).isalnum()
+                || line.chars(i) == '_') 
+            {
                 inputing_text.insert(0, line.chars(i)); 
             } 
             else {
@@ -37,7 +39,7 @@ class ViClone
         elif(candidates.length() == 1) {
             selected_string := candidates.items(0);
 
-            line.delete(i, scrollTopX + cursorX+1); 
+            line.delete(i, scrollTopX + cursorX); 
             line.insert(i, selected_string);
             cursorX += selected_string.length() 
                 - (scrollTopX + cursorX - i)
@@ -48,7 +50,7 @@ class ViClone
             if(index != -1) {
                 selected_string 
                     := candidates.items(index);
-                line.delete(i+1, scrollTopX + cursorX+1); 
+                line.delete(i, scrollTopX + cursorX); 
                 line.insert(i, selected_string);
                 cursorX += selected_string.length() 
                     - (scrollTopX + cursorX - i)
