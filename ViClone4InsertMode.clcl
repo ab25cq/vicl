@@ -51,7 +51,6 @@ class ViClone
 
         makeVisibleTexts();
 
-        fixCursorAndScrollTop(scrolltop_y_before);
 
         startPositionOfInsertMode = cursorX + scrollTopX;
     }
