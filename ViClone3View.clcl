@@ -441,22 +441,26 @@ class ViClone
 
             fixCursorAndScrollTop(scrolltop_y_before);
         }
+        keyEvents[KEY_DOWN] = keyEvents['j'.to_int];
         keyEvents['k'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             cursorY--;
             scrollTopX = 0; 
 
             fixCursorAndScrollTop(scrollTopY);
         }
+        keyEvents[KEY_UP] = keyEvents['k'.to_int];
         keyEvents['h'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             cursorX--;
 
             fixCursorAndScrollTop(scrollTopY);
         }
+        keyEvents[KEY_LEFT] = keyEvents['h'.to_int];
         keyEvents['l'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             cursorX++;
 
             fixCursorAndScrollTop(scrollTopY);
         }
+        keyEvents[KEY_RIGHT] = keyEvents['l'.to_int];
         keyEvents['w'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             var scrolltop_y_before = scrollTopY;
 

@@ -6,6 +6,12 @@ strcmp("AAA", "BBB");
 
 strcmp
 printf_aaa
+(
+if() {
+    if() { if() { }
+    }
+}
+)
 
 alnum
 123 strcmp 123

@@ -2,15 +2,15 @@ include "ViClone.clcl"
 
 class ViClone
 {
-    var dirName:String;
+    dirName:String;
 
-    var fileNames: SortableList<String>;
-    var dirScrollTop: int;
-    var dirCursor:int; 
+    fileNames: SortableList<String>;
+    dirScrollTop: int;
+    dirCursor:int; 
     
-    var dirPaneLength: int; 
+    dirPaneLength: int; 
     
-    var visibleDirPane: bool
+    visibleDirPane: bool
       
     def initialize() {
         inherit();
@@ -18,9 +18,9 @@ class ViClone
         dirScrollTop = 0; 
         dirCursor = 0; 
         
-        var maxx = getmaxx(); 
-        
-        visibleDirPane = false; 
+        visibleDirPane = true; 
+        maxx := getmaxx();
+        dirPaneLength = maxx/6;
         
         changeDirectory(getcwd());
     }
@@ -69,15 +69,17 @@ class ViClone
     def dirPaneOn() {
         mode = DIRMODE;
         visibleDirPane = true;
-        var maxx = getmaxx();
-        dirPaneLength = maxx/2;
+        maxx := getmaxx();
+        dirPaneLength = maxx/6;
         makeMaxxy(); 
     } 
     
     def dirPaneOff() {
+/*
         visibleDirPane = false;
         dirPaneLength = 0; 
         makeMaxxy(); 
+*/
         mode = EDITMODE; 
     } 
 
@@ -114,7 +116,7 @@ class ViClone
 
     def dirMode(key:int) {
         when(key) {
-            case ('j'.to_int) {
+            case ('j'.to_int, KEY_DOWN) {
                 dirCursor++;
                 
                 if(dirCursor+dirScrollTop >= fileNames.length()) {
@@ -126,7 +128,7 @@ class ViClone
                     dirCursor--; 
                 } 
             }
-            case ('k'.to_int) {
+            case ('k'.to_int, KEY_UP) {
                 dirCursor--;
                 
                 if(dirCursor < 0) {

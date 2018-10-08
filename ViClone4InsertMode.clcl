@@ -13,29 +13,20 @@ class ViClone
     }
 
     def enterNewLine(no_tails_getting:bool) {
-        var scrolltop_y_before = scrollTopY;
+        scrolltop_y_before := scrollTopY;
 
-        var maxx := getmaxx();
-        var maxy := getmaxy();
+        line := texts.items(scrollTopY+cursorY)?.filter{it}:"";
 
-        var original_line := texts.items(scrollTopY+cursorY);
-        if(original_line == null) {
-            original_line = "";
-        }
-
-        var tails := "";
+        tails := "";
         if(!no_tails_getting) {
-            tails = original_line.subString((scrollTopX+cursorX)..-1);
-            original_line.delete((scrollTopX+cursorX)..-1);
+            tails = line.subString((scrollTopX+cursorX)..-1);
+            line.delete((scrollTopX+cursorX)..-1);
         }
 
-        var spaces_num := 0;
+        spaces_num := 0;
 
         try {
-            spaces_num = original_line.scan(/^\s+/).items(0).length();
-            if(tails.length() == 0) {
-                spaces_num++;
-            }
+            spaces_num = line.scan(/^\s+/).items(0).length();
             cursorX = spaces_num;
         } catch(e:Exception) {
             spaces_num = -1;
@@ -45,12 +36,11 @@ class ViClone
         scrollTopX = 0;
         cursorY++;
         
-        var spaces := " ".multiply(spaces_num);
+        spaces := " ".multiply(spaces_num);
         spaces.append(tails);
         texts.insert(cursorY+scrollTopY, spaces);
 
         makeVisibleTexts();
-
 
         startPositionOfInsertMode = cursorX + scrollTopX;
     }
