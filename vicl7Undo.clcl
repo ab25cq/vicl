@@ -1,4 +1,4 @@
-include "ViClone6Edit.clcl"
+include "vicl6Edit.clcl"
 
 class ViClone
 {

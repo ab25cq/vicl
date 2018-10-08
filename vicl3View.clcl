@@ -1,4 +1,4 @@
-include "ViClone2DirPane.clcl"
+include "vicl2DirPane.clcl"
 
 class ViClone
 {

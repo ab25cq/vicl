@@ -1,4 +1,4 @@
-include "ViClone10MessageBox.clcl"
+include "vicl10MessageBox.clcl"
 
 class ViClone
 {

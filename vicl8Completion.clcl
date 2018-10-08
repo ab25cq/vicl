@@ -1,4 +1,4 @@
-include "ViClone7Undo.clcl"
+include "vicl7Undo.clcl"
 
 class ViClone
 {

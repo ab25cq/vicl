@@ -1,4 +1,4 @@
-include "ViClone8Completion.clcl"
+include "vicl8Completion.clcl"
 
 class ViClone
 {
@@ -53,12 +53,25 @@ class ViClone
             }
             else {
                 scrolltop_y_before := scrollTopY;
+                
+                if(y >= scrollTopY 
+                    && y < scrollTopY + MaxY-1) 
+                {
+                    cursorY = y - scrollTopY;
+                    scrollTopX = 0;
+                    cursorX = x; 
+                }
+                else {
+                    scrollTopY = y -10;
+                    cursorY = 10;
+                    scrollTopX = 0;
+                    cursorX = x; 
 
-                scrollTopY = y;
-                cursorY = 0;
-
-                scrollTopX = 0;
-                cursorX = x;
+                    if(scrollTopY < 0) {
+                        cursorY += scrollTopY;
+                        scrollTopY = 0;
+                    }
+                }
 
                 fixCursorAndScrollTop(scrolltop_y_before);
             }
@@ -90,12 +103,24 @@ class ViClone
             else {
                 scrolltop_y_before := scrollTopY;
 
-                scrollTopY = y;
-                cursorY = 0;
+                if(y >= scrollTopY 
+                    && y < scrollTopY + MaxY-1) 
+                {
+                    cursorY = y - scrollTopY;
+                    scrollTopX = 0;
+                    cursorX = x - statusLineInSearchMode.length()+1
+                }
+                else {
+                    scrollTopY = y -10;
+                    cursorY = 10;
+                    scrollTopX = 0;
+                    cursorX = x - statusLineInSearchMode.length()+1
 
-                scrollTopX = 0;
-                cursorX = x 
-                    - statusLineInSearchMode.length()+1
+                    if(scrollTopY < 0) {
+                        cursorY += scrollTopY;
+                        scrollTopY = 0;
+                    }
+                }
 
                 fixCursorAndScrollTop(scrolltop_y_before);
             }

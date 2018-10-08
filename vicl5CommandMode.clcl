@@ -1,4 +1,4 @@
-include "ViClone4InsertMode.clcl"
+include "vicl4InsertMode.clcl"
 
 class ViClone
 {

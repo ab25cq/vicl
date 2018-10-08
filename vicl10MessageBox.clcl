@@ -1,4 +1,4 @@
-include "ViClone9SearchMode.clcl"
+include "vicl9SearchMode.clcl"
 
 class ViClone
 {
