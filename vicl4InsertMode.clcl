@@ -137,6 +137,11 @@ class ViClone
                 }
             }
         }
+        keyEvents[('L'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {  # Control-L
+            makeVisibleTexts()
+            clear();
+            view();
+        }
     }
 
     def insertMode(key:int) {

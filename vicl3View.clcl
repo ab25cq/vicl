@@ -336,7 +336,7 @@ class ViClone
         var scrolltop_y = scrollTopY;
 
         var c = line?.chars(scrolltop_x+x):'\0';
-
+        
         if(line.equals("")) {
             x = 9999;
             y--;

@@ -27,7 +27,8 @@ class ViClone
         if(searchMode == SEARCHMODE_NORMAL) {
             y := scrollTopY + cursorY;
             x := texts.items(y)
-                .subString(scrollTopX + cursorX + 1, -1)
+                .subString(scrollTopX+cursorX+1
+                                    , -1)
                 .indexOf(statusLineInSearchMode);
              
             if(x != -1) { 
@@ -40,7 +41,8 @@ class ViClone
                 { 
                     it := texts.items(y);
                      
-                    x = it.indexOf(statusLineInSearchMode);
+                    x = it.indexOf(
+                        statusLineInSearchMode);
                     
                     if(x != -1) {
                         break; 
@@ -108,13 +110,13 @@ class ViClone
                 {
                     cursorY = y - scrollTopY;
                     scrollTopX = 0;
-                    cursorX = x - statusLineInSearchMode.length()+1
+                    cursorX = x;
                 }
                 else {
                     scrollTopY = y -10;
                     cursorY = 10;
                     scrollTopX = 0;
-                    cursorX = x - statusLineInSearchMode.length()+1
+                    cursorX = x;
 
                     if(scrollTopY < 0) {
                         cursorY += scrollTopY;

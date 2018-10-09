@@ -196,6 +196,25 @@ class ViClone
                     dirPaneOff(); 
                 }
             }
+            case ('/'.to_int) {
+                endwin();
+                iclover2 -s 'grep  * | less' -p 5 -c
+                initscr();
+                keypad(stdscr, true);
+                noecho();
+            }
+            case (':'.to_int) {
+                endwin();
+                iclover2
+                initscr();
+                keypad(stdscr, true);
+                noecho();
+            }
+            case (('L'-'A').to_int+1) {
+                makeVisibleTexts()
+                clear();
+                view();
+            }
         }
     }
 
