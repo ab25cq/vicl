@@ -236,7 +236,7 @@ class ViClone
             readFile(file_name);
             
             scrolltop_y_before := scrollTopY;
-            moveCursor(line_num, 0);
+            moveCursor(line_num-1, 0);
             fixCursorAndScrollTop(scrolltop_y_before);
         }
     }

@@ -198,7 +198,7 @@ class ViClone
             }
             case ('/'.to_int) {
                 endwin();
-                iclover2 -s 'grep -ne  * | less' -p 9 -c
+                iclover2 -s 'a := grep("-ne", "", glob("*")).selector().scan(/^(.+):(\\d+)/); vicl_open_file(a.items(1), a.items(2))' -p 18 -c
                 initscr();
                 keypad(stdscr, true);
                 noecho();

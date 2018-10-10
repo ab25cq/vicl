@@ -50,6 +50,8 @@ while(!vicl.endOfAplication) {
             line_num := array.items(2).to_int();
             
             vicl.openFile(file_name, line_num);
+            
+            vicl.dirPaneOff()
         }
         elif(message.match(/^INSERT_FILE .+$/)) {
             array := message.scan(/^INSERT_FILE (.+)$/)
