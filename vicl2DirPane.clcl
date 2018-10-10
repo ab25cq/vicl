@@ -198,7 +198,7 @@ class ViClone
             }
             case ('/'.to_int) {
                 endwin();
-                iclover2 -s 'grep  * | less' -p 5 -c
+                iclover2 -s 'grep -ne  * | less' -p 9 -c
                 initscr();
                 keypad(stdscr, true);
                 noecho();
