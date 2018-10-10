@@ -104,26 +104,7 @@ class ViClone
             }
             else {
                 scrolltop_y_before := scrollTopY;
-
-                if(y >= scrollTopY 
-                    && y < scrollTopY + MaxY-1) 
-                {
-                    cursorY = y - scrollTopY;
-                    scrollTopX = 0;
-                    cursorX = x;
-                }
-                else {
-                    scrollTopY = y -10;
-                    cursorY = 10;
-                    scrollTopX = 0;
-                    cursorX = x;
-
-                    if(scrollTopY < 0) {
-                        cursorY += scrollTopY;
-                        scrollTopY = 0;
-                    }
-                }
-
+                moveCursor(y, x);
                 fixCursorAndScrollTop(scrolltop_y_before);
             }
         }

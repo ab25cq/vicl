@@ -32,7 +32,7 @@ CXXFLAGS=@CXXFLAGS@
 ##########################################################
 all: vicl
 
-vicl: CLParser.oclcl ViClone.oclcl viclone.ocl Clover.oclcl preinstall 
+vicl: CLParser.oclcl ViClone.oclcl viclone.ocl viclone_open_file.ocl viclone_insert_file.ocl Clover.oclcl preinstall 
 
 Clover.oclcl: Fundamental.clcl CLParser.clcl
 	cclover2 -core Fundamental.clcl
@@ -45,13 +45,21 @@ CLParser.oclcl: CLParser.clcl
 	if test -e CLNodeTreePlus.bc; then bclover2 CLNodeTreePlus.bc; fi
 	if test -e CLParser.bc; then bclover2 CLParser.bc; fi
 
-ViClone.oclcl: viclone.clcl vicl2DirPane.clcl vicl3View.clcl vicl4InsertMode.clcl vicl5CommandMode.clcl vicl6Edit.clcl vicl7Undo.clcl vicl8Completion.clcl vicl9SearchMode.clcl vicl10MessageBox.clcl vicl11VisualMode.clcl
+ViClone.oclcl: vicl.clcl vicl2DirPane.clcl vicl3View.clcl vicl4InsertMode.clcl vicl5CommandMode.clcl vicl6Edit.clcl vicl7Undo.clcl vicl8Completion.clcl vicl9SearchMode.clcl vicl10MessageBox.clcl vicl11VisualMode.clcl
 	cclover2 vicl11VisualMode.clcl
 	if test -e ViClone.bc; then bclover2 ViClone.bc; fi
 
 viclone.ocl: viclone.cl
 	cclover2 viclone.cl
 	install -m 644 viclone.ocl $(HOME)/.clover2/viclone.ocl
+
+viclone_insert_file.ocl:viclone_insert_file.cl
+	cclover2 viclone_insert_file.cl
+	install -m 644 viclone_insert_file.ocl $(HOME)/.clover2/viclone_insert_file.ocl
+
+viclone_open_file.ocl:viclone_open_file.cl
+	cclover2 viclone_open_file.cl
+	install -m 644 viclone_open_file.ocl $(HOME)/.clover2/viclone_open_file.ocl
 
 preinstall:
 	mkdir -p $(HOME)/.clover2/vicl
@@ -77,6 +85,8 @@ preinstall:
 install:
 	mkdir -p "$(DESTDIR)"/bin
 	install -m 755 vicl "$(DESTDIR)"/bin
+	install -m 755 vicl_open_file "$(DESTDIR)"/bin
+	install -m 755 vicl_insert_file "$(DESTDIR)"/bin
 
 #########################################################
 # uninstall

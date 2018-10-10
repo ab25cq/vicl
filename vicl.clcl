@@ -230,8 +230,55 @@ class ViClone
             }
         }
     }
+    
+    def openFile(file_name:String, line_num:int) {
+        writeToFile().if {
+            readFile(file_name);
+            
+            scrolltop_y_before := scrollTopY;
+            moveCursor(line_num, 0);
+            fixCursorAndScrollTop(scrolltop_y_before);
+        }
+    }
+    
+    def insertText(text:String) {
+        insert_texts := text.split(/\n/);
+        
+        if(insert_texts.length() == 1) {
+            texts.items(cursorY + scrollTopY)
+                .insert(cursorX + scrollTopX, text);
+        }
+        else {
+            first_line := true;
+            tail_line :String? = null;
+            
+            y := cursorY + scrollTopY;
+            
+            insert_texts.each {
+                if(first_line) {
+                    line := texts.items(y);
+                    line.insert(cursorX + scrollTopX, it);
+                    tail_line = line.subString(cursorX + scrollTopX + it.length(), -1);
+                    line.delete(cursorX + scrollTopX + it.length(), -1);
+                    first_line = false;
+                }
+                else {
+                    texts.insert(y, it);
+                }
+                
+                y++;
+            }
+            
+            if(tail_line != null) {
+                texts.insert(y, tail_line);
+            }
+        }
+        
+        makeVisibleTexts();
+        fixCursorAndScrollTop(scrollTopY);
+    }
 
-    def refresh():static {
+    def refresh() {
         System.refresh();
     }
 }

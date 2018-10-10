@@ -16,5 +16,3 @@ if() {
 
 alnum
 123 strcmp 123
-
-123 printf_aaa 123

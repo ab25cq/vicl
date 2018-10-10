@@ -102,6 +102,29 @@ class ViClone
         clearUndoText();
     }
     
+    def moveCursor(line_num:int, x:int) {
+        y := line_num;
+        
+        if(y >= scrollTopY 
+            && y < scrollTopY + MaxY-1) 
+        {
+            cursorY = y - scrollTopY;
+            scrollTopX = 0;
+            cursorX = x;
+        }
+        else {
+            scrollTopY = y -10;
+            cursorY = 10;
+            scrollTopX = 0;
+            cursorX = x;
+
+            if(scrollTopY < 0) {
+                cursorY += scrollTopY;
+                scrollTopY = 0;
+            }
+        }
+    }
+    
     def initialize() {
         inherit();
 
