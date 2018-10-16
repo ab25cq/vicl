@@ -12,6 +12,11 @@ class ViClone
         modifiedText = false;
     }
 
+    def enterCommandMode() {
+        mode = COMMANDMODE;
+        statusLineInCommandMode = "";
+    }
+
     def commandMode(key:int) {
         when(key) {
             case ('w'.to_int) {
@@ -23,10 +28,9 @@ class ViClone
             case ('!'.to_int) {
                 statusLineInCommandMode.append("!");
             }
-            case (('['-'A').to_int+1) {
+            case (('['-'A').to_int+1, ('C'-'A').to_int+1) {
                 mode = EDITMODE;
                 statusLineInCommandMode = "";
-                addUndoText();
             }
             case (('H'-'A').to_int+1, KEY_BACKSPACE) {
                 statusLineInCommandMode.delete(-2);
@@ -80,8 +84,7 @@ class ViClone
         inherit();
 
         keyEvents[':'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            mode = COMMANDMODE;
-            statusLineInCommandMode = "";
+            enterCommandMode();
         }
     }
     def runKeyEvents(key:int) {

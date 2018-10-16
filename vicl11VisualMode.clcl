@@ -16,7 +16,7 @@ class ViClone
     def enterVisualMode() {
         mode = VISUALMODE;
 
-        visualModeStart = scrollTopY+cursorY;
+        visualModeStart = getRealPosY();
     }
 
     def clearClipBoard() {
@@ -29,7 +29,7 @@ class ViClone
     def pasteBeforeCursor() {
         addUndoText();
 
-        val line = scrollTopY + cursorY;
+        line := getRealPosY();
         texts.insert(line, clipBoard.clone());
 
         makeVisibleTexts();
@@ -38,10 +38,8 @@ class ViClone
     def pasteAfterCursor() {
         addUndoText();
 
-        val line = scrollTopY + cursorY;
+        line := getRealPosY();
         texts.insert(line+1, clipBoard.clone());
-
-        cursorY += clipBoard.length();
 
         makeVisibleTexts();
         fixCursorAndScrollTop(scrollTopY);
@@ -80,6 +78,16 @@ class ViClone
 
                 fixCursorAndScrollTop(scrollTopY);
             }
+            case (('D'-'A').to_int+1) {
+                cursorY += (MaxY-1) / 2;
+
+                fixCursorAndScrollTop(scrollTopY);
+            }
+            case (('U'-'A').to_int+1) {
+                cursorY -= (MaxY-1) / 2;
+
+                fixCursorAndScrollTop(scrollTopY);
+            }
             
             case ('l'.to_int, KEY_RIGHT) {
                 cursorX++;
@@ -94,7 +102,7 @@ class ViClone
             }
 
             case ('y'.to_int) {
-                val line = scrollTopY + cursorY;
+                line := getRealPosY();
 
                 if(visualModeStart < line) {
                     clipBoard = texts.subList(visualModeStart, line+1);
@@ -111,12 +119,11 @@ class ViClone
             case ('d'.to_int) {
                 addUndoText();
 
-                val line = scrollTopY + cursorY;
+                line := getRealPosY();
 
                 if(visualModeStart < line) {
                     clipBoard = texts.subList(visualModeStart, line+1);
                     texts.deleteWithRange(visualModeStart, line+1);
-                    cursorY -= line - visualModeStart;
                 }
                 else {
                     clipBoard = texts.subList(line, visualModeStart+1);
@@ -127,22 +134,11 @@ class ViClone
                 makeVisibleTexts(); 
                 fixCursorAndScrollTop(scrollTopY);
             }
-            case (('D'-'A').to_int+1) {
-                val maxy = getmaxy();
-                cursorY += maxy / 2;
-
-                fixCursorAndScrollTop(scrollTopY);
-            }
-            case (('U'-'A').to_int+1) {
-                val maxy = getmaxy();
-                cursorY -= maxy / 2;
-
-                fixCursorAndScrollTop(scrollTopY);
-            }
             case ('>'.to_int) {
                 addUndoText();
 
-                texts.subList(visualModeStart, cursorY+scrollTopY+1).each {
+                texts.subList(visualModeStart, getRealPosY()+1).each 
+                {
                     it.insert(0, "    ");
                 } 
                 
@@ -153,15 +149,19 @@ class ViClone
                 addUndoText();
 
                 y := visualModeStart; 
+                y2 := getRealPosY();
                 
-                lines := texts.subList(visualModeStart, cursorY+scrollTopY+1).map {
+                lines := texts.subList(visualModeStart, y2+1).map {
                     it.sub(/^    /, "");
                 } 
                 
-                texts.deleteWithRange(visualModeStart, cursorY+scrollTopY+1).insert(visualModeStart, lines); 
+                texts.deleteWithRange(visualModeStart, y2+1).insert(visualModeStart, lines); 
                 
                 makeVisibleTexts(); 
                 fixCursorAndScrollTop(scrollTopY);
+            }
+            case (':'.to_int) {
+                enterCommandMode();
             }
         }
     }
@@ -172,53 +172,29 @@ class ViClone
             
             dirView(); 
 
-            var y = 0;
+            for(y:=0; y<visibleTexts.length(); y++) {
+                line := visibleTexts.items(y);
 
-            var cursor_line = scrollTopY+cursorY;
+                if(line == null) {
+                    break;
+                }
 
-            visibleTexts.each {
-                over_maxx := it.length() >= MaxX-1;
+                y2 := viewYToRealY(y);
+                cursor_line := viewYToRealY(cursorY);
 
-                val y2 = y + scrollTopY;
-
-                if((y2 >= visualModeStart && y2 <= cursor_line)
-                    || (y2 >= cursor_line && y2 <= visualModeStart))
+                if((y2 >= visualModeStart && y2 <= cursor_line) || (y2 >= cursor_line && y2 <= visualModeStart))
                 {
                     attron(A_REVERSE);
                 }
 
+
                 ### cursor line ####
-                if(cursorY == y) {
-                    if(it.length() == 0) {
-                        mvprintw(y,0+dirPaneLength, " ");
-                    }
-                    else {
-                        mvprintw(y, 0+dirPaneLength, it.subString(scrollTopX, scrollTopX+cursorX));
+                mvprintw(y, 0 + dirPaneLength, line);
 
-                        val c = it.chars(scrollTopX+cursorX);
-
-                        mvprintw(y, cursorX+dirPaneLength, c.toString());
-
-                        if(it.length()-scrollTopX > MaxX-1) {
-                            mvprintw(y, cursorX+1+dirPaneLength, it.subString(scrollTopX+cursorX+1, scrollTopX+(MaxX-1)));
-                        }
-                        else {
-                            mvprintw(y, cursorX+1+dirPaneLength, it.subString(scrollTopX+cursorX+1, -1));
-                        }
-                    }
-                }
-                ### visible line ###
-                else {
-                    mvprintw(y, 0+dirPaneLength, it.subString(0, MaxX-1));
-                }
-
-                if((y2 >= visualModeStart && y2 <= cursor_line)
-                    || (y2 >= cursor_line && y2 <= visualModeStart))
+                if((y2 >= visualModeStart && y2 <= cursor_line) || (y2 >= cursor_line && y2 <= visualModeStart))
                 {
                     attroff(A_REVERSE);
                 }
-
-                y++;
            }
 
            attron(A_REVERSE);

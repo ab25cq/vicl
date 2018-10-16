@@ -1,53 +1,84 @@
-include "vicl3View.clcl"
+include "vicl3.5Word.clcl"
 
 class ViClone
 {
-    tabSize:int;
-    var startPositionOfInsertMode:int;
+    var tabSize:int;
      
     def initialize() {
         inherit();
         
-        startPositionOfInsertMode = 0;
         tabSize = 4; 
     }
 
-    def enterNewLine(no_tails_getting:bool) {
-        scrolltop_y_before := scrollTopY;
+    def fixCursorAndScrollTop(scrolltop_y_before:int) {
+        if(mode == INSERTMODE) {
+            (y, x, line_size) := viewPosToRealPos(cursorY, cursorX);
+            line := texts.items(y);
 
-        line := texts.items(scrollTopY+cursorY)?.filter{it}:"";
+            if(cursorX == MaxX-1 && x == line.length()) {
+            }
+            elif(cursorX == MaxX && x == line.length()) {
+                cursorX = 1;
+                cursorY++;
+            }
+            else {
+                if(cursorX >= MaxX-1) {
+                    cursorX = 0;
+                    cursorY++;
+                }
+            }
+
+            inherit(scrolltop_y_before);
+        }
+        else {
+            inherit(scrolltop_y_before);
+        }
+    }
+
+    def enterNewLine(no_tails_getting:bool) {
+        (y, x, line_size) := viewPosToRealPos(cursorY, cursorX);
+
+        line := texts.items(y);
+
+        spaces_num := line.scan(/^\s+/)?.items(0).length():0;
 
         tails := "";
         if(!no_tails_getting) {
-            tails = line.subString((scrollTopX+cursorX)..-1);
-            line.delete((scrollTopX+cursorX)..-1);
+            tails = line.subString(x..-1);
+            line.delete(x..-1);
         }
 
-        spaces_num := 0;
-
-        try {
-            spaces_num = line.scan(/^\s+/).items(0).length();
-            cursorX = spaces_num;
-        } catch(e:Exception) {
-            spaces_num = -1;
-            cursorX = 0;
-        }
-
-        scrollTopX = 0;
+        cursorX = spaces_num;
         cursorY++;
+
+        if(cursorY >= MaxY-1) {
+            (tmp, tmp2, top_line_size) := visibleTextsPos.items(0);
+
+            if(top_line_size >= MaxY-1) {
+                scrollTopY++;
+                cursorY = 0;
+                cursorX = 0;
+            }
+            else {
+                scroll_size := cursorY - MaxY +2;
+
+                scrollTopY += scroll_size;
+                cursorY -= scroll_size + top_line_size -1;
+            }
+        }
         
         spaces := " ".multiply(spaces_num);
         spaces.append(tails);
-        texts.insert(cursorY+scrollTopY, spaces);
+        texts.insert(y+1, spaces);
 
         makeVisibleTexts();
+        fixCursorAndScrollTop(scrollTopY);
 
-        startPositionOfInsertMode = cursorX + scrollTopX;
+        cursorX = spaces_num;
     }
 
     def enterInsertMode() {
         mode = INSERTMODE;
-        startPositionOfInsertMode = cursorX + scrollTopX;
     }
 
     def defaultKeyEvents() {
@@ -63,34 +94,39 @@ class ViClone
         keyEvents['a'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             addUndoText();
 
-            var maxx := getmaxx();
-            
-            line := texts.items(scrollTopY+cursorY);
-            
-            if(scrollTopX + cursorX < line.length()) {
-                cursorX++;
-    
-                if(cursorX >= maxx-1) {
-                    scrollTopX++;
-                    cursorX--;
-                }
-            } 
+            cursorX++;
+
+            clear();
+            view();
 
             enterInsertMode();
         }
         keyEvents['A'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             addUndoText();
 
-            var maxx := getmaxx();
+            line := texts.items(getRealPosY());
 
-            (line,over_max) := getLine(scrollTopY+cursorY);
+            if(line != null && line.length() != 0) {
+                (y, x) := realPosToViewPos(getRealPosY(), line.length()-1);
 
-            if(line.length() > maxx-1) {
-                scrollTopX = line.length() - maxx +2;
-                cursorX = maxx-2;
-            }
-            else {
-                cursorX = line.length();
+                if(y == 0 && x == 0 && getRealPosY() != 0) {
+                    scrollTopY = getRealPosY();
+                    cursorY = 0;
+                    makeVisibleTexts();
+
+                    (cursorY, cursorX) = realPosToViewPos(getRealPosY(), line.length()-1);
+                }
+                else {
+                    cursorY = y;
+                    cursorX = x;
+                }
+
+                makeVisibleTexts();
+                fixCursorAndScrollTop(scrollTopY);
+                cursorX++;
+
+                clear();
+                view();
             }
 
             enterInsertMode();
@@ -107,25 +143,20 @@ class ViClone
              
             when(key2) {
                 case ('e'.to_int, 'w'.to_int) {
-                    (x,y,scrolltop_x, scrolltop_y) := forwardWord(0); 
+                    (x,y, scrolltop_y) := forwardWord(0); 
                  
-                    var line = texts.items(scrollTopY+cursorY);
+                    line := texts.items(getRealPosY());
                     
                     if(y > cursorY) {
-                        line.delete(scrollTopX+cursorX, -1);
+                        line.delete(cursorX, -1);
     
                         makeVisibleTexts();                     
                         fixCursorAndScrollTop(scrollTopY);
             
                         cursorX++;
-            
-                        if(cursorX >= MaxX-1) {
-                            scrollTopX++;
-                            cursorX--;
-                        }
                     } 
                     else { 
-                        line.delete(scrollTopX+cursorX, scrolltop_x+x); 
+                        line.delete(cursorX, x); 
     
                         makeVisibleTexts();                     
                         fixCursorAndScrollTop(scrollTopY);
@@ -143,85 +174,93 @@ class ViClone
             view();
         }
     }
+    
+    def viewYToRealY(y:int):int {
+        (y2, x2, line_size) := viewPosToRealPos(y, 0);
+        return y2;
+    }
+
+    def realYToViewY(y:int):int {
+        (y2, x2) := realPosToViewPos(y, 0);
+        return y2;
+    }
+
+    def viewPosToRealPos(y:int, x:int): Tuple3<Integer, Integer, Integer>
+    {
+        if(y >= 0 && y < visibleTextsPos.length()) {
+            (y2, x2, line_size) := visibleTextsPos.items(y);
+            return (y2, x + x2, line_size);
+        }
+        else {
+            throw Exception("viewPosToRealPos");
+        }
+    }
+
+    def getRealPosY():int {
+        (y, x, line_size) := visibleTextsPos.items(cursorY);
+        return y;
+    }
+
+    def getRealPosX():int {
+        (y, x, line_size) := visibleTextsPos.items(cursorY);
+        return x + cursorX;
+    }
+
+    def getRealPosYOfMaxY():int {
+        (y, x, line_size) := visibleTextsPos.items(MaxY-2);
+        return y;
+    }
+
+    def realPosToViewPos(y:int, x:int): Tuple2<Integer, Integer>
+    {
+        for(i:=0; i<visibleTextsPos.length(); i++)
+        {
+            (y2, x2, line_num) := visibleTextsPos.items(i);
+
+            if(y2 == y) {
+                if(x >= x2 && x < x2 + MaxX-1)
+                {
+                    return (i, x-x2);
+                }
+            }
+        }
+
+        return (0,0)
+    }
 
     def insertMode(key:int) {
         when(key) {
-            case (('['-'A').to_int+1) {
+            case (('['-'A').to_int+1, ('C'-'A').to_int+1) {
                 mode = EDITMODE;
+                fixCursorAndScrollTop(scrollTopY);
             }
-            
-            case (('V'-'A').to_int+1) {
-                key = getch(); 
-                 
-                var maxx := getmaxx();
-                var line := texts.items(cursorY + scrollTopY);
-
-                if(line != null) {
-                    var c := key.to_char;
-                    if(c == '\t') {
-                        line.insert(cursorX + scrollTopX, "\t");
-                        cursorX++; 
-                    } 
-                    elif(c.isalnum() || c == ' ' || c.isgraph())  {
-                        line.insert(cursorX + scrollTopX, c.toString());
-                        cursorX++;
-                    }
-                    
-                    if(cursorX >= maxx-1) {
-                        scrollTopX++;
-                        cursorX--; 
-                    } 
-                }
-                
-                makeVisibleTexts();
-            } 
 
             ### Backspace ###
             case (('H'-'A').to_int+1, KEY_BACKSPACE) {
-                val line = texts.items(scrollTopY + cursorY);
+                (y, x, line_size) := viewPosToRealPos(cursorY, cursorX);
+
+                line := texts.items(y);
                 
-                if(line != null) {
-                    line.delete(scrollTopX + cursorX -1);
-                    cursorX--; 
+                if(line != null && cursorX >= 0) {
+                    line.delete(x -1);
+                    cursorX--;
                 } 
                 
                 makeVisibleTexts();
             }
 
-            ### delete Back word ###
-            case (('W'-'A').to_int+1) {
-                line := texts.items(scrollTopY + cursorY);
-
-                (x, y, scroll_x, scroll_y) 
-                    := backwardWord(-1);
-                
-                if(line != null) {
-                    if(y < cursorY) {
-                        line.setValue(""); 
-                        cursorX = 0;
-                        scrollTopX = 0;
-                    } 
-                    else { 
-                        (cursorX - x).times {
-                            line.delete(
-                                scrollTopX+cursorX-1);
-                            cursorX--; 
-                        }
-                    } 
-                } 
-                #cursorX++; 
-                
-                makeVisibleTexts();
-            }
-            
             case (('D'-'A').to_int+1) {
-                val line = texts.items(scrollTopY + cursorY);
+                (y, x, line_size) := viewPosToRealPos(cursorY, cursorX);
+
+                line := texts.items(y);
                 
                 if(line != null) {
-                    4.times { 
-                        line.delete(scrollTopX+cursorX-1);
-                        cursorX --; 
-                    } 
+                    4.times {
+                        if(cursorX >= 0) {
+                            line.delete(x -1);
+                            cursorX--;
+                        }
+                    }
                 } 
                 
                 makeVisibleTexts();
@@ -234,19 +273,14 @@ class ViClone
             }
 
             case (('I'-'A').to_int+1) {
-                addUndoText();
+                (y, x, line_size) := viewPosToRealPos(cursorY, cursorX);
 
-                var line = texts
-                    .items(cursorY+scrollTopY);
-
+                line := texts.items(y);
+                
                 if(line != null) {
-                    if(line
-                       .subString(0, scrollTopX+cursorX)
-                       .match(/^\s*$/)) 
-                    {
+                    if(line.subString(0, x).match(/^\s*$/)) {
                         4.times { 
-                            line.insert(cursorX+scrollTopX
-                                        , " ");
+                            line.insert(x, " ");
                             cursorX++;
                         } 
                     }
@@ -258,20 +292,19 @@ class ViClone
                 makeVisibleTexts();
             }
             else {
-                var line = texts.items(cursorY + scrollTopY);
-                var vline = visibleTexts.items(cursorY);
-
-                if(line != null && vline != null) {
-                    var c := key.to_char;
+                (y, x, line_size) := viewPosToRealPos(cursorY, cursorX);
+                line := texts.items(y);
+                
+                if(line != null) {
+                    c := key.to_char;
                     if(c.isalnum() || c == ' ' || c.isgraph()) {
-                        line.insert(cursorX + scrollTopX, c.toString());
-                        vline.insert(cursorX + scrollTopX, c.toString());
+                        line.insert(x, c.toString());
+
+                        makeVisibleTexts();
                         cursorX++;
 
-                        if(cursorX >= MaxX-1) {
-                            scrollTopX++;
-                            cursorX--;
-                        }
+                        fixCursorAndScrollTop(scrollTopY);
+                        #makeVisibleTexts();
                     }
                 }
             }
@@ -289,10 +322,10 @@ class ViClone
     }
 
     def clearStatusLine() {
-        var maxy = getmaxy();
-        var maxx = getmaxx();
+        maxy := getmaxy();
+        maxx := getmaxx();
 
-        var line := " ".multiply(maxx-1);
+        line := " ".multiply(maxx-1);
 
         mvprintw(maxy-1, 0, line);
     }

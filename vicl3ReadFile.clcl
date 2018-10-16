@@ -1,0 +1,98 @@
+include "vicl2DirPane.clcl"
+
+class ViClone
+{
+    var texts:SortableList<String>;
+
+    def saveCursorPos() {
+        try {          
+            if(access(getCursorPositionDir(), X_OK) != 0) {
+                mkdir(getCursorPositionDir(), 0755);
+            }
+            
+            path := getCursorPositionDir().append(fileName);
+            (scrollTopY+cursorY+1).toString().write(path);
+        } catch(e:Exception) {
+        }         
+    }
+    
+    def readFile(fname:String) {
+        if(fname == null) {
+            texts = SortableList<String>();
+            texts.add("");
+             
+            fileName = null;
+        }
+        elif(access(fname, R_OK) == 0) {
+            texts = fname.toPath().read().toString().split(/\n/);
+
+            if(texts.length() == 0) {
+                texts = SortableList<String>();
+                texts.add("");
+            }
+             
+            fileName = fname.clone();
+        }
+        else {
+            texts = SortableList<String>();
+            texts.add("");
+             
+            fileName = null;
+        }
+
+        var file_line_num = (getCursorPositionDir().append(fileName).toPath()?.read().toString():"-1").to_int();
+        cursorX = 0;
+        cursorY = 0;
+        scrollTopY = 0;
+        scrollTopX = 0;
+
+        makeMaxxy();
+        makeSpaces();
+        
+        makeVisibleTexts();
+
+        if(argmentLineNum == -1) {
+            argmentLineNum = file_line_num;
+        }
+
+        if(argmentLineNum != -1) {
+            argmentLineNum--;
+
+            if(argmentLineNum >= texts.length()) {
+                argmentLineNum = texts.length()-1;
+            }
+            if(argmentLineNum < 0) {
+                argmentLineNum = 0;
+            }
+
+            cursorY = argmentLineNum;
+
+            scrollTopY = cursorY - (MaxY-2) /2;
+            
+            cursorY -= scrollTopY;
+
+            if(scrollTopY < 0) {
+                cursorY += scrollTopY;
+                scrollTopY = 0;
+            }
+
+            fixCursorAndScrollTop(scrollTopY);
+
+            makeVisibleTexts();
+        }
+        
+        if(fileName != null) { 
+            setDirCursor(fileName); 
+        } 
+
+        argmentLineNum = -1;
+    
+        clearUndoText();
+    }
+    
+    def initialize() {
+        inherit();
+
+        readFile(fileName);
+    }
+}

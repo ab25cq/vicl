@@ -8,13 +8,12 @@ class ViClone
     
     def completion() {
         words := texts.join("\n").scan(/[a-zA-Z_]+/);
-        line := texts.items(scrollTopY + cursorY);
+        line := texts.items(getRealPosY());
         
         ### getting inputing word ###
         var inputing_text = "";
-        for(i:= cursorX+scrollTopX-1; i >= 0; i--) {
-            if(line.chars(i).isalnum()
-                || line.chars(i) == '_') 
+        for(i:=getRealPosX()-1; i >= 0; i--) {
+            if(line.chars(i).isalnum() || line.chars(i) == '_') 
             {
                 inputing_text.insert(0, line.chars(i)); 
             } 
@@ -29,31 +28,27 @@ class ViClone
             i++;
         }
 
-        candidates := words.select { 
-                it.indexOf(inputing_text) == 0 
-                && !it.equals(inputing_text)
-            }.sort().uniq();
+        candidates := words.map { it.subString(0, MaxX-1) }.select { 
+            it.indexOf(inputing_text) == 0 && !it.equals(inputing_text)
+        }.sort().uniq();
 
         if(candidates.length() == 0) {
         }
         elif(candidates.length() == 1) {
             selected_string := candidates.items(0);
 
-            line.delete(i, scrollTopX + cursorX); 
+            line.delete(i, getRealPosX()); 
             line.insert(i, selected_string);
-            cursorX += selected_string.length() 
-                - (scrollTopX + cursorX - i)
+            cursorX += selected_string.length() - (getRealPosX() - i)
         }
         else {
-            index := selectStrings(line, candidates);
+            index := selectStrings(line.subString(0, MaxX-1), candidates);
 
             if(index != -1) {
-                selected_string 
-                    := candidates.items(index);
-                line.delete(i, scrollTopX + cursorX); 
+                selected_string := candidates.items(index);
+                line.delete(i, getRealPosX());
                 line.insert(i, selected_string);
-                cursorX += selected_string.length() 
-                    - (scrollTopX + cursorX - i)
+                cursorX += selected_string.length() - (getRealPosX() - i)
             }
         }
     } 

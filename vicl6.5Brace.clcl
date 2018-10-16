@@ -1,0 +1,148 @@
+include "vicl6Edit.clcl"
+
+class ViClone
+{
+    def getCursorChar(): char {
+        return visibleTexts.items(cursorY).chars(cursorX);
+    }
+    
+    def forwardBrace(head_char:char, tail_char:char): Tuple2<Integer, Integer> {
+        line_num := getRealPosY();
+        cursor_num := -1; 
+        nest := 0; 
+
+        it := texts.items(line_num);
+        for(i:=getRealPosX()+1; i<it.length(); i++) {
+            if(it.chars(i) == head_char) {
+                nest++; 
+            } 
+            elif(it.chars(i) == tail_char) {
+                if(nest == 0) {
+                    cursor_num = i;
+                    break; 
+                } 
+                nest--;
+            } 
+        } 
+
+        if(cursor_num == -1) {
+            line_num++;
+
+            texts.subList(line_num, -1).each {
+                for(i:=0; i<it.length(); i++) {
+                    if(it.chars(i) == head_char) {
+                        nest++; 
+                    } 
+                    elif(it.chars(i) == tail_char) {
+                        if(nest == 0) {
+                            cursor_num = i;
+                            break; 
+                        } 
+                        nest--;
+                    } 
+                } 
+                
+                if(cursor_num != -1) {
+                    break; 
+                } 
+                
+                line_num++; 
+            }
+        }
+        
+        return (line_num, cursor_num); 
+    } 
+
+    def backwordBrace(head_char:char, tail_char:char): Tuple2<Integer, Integer> {
+        line_num := getRealPosY();
+        
+        cursor_num := -1; 
+        nest := 0; 
+        it := texts.items(line_num);
+        for(i:=getRealPosX()-1; i>=0; i--) 
+        {
+            if(it.chars(i) == head_char) {
+                nest++; 
+            } 
+            elif(it.chars(i) == tail_char) {
+                if(nest == 0) {
+                    cursor_num = i;
+                    break; 
+                } 
+                nest--;
+            } 
+        } 
+
+        if(cursor_num == -1) {
+            line_num--;
+
+            texts.subList(0, line_num+1).reverse() .each {
+                for(i:=it.length()-1; i>=0; i--) {
+                    if(it.chars(i) == head_char) {
+                        nest++; 
+                    } 
+                    elif(it.chars(i) == tail_char) {
+                        if(nest == 0) {
+                            cursor_num = i;
+                            break; 
+                        } 
+                        nest--;
+                    } 
+                } 
+                
+                if(cursor_num != -1) {
+                    break; 
+                } 
+                
+                line_num--; 
+            } 
+        }
+        
+        return (line_num, cursor_num); 
+    } 
+
+    def defaultKeyEvents() {
+        inherit();
+
+        keyEvents['%'.to_int] = lambda(self:ViClone, key:int, key2:int) { 
+            c := getCursorChar();
+
+            line_num := -1;
+            cursor_num := -1;
+            
+            if(c == '(') {
+                (line_num, cursor_num) = forwardBrace('(', ')');
+            }
+            elif(c == '{') {
+                (line_num, cursor_num) = forwardBrace('{', '}');
+            }
+            elif(c == '}') {
+                (line_num, cursor_num) = backwordBrace('}', '{');
+            }
+            elif(c == ')') {
+                (line_num, cursor_num) = backwordBrace(')', '(');
+            }
+            
+            if(line_num != -1 && cursor_num != -1) 
+            {
+                y := line_num;
+                x := cursor_num;
+
+                if(y >= scrollTopY && y <= getRealPosYOfMaxY()) {
+                    (cursorY, cursorX) = realPosToViewPos(y, x);
+                }
+                else {
+                    scroll_size := (MaxY-1)/2;
+                    scrollTopY = getRealPosY() - scroll_size;
+
+                    fixCursorAndScrollTop(scrollTopY);
+                    makeVisibleTexts();
+
+                    (cursorY, cursorX) = realPosToViewPos(y, x);
+
+                    makeVisibleTexts();
+                }
+            } 
+        }
+    }
+}

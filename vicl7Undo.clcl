@@ -1,10 +1,10 @@
-include "vicl6Edit.clcl"
+include "vicl6.5Brace.clcl"
 
 class ViClone
 {
     var undoTexts:SortableList<String>;
     var undoIndex:int;
-    var undoCurosrPosition:EqualableList<Tuple4<Integer, Integer, Integer, Integer>>;
+    var undoCurosrPosition:EqualableList<Tuple3<Integer, Integer, Integer>>;
 
     def initialize() {
         inherit();
@@ -12,14 +12,14 @@ class ViClone
         undoTexts = SortableList<String>();
         undoIndex = 0;
 
-        undoCurosrPosition = EqualableList<Tuple4<Integer, Integer, Integer, Integer>>();
+        undoCurosrPosition = EqualableList<Tuple3<Integer, Integer, Integer>>();
     }
 
     def addUndoText() {
         undoTexts.deleteWithRange(undoIndex, -1);
         undoTexts.add(texts.join("\n"));
         undoCurosrPosition.deleteWithRange(undoIndex, -1);
-        undoCurosrPosition.add((scrollTopY, scrollTopX, cursorY, cursorX));
+        undoCurosrPosition.add((scrollTopY, cursorY, cursorX));
         undoIndex++;
     }
     
@@ -42,12 +42,9 @@ class ViClone
                 undoIndex--;
                 texts = undoTexts.items(undoIndex).split(/\n/);
                 
-                (scrolltop_y, scrolltop_x, cursor_y, cursor_x) := undoCurosrPosition.items(undoIndex);
+                (scrollTopY, cursorY, cursorX) = undoCurosrPosition.items(undoIndex);
 
-                scrollTopY = scrolltop_y;
-                scrollTopX = scrolltop_x;
-                cursorY = cursor_y;
-                cursorX = cursor_x;
+                fixCursorAndScrollTop(scrollTopY);
             }
 
             makeVisibleTexts();
@@ -57,12 +54,9 @@ class ViClone
                 undoIndex++;
                 texts = undoTexts.items(undoIndex).split(/\n/);
                 
-                (scrolltop_y, scrolltop_x, cursor_y, cursor_x) := undoCurosrPosition.items(undoIndex);
+                (scrollTopY, cursorY, cursorX) = undoCurosrPosition.items(undoIndex);
 
-                scrollTopY = scrolltop_y;
-                scrollTopX = scrolltop_x;
-                cursorY = cursor_y;
-                cursorX = cursor_x;
+                fixCursorAndScrollTop(scrollTopY);
             }
 
             makeVisibleTexts();

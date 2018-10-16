@@ -2,183 +2,30 @@ include "vicl5CommandMode.clcl"
 
 class ViClone
 {
-    def getCursorChar(): char {
-        return texts.subList(scrollTopY
-                    , scrollTopY+getmaxy()-1)
-                    .items(cursorY).chars(scrollTopX+cursorX);
-    }
-    
-    def forwardBrace(head_char:char, tail_char:char): Tuple2<Integer, Integer> {
-        line_num := cursorY + scrollTopY; 
-        cursor_num := -1; 
-        nest := 0; 
-        texts.subList(cursorY + scrollTopY, -1)
-        .each {
-            if(line_num == cursorY + scrollTopY) 
-            {
-                for(i:=cursorX+scrollTopX+1;
-                     i<it.length(); i++) 
-                {
-                    if(it.chars(i) == head_char) {
-                        nest++; 
-                    } 
-                    elif(it.chars(i) == tail_char) {
-                        if(nest == 0) {
-                            cursor_num = i;
-                            break; 
-                        } 
-                        nest--;
-                    } 
-                } 
-            } 
-            else { 
-                for(i:=0; i<it.length(); i++) {
-                    if(it.chars(i) == head_char) {
-                        nest++; 
-                    } 
-                    elif(it.chars(i) == tail_char) {
-                        if(nest == 0) {
-                            cursor_num = i;
-                            break; 
-                        } 
-                        nest--;
-                    } 
-                } 
-            }             
-            
-            if(cursor_num != -1) {
-                break; 
-            } 
-            
-            line_num++; 
-        } 
-        
-        return (line_num, cursor_num); 
-    } 
-    def backwordBrace(head_char:char, tail_char:char): Tuple2<Integer, Integer> {
-        var line_num = cursorY + scrollTopY; 
-        var cursor_num = -1; 
-        var nest = 0; 
-        texts.subList(0, cursorY + scrollTopY+1).reverse()
-            .each 
-            {
-            if(line_num == cursorY + scrollTopY) {
-                for(i:=cursorX+scrollTopX-1; 
-                    i>=0; 
-                    i--) 
-                {
-                    if(it.chars(i) == head_char) {
-                        nest++; 
-                    } 
-                    elif(it.chars(i) == tail_char) {
-                        if(nest == 0) {
-                            cursor_num = i;
-                            break; 
-                        } 
-                        nest--;
-                    } 
-                } 
-            } 
-            else { 
-                for(i:=it.length()-1; i>=0; i--) {
-                    if(it.chars(i) == head_char) {
-                        nest++; 
-                    } 
-                    elif(it.chars(i) == tail_char) {
-                        if(nest == 0) {
-                            cursor_num = i;
-                            break; 
-                        } 
-                        nest--;
-                    } 
-                } 
-            }             
-            
-            if(cursor_num != -1) {
-                break; 
-            } 
-            
-            line_num--; 
-        } 
-        
-        return (line_num, cursor_num); 
-    } 
-
     def defaultKeyEvents() {
         inherit();
-
-        keyEvents['%'.to_int] = lambda(self:ViClone, key:int, key2:int) { 
-            c := getCursorChar();
-
-            line_num := -1;
-            cursor_num := -1;
-            
-            if(c == '(') {
-                (line_num, cursor_num) 
-                    = forwardBrace('(', ')');
-            }
-            elif(c == '{') {
-                (line_num, cursor_num) 
-                    = forwardBrace('{', '}');
-            }
-            elif(c == '}') {
-                (line_num, cursor_num) 
-                    = backwordBrace('}', '{');
-            }
-            elif(c == ')') {
-                (line_num, cursor_num) 
-                    = backwordBrace(')', '(');
-            }
-            
-            if(line_num != -1 
-                && cursor_num != -1) 
-            {
-                if(line_num >= scrollTopY 
-                    && line_num 
-                        < scrollTopY+MaxY-1) 
-                {
-                    cursorY = line_num - scrollTopY;
-                    scrollTopX = 0;
-                    cursorX = cursor_num; 
-                }
-                else {
-                    scrollTopY = line_num -10;
-                    cursorY = 10;
-                    scrollTopX = 0;
-                    cursorX = cursor_num; 
-
-                    if(scrollTopY < 0) {
-                        cursorY += scrollTopY;
-                        scrollTopY = 0;
-                    }
-                }
-                
-                makeVisibleTexts();
-                fixCursorAndScrollTop(
-                                scrollTopY);
-            } 
-        }
 
         keyEvents['J'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             addUndoText();
 
-            line := texts
-                    .items(cursorY + scrollTopY);
+            real_pos_y := getRealPosY();
+            real_pos_x := getRealPosX();
 
-            next_line := texts
-                .items(cursorY + scrollTopY + 1);
+            line := texts.items(real_pos_y);
+            next_line := texts.items(real_pos_y +1);
 
             if(line.identifyWith(null).negative() && next_line.identifyWith(null).negative()) 
             {
-                cursorX = line.length();
+                (y, x) := realPosToViewPos(real_pos_y, line.length()-1);
 
                 line.append(" ");
-                line.append(
-                    next_line.scan(/\s*(.+)/)
-                    .items(1));
+                if(next_line.length() != 0) {
+                    line.append(next_line.scan(/\s*(.+)/).items(1));
+                }
 
-                texts
-                 .deleteAt(scrollTopY+cursorY+1);
+                (cursorY, cursorX) = (y, x+1);
+
+                texts.deleteAt(real_pos_y+1);
 
                 makeVisibleTexts();
                 fixCursorAndScrollTop(scrollTopY);
@@ -189,86 +36,102 @@ class ViClone
 
             when(key2) {
                 case ('e'.to_int, 'w'.to_int) {
-                    (x,y,scrolltop_x, scrolltop_y) 
-                        := forwardWord(0); 
-                 
-                    line := texts
-                      .items(scrollTopY+cursorY);
-                    
-                    if(y > cursorY) {
-                        line.delete(
-                         scrollTopX+cursorX, -1);
-    
-                        makeVisibleTexts();                     
-                        fixCursorAndScrollTop(scrollTopY);
-            
-                        cursorX++;
-            
-                        if(cursorX >= MaxX-1) {
-                            scrollTopX++;
-                            cursorX--;
+                    real_y := getRealPosY();
+                    real_x := getRealPosX();
+
+                    (x,y, scrolltop_y) := forwardWord(0); 
+
+                    try {
+                        (y2, x2, line_size2) := viewPosToRealPos(y, x);
+
+                        if(y2 != real_y) {
+                            y2 = real_y;
+                            x2 = -1;
                         }
-                    } 
-                    else { 
-                        line.delete(
-                            scrollTopX+cursorX
-                            , scrolltop_x+x); 
-    
+
+                        line := texts.items(y2);
+                        
+                        line.delete(real_x, x2);
+
                         makeVisibleTexts();                     
                         fixCursorAndScrollTop(scrollTopY);
-                    } 
-                     
+                    }
+                    catch (e:Exception) {
+                        cursorX = getRealPosX();
+                        scrollTopY = getRealPosY();
+                        cursorY = 0;
+
+                        makeVisibleTexts();
+                        fixCursorAndScrollTop(scrollTopY);
+                        real_y := getRealPosY();
+                        real_x := getRealPosX();
+
+                        (x,y, scrolltop_y) := forwardWord(0); 
+
+                        (y2, x2, line_size2) := viewPosToRealPos(y, x);
+
+                        if(y2 != real_y) {
+                            y2 = real_y;
+                            x2 = -1;
+                        }
+
+                        line := texts.items(y2);
+                        
+                        line.delete(real_x, x2);
+
+                        makeVisibleTexts();                     
+                        fixCursorAndScrollTop(scrollTopY);
+                    }
                 }
                 case ('d'.to_int) {
-                    line := texts
-                      .items(cursorY+scrollTopY);
+                    y := getRealPosY();
 
-                    clearClipBoard();
-                    addClipBoard(
-                        texts.items(
-                            scrollTopY+cursorY));
+                    line := texts.items(y);
 
                     if(line != null) {
-                        texts.deleteAt(scrollTopY+cursorY);
+                        clearClipBoard();
+                        addClipBoard(line);
+                        texts.deleteAt(y);
                     }
 
                     if(texts.length() == 0) {
                         texts.add("");
-                        scrollTopX = 0;
                         cursorX = 0;
+                        cursorY = 0;
+                        scrollTopY = 0;
                     }
 
                     makeVisibleTexts();                     
-                    fixCursorAndScrollTop(
-                                    scrollTopY);
+                    fixCursorAndScrollTop(scrollTopY);
                 }
             }
         }
         keyEvents['x'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            line := texts.items(cursorY + scrollTopY);
+            line := texts.items(getRealPosY());
 
             if(line != null) {
-                if(cursorX + scrollTopX 
-                    < line.length()) 
+                x := getRealPosX();
+
+                if(x < line.length()) 
                 {
                     addUndoText();
                     
-                    line.delete(
-                        cursorX + scrollTopX);
+                    line.delete(x);
 
                     makeVisibleTexts();
                 } 
             }
         }
         keyEvents['D'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            var line := texts.items(
-                        cursorY + scrollTopY);
+            x := getRealPosX();
+            y := getRealPosY();
 
-            if(line.identifyWith(null).negative()) {
+            line := texts.items(y);
+
+            if(line.identifyWith(null).negative() && x < line.length()-1) {
                 addUndoText();
 
-                line.delete(cursorX + scrollTopX
-                            , -1);
+                line.delete(x, -1);
 
                 makeVisibleTexts();
                 fixCursorAndScrollTop(scrollTopY);
@@ -277,30 +140,27 @@ class ViClone
         keyEvents['z'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             when(key2) {
                 case ('z'.to_int) {
-                    var n = scrollTopY + cursorY;
-                     
-                    cursorY = MaxY / 2; 
-                    scrollTopY = n - cursorY;
-                    
-                    if(scrollTopY < 0) {
-                        cursorY += scrollTopY; 
-                        scrollTopY = 0; 
-                    } 
-                     
+                    y := getRealPosY();
+                    x := getRealPosX();
+
+                    scroll_size := (MaxY-1)/2;
+                    scrollTopY = getRealPosY() - scroll_size;
+
+                    fixCursorAndScrollTop(scrollTopY);
                     makeVisibleTexts();
-                    fixCursorAndScrollTop(
-                        scrollTopY);
+
+                    (cursorY, cursorX) = realPosToViewPos(y, x);
+
+                    makeVisibleTexts();
                 }
 
                 case (KEY_ENTER, ('J'-'A').to_int+1) {
-                    var n = scrollTopY + cursorY;
-                     
+                    cursorX = getRealPosX();
+                    scrollTopY = getRealPosY();
                     cursorY = 0;
-                    scrollTopY = n;
-                     
+
                     makeVisibleTexts();
-                    fixCursorAndScrollTop(
-                                    scrollTopY);
+                    fixCursorAndScrollTop(scrollTopY);
                 }
             }
         }

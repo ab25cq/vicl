@@ -1,4 +1,4 @@
-include "vicl.clcl"
+include "vicl1Lib.clcl"
 
 class ViClone
 {
@@ -203,12 +203,15 @@ class ViClone
                 keypad(stdscr, true);
                 noecho();
             }
-            case (':'.to_int) {
+            case ('!'.to_int) {
                 endwin();
                 iclover2
                 initscr();
                 keypad(stdscr, true);
                 noecho();
+            }
+            case (':'.to_int) {
+                enterCommandMode();
             }
             case (('L'-'A').to_int+1) {
                 makeVisibleTexts()

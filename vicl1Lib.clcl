@@ -23,8 +23,10 @@ class ViClone
         defaultKeyEvents();
 
         runningCurses = true;
+        setEscapeDelay(0);
         initscr();
         keypad(stdscr, true);
+        raw();
         noecho();
 
         argmentLineNum = -1;
@@ -132,7 +134,7 @@ class ViClone
             var key := getch();
 
             when(key) {
-                case (('['-'A').to_int+1) {
+                case (('['-'A').to_int+1, ('C'-'A').to_int + 1) {
                     break;
                 }
                 case (KEY_UP, 'k'.to_int) {
@@ -234,10 +236,9 @@ class ViClone
     def openFile(file_name:String, line_num:int) {
         writeToFile().if {
             readFile(file_name);
-            
-            scrolltop_y_before := scrollTopY;
-            moveCursor(line_num-1, 0);
-            fixCursorAndScrollTop(scrolltop_y_before);
+            scrollTopY = line_num-1;
+            cursorX = 0;
+            makeVisibleTexts();
         }
     }
     
