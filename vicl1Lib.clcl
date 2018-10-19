@@ -26,7 +26,8 @@ class ViClone
         setEscapeDelay(0);
         initscr();
         keypad(stdscr, true);
-        raw();
+        #raw();
+        #nodelay(stdscr, true);
         noecho();
 
         argmentLineNum = -1;
@@ -58,8 +59,29 @@ class ViClone
         }
     }
 
-    def input(): int {
-        return getch();
+    def getch(): int {
+/*
+        key := -1;
+        mask := fd_set();
+        read_ok := fd_set();
+
+        FD_ZERO(mask);
+        FD_SET(0, mask);
+        while(true) {
+            read_ok = mask.clone();
+        
+            result := select(FD_SETSIZE, read_ok, null, null, null);
+        
+            if(FD_ISSET(0, read_ok)) {
+                key := System.getch();
+                break;
+            }
+        }
+        
+        return key;
+*/
+
+        return System.getch();
     }
 
     def finalize() {

@@ -411,9 +411,8 @@ class CLParser
         result:CLNodeTree? = null;
 
         if(p->byte >= '0' && p->byte <= '9') {
-            var value := getNumber();
+            value := getNumber();
             result = CLNodeTreeInt(value, sourceName, sourceLine);
-            #result = longToNode(value);
         }
         elif(p->byte == '-' && !((p+1)->byte == '=' || (p+1)->byte == '-' || (p+1)->byte == '>')) {
             p++;
@@ -596,6 +595,8 @@ class CLParser
         p = Buffer(sourceBuffer.buffer, sourceBuffer.size, false);
         sourceLine = 1;
 
+        skipSpacesAndLF();
+
         while(p->byte != '\0') {
             exp:CLNodeTree? = expression();
 
@@ -611,6 +612,8 @@ class CLParser
         sourceLine = 1;
 
         type := "";
+
+        skipSpacesAndLF();
 
         while(p->byte != '\0') {
             exp:CLNodeTree? = expression();

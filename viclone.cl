@@ -30,7 +30,7 @@ while(!vicl.endOfAplication) {
     result := select(FD_SETSIZE, read_ok, null, null, null);
 
     if(FD_ISSET(0, read_ok)) {
-        key := vicl.input();
+        key := System.getch();
 
         vicl.runKeyEvents(key);
     }

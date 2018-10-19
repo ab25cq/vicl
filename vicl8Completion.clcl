@@ -6,6 +6,78 @@ class ViClone
         inherit();
     }
     
+    def clover2Completion() {
+        line := texts.items(getRealPosY());
+        
+        line2 := line.clone();
+        if(line.match(/(.+)\..*/)) {
+            line2 = line.scan(/\s*(.+)\..*$/).items(1);
+        }
+        
+        parser := CLParser(line2, "clover2Completion");
+        
+        type_name := parser.getType();
+
+        boxing_type_name := Clover.primitiveClassToBoxingClass(type_name);
+
+        klass := Class(boxing_type_name);
+
+        methods := klass.getMethods();
+
+        words := SortableList<String>();
+        methods.each {
+            words.add(it.name);
+        }
+
+        ### getting inputing word ###
+        inputing_text := "";
+        for(i:=getRealPosX()-1; i >= 0; i--) {
+            if(line.chars(i).isalnum() || line.chars(i) == '_') 
+            {
+                inputing_text.insert(0, line.chars(i)); 
+            }
+            elif(line.chars(i) == '\.') {
+                break;
+            }
+            else {
+                break; 
+            } 
+        }
+        if(i < 0) {
+            i = 0;
+        }
+        else {
+            i++;
+        }
+
+        candidates := words.map { 
+            it.subString(0, MaxX-1) 
+        }.select { 
+            it.indexOf(inputing_text) == 0 && !it.equals(inputing_text)
+        }.sort()
+        .uniq();
+
+        if(candidates.length() == 0) {
+        }
+        elif(candidates.length() == 1) {
+            selected_string := candidates.items(0);
+
+            line.delete(i, getRealPosX()); 
+            line.insert(i, selected_string);
+            cursorX += selected_string.length() - (getRealPosX() - i)
+        }
+        else {
+            index := selectStrings(line.subString(0, MaxX-1), candidates);
+
+            if(index != -1) {
+                selected_string := candidates.items(index);
+                line.delete(i, getRealPosX());
+                line.insert(i, selected_string);
+                cursorX += selected_string.length() - (getRealPosX() - i)
+            }
+        }
+    }
+    
     def completion() {
         words := texts.join("\n").scan(/[a-zA-Z_]+/);
         line := texts.items(getRealPosY());
@@ -28,9 +100,12 @@ class ViClone
             i++;
         }
 
-        candidates := words.map { it.subString(0, MaxX-1) }.select { 
+        candidates := words.map { 
+            it.subString(0, MaxX-1) 
+        }.select { 
             it.indexOf(inputing_text) == 0 && !it.equals(inputing_text)
-        }.sort().uniq();
+        }.sort()
+        .uniq();
 
         if(candidates.length() == 0) {
         }

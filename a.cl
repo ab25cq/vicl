@@ -8,7 +8,8 @@ strcmp("AAA", "BBB") == 0;
 222aaaaaa1111ddddddddddaaaaa
     333
    444
-    
+   
+   
 strcmp
 printf_aaa
 (
@@ -47,10 +48,6 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 
 
-
-
-
-
 aaaao
     asdflkasdalfdkla
     asdlkfasdlfadslk
@@ -59,3 +56,5 @@ aaaao
         asdlfkasfal
         asdlfasdlfa
         
+        1.
+        1.

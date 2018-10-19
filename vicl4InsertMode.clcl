@@ -232,7 +232,7 @@ class ViClone
         when(key) {
             case (('['-'A').to_int+1, ('C'-'A').to_int+1) {
                 mode = EDITMODE;
-                fixCursorAndScrollTop(scrollTopY);
+                #fixCursorAndScrollTop(scrollTopY);
             }
 
             ### Backspace ###
@@ -266,10 +266,36 @@ class ViClone
                 makeVisibleTexts();
             } 
 
+            ### delete Back word ###
+            case (('W'-'A').to_int+1) {
+                line := texts.items(getRealPosY());
+
+                (x, y, scroll_y) := backwardWord(-1);
+                
+                if(line != null) {
+                    if(y < cursorY) {
+                        line.setValue(""); 
+                        cursorX = 0;
+                    } 
+                    else { 
+                        (cursorX - x).times { 
+                            line.delete(cursorX-1);
+                            cursorX--; 
+                        }
+                    } 
+                } 
+                
+                makeVisibleTexts();
+            }
+
             case ('\n'.to_int) {
                 enterNewLine(false);
                 
                 makeVisibleTexts();
+            }
+            
+            case (('X'-'A').to_int+1) {
+                clover2Completion();
             }
 
             case (('I'-'A').to_int+1) {
