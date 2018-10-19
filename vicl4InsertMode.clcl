@@ -328,9 +328,8 @@ class ViClone
 
                         makeVisibleTexts();
                         cursorX++;
-
+                        
                         fixCursorAndScrollTop(scrollTopY);
-                        #makeVisibleTexts();
                     }
                 }
             }

@@ -80,7 +80,7 @@ class ViClone
             cursorY = 0;
             scrollTopY -= scroll_size;
         }
-
+        
         if(scrollTopY >= texts.length()) {
             cursorY = 0;
             scrollTopY = texts.length()-1;
@@ -102,6 +102,10 @@ class ViClone
 
         if(cursorX < 0) {
             cursorX = 0;
+        }
+        
+        if(cursorY >= visibleTexts.length()) {
+            cursorY = visibleTexts.length() - 1;
         }
     }
 
