@@ -449,7 +449,6 @@ class CLParser
                     skipSpacesAndLF();
                     break;
                 }
-/*
                 elif(p->byte == '\\') {
                     p++;
 
@@ -504,12 +503,6 @@ class CLParser
                 elif(p->byte == '\0') {
                     throw Exception("close \" to make string value");
                 }
-*/
-                else {
-                    a := 1;
-                    p ++;
-                }
-/*
                 else {
                     if(p->byte == '\n') {
                         sourceLine++
@@ -518,7 +511,6 @@ class CLParser
                     value.append(p->byte.to_char);
                     p++;
                 }
-*/
             }
 
             skipSpacesAndLF();

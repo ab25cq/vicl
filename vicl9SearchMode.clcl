@@ -16,8 +16,7 @@ class ViClone
     }
     
     def moveCursor(y:int, x:int) {
-        if(y >= scrollTopY && y < scrollTopY + getRealPosYOfMaxY()) 
-        {
+        if(y >= scrollTopY && y < scrollTopY + visibleTexts.length()) {
             (cursorY, cursorX) = realPosToViewPos(y, x);
         }
         else {

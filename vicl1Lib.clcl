@@ -23,7 +23,7 @@ class ViClone
         defaultKeyEvents();
 
         runningCurses = true;
-        setEscapeDelay(0);
+        setEscapeDelay(1);
         initscr();
         keypad(stdscr, true);
         #raw();

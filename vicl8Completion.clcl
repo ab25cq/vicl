@@ -5,28 +5,31 @@ class ViClone
     def initialize() {
         inherit();
     }
-    
-    def clover2Completion() {
-        line := texts.items(getRealPosY());
+
+    def methodNameCompletion(line:String) {
+        line2 := line.scan(/\s*(.+)\..*$/).items(1);
         
-        line2 := line.clone();
-        if(line.match(/(.+)\..*/)) {
-            line2 = line.scan(/\s*(.+)\..*$/).items(1);
+        type_name := line2.toCommand().tyclover2().toString();
+        
+        type_name2 := type_name.chomp();
+        if(type_name2.match(/\s*(.+)\s*/)) {
+            type_name2 = type_name2.scan(/\s*(.+)\s*/).items(0);
         }
         
-        parser := CLParser(line2, "clover2Completion");
+        boxing_type_name := Clover.primitiveClassToBoxingClass(type_name2);
         
-        type_name := parser.getType();
-
-        boxing_type_name := Clover.primitiveClassToBoxingClass(type_name);
-
-        klass := Class(boxing_type_name);
+        class_name := boxing_type_name;
+        if(boxing_type_name.match(/.+<.+>/)) {
+            class_name = boxing_type_name.scan(/(.+)<.+>/).items(0);
+        }
+        
+        klass := Class(class_name);
 
         methods := klass.getMethods();
 
         words := SortableList<String>();
         methods.each {
-            words.add(it.name);
+            words.add(it.methodNameAndParams);
         }
 
         ### getting inputing word ###
@@ -60,7 +63,7 @@ class ViClone
         if(candidates.length() == 0) {
         }
         elif(candidates.length() == 1) {
-            selected_string := candidates.items(0);
+            selected_string := candidates.items(0).scan(/^(.+\()/).items(1);
 
             line.delete(i, getRealPosX()); 
             line.insert(i, selected_string);
@@ -70,11 +73,19 @@ class ViClone
             index := selectStrings(line.subString(0, MaxX-1), candidates);
 
             if(index != -1) {
-                selected_string := candidates.items(index);
+                selected_string := candidates.items(index).scan(/^(.+\()/).items(1);
                 line.delete(i, getRealPosX());
                 line.insert(i, selected_string);
                 cursorX += selected_string.length() - (getRealPosX() - i)
             }
+        }
+    }
+    
+    def clover2Completion() {
+        line := texts.items(getRealPosY());
+        
+        if(line.match(/(.+)\..*/)) {
+            methodNameCompletion(line);
         }
     }
     

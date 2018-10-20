@@ -95,6 +95,27 @@ class ViClone
                 fixCursorAndScrollTop(scrollTopY);
             }
             
+            case ('G'.to_int) {
+                scrolltop_y_before := scrollTopY;
+    
+                cursorY = 999999;
+    
+                fixCursorAndScrollTop(scrolltop_y_before);
+            }
+            case ('g'.to_int) {
+                key2 := getch();
+                
+                if(key2 == 'g'.to_int) {
+                    var scrolltop_y_before = scrollTopY;
+    
+                    cursorX = 0;
+                    cursorY = 0;
+                    scrollTopY = 0;
+    
+                    fixCursorAndScrollTop(scrolltop_y_before);
+                }
+            }
+            
             case ('h'.to_int, KEY_LEFT) {
                 cursorX--;
 
@@ -119,20 +140,28 @@ class ViClone
             case ('d'.to_int) {
                 addUndoText();
 
-                line := getRealPosY();
+                real_pos_y := getRealPosY();
 
-                if(visualModeStart < line) {
-                    clipBoard = texts.subList(visualModeStart, line+1);
-                    texts.deleteWithRange(visualModeStart, line+1);
+                if(visualModeStart < real_pos_y) {
+                    clipBoard = texts.subList(visualModeStart, real_pos_y+1);
+                    texts.deleteWithRange(visualModeStart, real_pos_y+1);
+                    
+                    if(texts.length() == 0) {
+                        texts.add("");
+                    }
                 }
                 else {
-                    clipBoard = texts.subList(line, visualModeStart+1);
-                    texts.deleteWithRange(line, visualModeStart+1);
+                    clipBoard = texts.subList(real_pos_y, visualModeStart+1);
+                    texts.deleteWithRange(real_pos_y, visualModeStart+1);
+                    if(texts.length() == 0) {
+                        texts.add("");
+                    }
                 }
 
-                mode = EDITMODE;
                 makeVisibleTexts(); 
                 fixCursorAndScrollTop(scrollTopY);
+                mode = EDITMODE;
+                moveCursor(visualModeStart, 0);
             }
             case ('>'.to_int) {
                 addUndoText();
