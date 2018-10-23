@@ -1,0 +1,284 @@
+include "vicl4InsertMode.clcl"
+
+class ViClone
+{
+    def forwardWord(offset:int=0):Tuple2<Integer, Integer> {
+        real_pos_x := getRealPosX();
+        real_pos_y := getRealPosY(); 
+
+        line := texts.items(real_pos_y);
+
+        x := real_pos_x + offset;
+        y := real_pos_y;
+
+        c := line?.chars(x):'\0';
+
+        if(line == null || line.equals("")) {
+            x = 0;
+            y++;
+        }
+        else {
+            if(c.isalpha() || c == '_') {
+                while(c.isalpha() || c == '_') {
+                    x++;
+
+                    if(x >= line.length()) {
+                        x = 0;
+                        y++;
+                        
+                        if(y >= texts.length()) {
+                            y--;
+                            line = texts.items(y);
+                            if(line.length() == 0) {
+                                x = 0;
+                            }
+                            else {
+                                x = line.length()-1;
+                            }
+                            break;
+                        }
+                        else {
+                            line = texts.items(y);
+                        }
+                    }
+                    c = line?.chars(x):'\0';
+                }
+            }
+            elif(c.isdigit()) {
+                while(c.isdigit()) {
+                    x++;
+
+                    if(x >= line.length()) {
+                        x = 0;
+                        y++;
+                        if(y >= texts.length()) {
+                            y--;
+                            line = texts.items(y);
+                            if(line.length() == 0) {
+                                x = 0;
+                            }
+                            else {
+                                x = line.length()-1;
+                            }
+                            break;
+                        }
+                        else {
+                            line = texts.items(y);
+                        }
+                    }
+
+                    c = line?.chars(x):'\0';
+                }
+            }
+            elif(c.isspace()) {
+                while(c.isspace()) {
+                    x++;
+
+                    if(x >= line.length()) {
+                        x = 0;
+                        y++;
+                        if(y >= texts.length()) {
+                            y--;
+                            line = texts.items(y);
+                            if(line.length() == 0) {
+                                x = 0;
+                            }
+                            else {
+                                x = line.length()-1;
+                            }
+                            break;
+                        }
+                        else {
+                            line = texts.items(y);
+                        }
+                    }
+
+                    c = line?.chars(x):'\0';
+                }
+            }
+            elif(c != '\0') {
+                while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
+                    x++;
+
+                    if(x >= line.length()) {
+                        x = 0;
+                        y++;
+                        if(y >= texts.length()) {
+                            y--;
+                            
+                            line = texts.items(y);
+                            if(line.length() == 0) {
+                                x = 0;
+                            }
+                            else {
+                                x = line.length()-1;
+                            }
+                            break;
+                        }
+                        else {
+                            line = texts.items(y);
+                        }
+                    }
+
+                    c = line?.chars(x):'\0';
+                }
+            }
+        }
+
+        return (y, x);
+    }
+
+    def backwardWord(offset:int=0):Tuple2<Integer, Integer> {
+        real_pos_x := getRealPosX();
+        real_pos_y := getRealPosY(); 
+    
+        line := texts.items(real_pos_y);
+
+        x := real_pos_x + offset;
+        y := real_pos_y;
+
+        c := line?.chars(x):'\0';
+        
+        if(line == null || line.equals("")) {
+            y--;
+            if(y >= 0) {
+                line = texts.items(y);
+                
+                if(line.length() == 0) {
+                    x = 0;
+                }
+                else {
+                    x = line.length()-1;
+                }
+            }
+            else {
+                y = 0;
+            }
+        }
+        else {
+            c := line.chars(x)?:'\0';
+
+            if(c.isalpha() || c == '_') {
+                while(c.isalpha() || c == '_') {
+                    x--;
+
+                    if(x < 0) {
+                        y--;
+
+                        if(y >= 0) {
+                            line = texts.items(y);
+                            if(line.length() == 0) {
+                                x = 0;
+                            }
+                            else {
+                                x = line.length()-1;
+                            }
+                        }
+                        else {
+                            x = 0;
+                            y = 0;
+                            break;
+                        }
+                    }
+
+                    c = line?.chars(x):'\0';
+                }
+            }
+            elif(c.isdigit()) {
+                while(c.isdigit()) {
+                    x--;
+
+                    if(x < 0) {
+                        y--;
+
+                        if(y >= 0) {
+                            line = texts.items(y);
+                            if(line.length() == 0) {
+                                x = 0;
+                            }
+                            else {
+                                x = line.length()-1;
+                            }
+                        }
+                        else {
+                            x = 0;
+                            y = 0;
+                            break;
+                        }
+                    }
+
+                    c = line?.chars(x):'\0';
+                }
+            }
+            elif(c.isspace()) {
+                while(c.isspace()) {
+                    x--;
+
+                    if(x < 0) {
+                        y--;
+
+                        if(y >= 0) {
+                            line = texts.items(y);
+                            if(line.length() == 0) {
+                                x = 0;
+                            }
+                            else {
+                                x = line.length()-1;
+                            }
+                        }
+                        else {
+                            x = 0;
+                            y = 0;
+                            break;
+                        }
+                    }
+
+                    c = line?.chars(x):'\0';
+                }
+            }
+            elif(c != '\0') {
+                while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
+                    x--;
+
+                    if(x < 0) {
+                        y--;
+
+                        if(y >= 0) {
+                            line = texts.items(y);
+                            if(line.length() == 0) {
+                                x = 0;
+                            }
+                            else {
+                                x = line.length()-1;
+                            }
+                        }
+                        else {
+                            x = 0;
+                            y = 0;
+                            break;
+                        }
+                    }
+
+                    c = line?.chars(x):'\0';
+                }
+            }
+            x++; 
+        }
+
+        return (y, x);
+    }
+    def defaultKeyEvents() {
+        inherit();
+
+        keyEvents['w'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            (y, x) := forwardWord();
+            
+            moveCursor(y, x);
+        }
+        keyEvents['b'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            (y, x) := backwardWord(-1);
+            
+            moveCursor(y, x);
+        }
+    }
+}

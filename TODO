@@ -1,16 +1,22 @@
-%
 [[
 
-Insert Mode
-    C-w
+v finish visual mode after operator
+gv
 
-Visual Mode
-    
-:sp
+.
 
-cursor scrolltop saved with each texts
+word completion at the end of visible line occurs bug
 
-cw
-dw
+moving directory
 
-zz
+dt
+ct
+
+ma `a
+``
+
+method completion
+
+--- end
+#
+*

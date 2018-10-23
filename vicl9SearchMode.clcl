@@ -14,24 +14,6 @@ class ViClone
 
         searchMode = SEARCHMODE_NORMAL;
     }
-    
-    def moveCursor(y:int, x:int) {
-        if(y >= scrollTopY && y < scrollTopY + visibleTexts.length()) {
-            (cursorY, cursorX) = realPosToViewPos(y, x);
-        }
-        else {
-            scroll_size := (MaxY-1)/2;
-            scrollTopY = y - scroll_size;
-
-            fixCursorAndScrollTop(scrollTopY);
-            makeVisibleTexts();
-
-            (cursorY, cursorX) = realPosToViewPos(y, x);
-
-            fixCursorAndScrollTop(scrollTopY);
-            makeVisibleTexts();
-        }
-    }
 
     def enterSearchMode(str:String="", search_mode:int=SEARCHMODE_NORMAL) {
         searchMode = search_mode;
@@ -116,70 +98,40 @@ class ViClone
         keyEvents['n'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             searchString();
         }
-/*
-        keyEvents['*'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+        keyEvents['*'.to_int] = lambda(self:ViClone, key:int, key2:int) 
+        {
             line := texts.items(getRealPosY());
 
-            str := "";
+            (y, x) := forwardWord();
 
-            if(line != null) {
-                x := cursorX;
-                c := line.chars(getRealPosX());
-
-                if(c.isalnum() || c == '_') {
-                    while((c.isalnum() || c == '_') && (getRealPosX()X+x < line.length())) 
-                    {
-                        str.append(c);
-                        x++; 
-                        c = line.chars(scrollTopX+x); 
-                    }
-                     
-                    enterSearchMode(str, SEARCHMODE_NORMAL);
-                }
+            if(y == getRealPosY()) {
+                str := line.subString(getRealPosX(), x);
+                
+                enterSearchMode(str, SEARCHMODE_NORMAL);
+            }
+            else {
+                str := line.subString(getRealPosX(), -1);
+                
+                enterSearchMode(str, SEARCHMODE_NORMAL);
             }
         } 
-        keyEvents['#'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            val line = texts.items(scrollTopY+cursorY);
+        keyEvents['#'.to_int] = lambda(self:ViClone, key:int, key2:int) 
+        {
+            line := texts.items(getRealPosY());
 
-            var str = "";
+            (y, x) := forwardWord();
 
-            if(line != null) {
-                var x = cursorX;
-                var c = line.chars(scrollTopX+x);
-
-                if(c.isalpha()) {
-                    while(c.isalpha()) {
-                        str.append(c);
-                        x++; 
-                        c = line.chars(scrollTopX+x); 
-                    }
-                }
-                elif(c.isdigit()) {
-                    while(c.isdigit()) {
-                        str.append(c);
-                        x++; 
-                        c = line.chars(scrollTopX+x); 
-                    }
-                }
-                elif(c.isspace()) {
-                    while(c.isspace()) {
-                        str.append(c);
-                        x++; 
-                        c = line.chars(scrollTopX+x); 
-                    }
-                }
-                else {
-                    while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
-                        str.append(c);
-                        x++; 
-                        c = line.chars(scrollTopX+cursorX+x);
-                    }
-                }
+            if(y == getRealPosY()) {
+                str := line.subString(getRealPosX(), x);
+                
+                enterSearchMode(str, SEARCHMODE_REVERSE);
             }
-
-            enterSearchMode(str, SEARCHMODE_REVERSE);
+            else {
+                str := line.subString(getRealPosX(), -1);
+                
+                enterSearchMode(str, SEARCHMODE_REVERSE);
+            }
         } 
-*/
         keyEvents['N'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             var mode = searchMode;
             if(searchMode == SEARCHMODE_NORMAL) {

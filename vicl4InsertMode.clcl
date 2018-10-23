@@ -1,4 +1,4 @@
-include "vicl3.5Word.clcl"
+include "vicl3.3View.clcl"
 
 class ViClone
 {
@@ -32,6 +32,92 @@ class ViClone
         }
         else {
             inherit(scrolltop_y_before);
+        }
+    }
+    
+    def viewYToRealY(y:int):int {
+        (y2, x2, line_size) := viewPosToRealPos(y, 0);
+        return y2;
+    }
+
+    def realYToViewY(y:int):int {
+        (y2, x2) := realPosToViewPos(y, 0);
+        return y2;
+    }
+
+    def viewPosToRealPos(y:int, x:int): Tuple3<Integer, Integer, Integer>
+    {
+        if(y >= 0 && y < visibleTextsPos.length()) {
+            (y2, x2, line_size) := visibleTextsPos.items(y);
+            return (y2, x + x2, line_size);
+        }
+        else {
+            throw Exception("viewPosToRealPos");
+        }
+    }
+
+    def getRealPosY():int {
+        (y, x, line_size) := visibleTextsPos.items(cursorY);
+        return y;
+    }
+
+    def getRealPosX():int {
+        (y, x, line_size) := visibleTextsPos.items(cursorY);
+        return x + cursorX;
+    }
+
+    def getRealPosYOfMaxY():int {
+        (y, x, line_size) := visibleTextsPos.items(MaxY-2);
+        return y;
+    }
+
+    def realPosToViewPos(y:int, x:int): Tuple2<Integer, Integer>
+    {
+        for(i:=0; i<visibleTextsPos.length(); i++)
+        {
+            (y2, x2, line_num) := visibleTextsPos.items(i);
+
+            if(y2 == y) {
+                if(x >= x2 && x < x2 + MaxX-1)
+                {
+                    return (i, x-x2);
+                }
+            }
+        }
+
+        return (-1,-1)
+    }
+    
+    def moveCursor(y:int, x:int):int {
+        (y2,x2)  := realPosToViewPos(y, x);
+        
+        if(y2 >= 0 && y2 < visibleTexts.length())
+        {
+            (cursorY, cursorX) = realPosToViewPos(y, x);
+        }
+        else {
+            scroll_size := (MaxY-1)/2;
+            scrollTopY = y - scroll_size;
+
+            fixCursorAndScrollTop(scrollTopY);
+            makeVisibleTexts();
+
+            (cursorY, cursorX) = realPosToViewPos(y, x);
+
+            if(cursorY == -1 && cursorX == -1) {
+                scrollTopY = y;
+
+                fixCursorAndScrollTop(scrollTopY);
+                makeVisibleTexts();
+
+                (cursorY, cursorX) = realPosToViewPos(y, x);
+                fixCursorAndScrollTop(scrollTopY);
+                makeVisibleTexts();
+            }
+            else {
+                fixCursorAndScrollTop(scrollTopY);
+                makeVisibleTexts();
+            }
         }
     }
 
@@ -143,12 +229,15 @@ class ViClone
              
             when(key2) {
                 case ('e'.to_int, 'w'.to_int) {
-                    (x,y, scrolltop_y) := forwardWord(0); 
-                 
-                    line := texts.items(getRealPosY());
+                    (y, x) := forwardWord(0); 
                     
-                    if(y > cursorY) {
-                        line.delete(cursorX, -1);
+                    real_pos_y := getRealPosY();
+                    real_pos_x := getRealPosX();
+                 
+                    line := texts.items(real_pos_y);
+                    
+                    if(y > real_pos_y) {
+                        line.delete(real_pos_x, -1);
     
                         makeVisibleTexts();                     
                         fixCursorAndScrollTop(scrollTopY);
@@ -156,7 +245,7 @@ class ViClone
                         cursorX++;
                     } 
                     else { 
-                        line.delete(cursorX, x); 
+                        line.delete(real_pos_x, x); 
     
                         makeVisibleTexts();                     
                         fixCursorAndScrollTop(scrollTopY);
@@ -173,59 +262,6 @@ class ViClone
             clear();
             view();
         }
-    }
-    
-    def viewYToRealY(y:int):int {
-        (y2, x2, line_size) := viewPosToRealPos(y, 0);
-        return y2;
-    }
-
-    def realYToViewY(y:int):int {
-        (y2, x2) := realPosToViewPos(y, 0);
-        return y2;
-    }
-
-    def viewPosToRealPos(y:int, x:int): Tuple3<Integer, Integer, Integer>
-    {
-        if(y >= 0 && y < visibleTextsPos.length()) {
-            (y2, x2, line_size) := visibleTextsPos.items(y);
-            return (y2, x + x2, line_size);
-        }
-        else {
-            throw Exception("viewPosToRealPos");
-        }
-    }
-
-    def getRealPosY():int {
-        (y, x, line_size) := visibleTextsPos.items(cursorY);
-        return y;
-    }
-
-    def getRealPosX():int {
-        (y, x, line_size) := visibleTextsPos.items(cursorY);
-        return x + cursorX;
-    }
-
-    def getRealPosYOfMaxY():int {
-        (y, x, line_size) := visibleTextsPos.items(MaxY-2);
-        return y;
-    }
-
-    def realPosToViewPos(y:int, x:int): Tuple2<Integer, Integer>
-    {
-        for(i:=0; i<visibleTextsPos.length(); i++)
-        {
-            (y2, x2, line_num) := visibleTextsPos.items(i);
-
-            if(y2 == y) {
-                if(x >= x2 && x < x2 + MaxX-1)
-                {
-                    return (i, x-x2);
-                }
-            }
-        }
-
-        return (0,0)
     }
 
     def insertMode(key:int) {
@@ -269,23 +305,33 @@ class ViClone
             ### delete Back word ###
             case (('W'-'A').to_int+1) {
                 line := texts.items(getRealPosY());
+                
+                real_pos_y := getRealPosY();
+                real_pos_x := getRealPosX();
 
-                (x, y, scroll_y) := backwardWord(-1);
+                (y, x) := backwardWord(-1);
                 
                 if(line != null) {
-                    if(y < cursorY) {
-                        line.setValue(""); 
-                        cursorX = 0;
-                    } 
-                    else { 
-                        (cursorX - x).times { 
-                            line.delete(cursorX-1);
-                            cursorX--; 
+                    if(y == real_pos_y) {
+                        (real_pos_x - x).times { 
+                            line.delete(getRealPosX()-1);
                         }
+                        makeVisibleTexts();
+                        moveCursor(y, x);
                     } 
+                    elif(y < real_pos_y) {
+                        for(i:=real_pos_y; i>y; i--) {
+                            line = texts.items(i);
+                            line.setValue("");
+                        }
+                        
+                        line = texts.items(i);
+                        
+                        line.delete(x, -1);
+                        makeVisibleTexts();
+                        moveCursor(y, x);
+                    }
                 } 
-                
-                makeVisibleTexts();
             }
 
             case ('\n'.to_int) {

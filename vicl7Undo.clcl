@@ -41,25 +41,29 @@ class ViClone
             if(undoIndex > 0) {
                 undoIndex--;
                 texts = undoTexts.items(undoIndex).split(/\n/);
+    
+                makeVisibleTexts();
                 
                 (scrollTopY, cursorY, cursorX) = undoCurosrPosition.items(undoIndex);
 
                 fixCursorAndScrollTop(scrollTopY);
+                
+                makeVisibleTexts()
             }
-
-            makeVisibleTexts();
         }
         keyEvents[('R'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {
             if(undoIndex < undoTexts.length()-1) {
                 undoIndex++;
                 texts = undoTexts.items(undoIndex).split(/\n/);
+    
+                makeVisibleTexts();
                 
                 (scrollTopY, cursorY, cursorX) = undoCurosrPosition.items(undoIndex);
 
                 fixCursorAndScrollTop(scrollTopY);
+                
+                makeVisibleTexts()
             }
-
-            makeVisibleTexts();
         }
     }
 }

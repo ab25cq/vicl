@@ -6,25 +6,22 @@ class ViClone
     var mode: int;
     var runningCurses:static bool;
 
-    enum { EDITMODE, INSERTMODE, COMMANDMODE, SEARCHMODE
-            , VISUALMODE, DIRMODE }
+    enum { EDITMODE, INSERTMODE, COMMANDMODE, SEARCHMODE, VISUALMODE, DIRMODE }
 
-    var fileName:String?;
-    var argmentLineNum:int;
+    argmentLineNum:int;
 
     def initialize() {
         endOfAplication = false;
 
         mode = EDITMODE;
 
-        keyEvents 
-            = new lambda[KEY_MAX](ViClone, int, int)();
+        keyEvents = new lambda[KEY_MAX](ViClone, int, int)();
 
         defaultKeyEvents();
 
         runningCurses = true;
-        setEscapeDelay(1);
         initscr();
+        setEscapeDelay(0);
         keypad(stdscr, true);
         #raw();
         #nodelay(stdscr, true);
@@ -54,33 +51,11 @@ class ViClone
             fileName = argv.items(2);
         }
         else {
-            throw 
-            Exception("vi clone can't edit multiple files");
+            throw Exception("vi clone can't edit multiple files");
         }
     }
 
     def getch(): int {
-/*
-        key := -1;
-        mask := fd_set();
-        read_ok := fd_set();
-
-        FD_ZERO(mask);
-        FD_SET(0, mask);
-        while(true) {
-            read_ok = mask.clone();
-        
-            result := select(FD_SETSIZE, read_ok, null, null, null);
-        
-            if(FD_ISSET(0, read_ok)) {
-                key := System.getch();
-                break;
-            }
-        }
-        
-        return key;
-*/
-
         return System.getch();
     }
 
@@ -89,10 +64,8 @@ class ViClone
         runningCurses = false;
     }
 
-    def inputStringLine(message:String
-                   , default_string:String=""):String 
-    {
-        var result := default_string.clone();
+    def inputStringLine(message:String, default_string:String=""):String  {
+        result := default_string.clone();
 
         while(true) {
             clearWithoutBlink();
@@ -102,7 +75,7 @@ class ViClone
 
             refresh();
 
-            var key := getch();
+            key := getch();
 
             when(key) {
                 case (('['-'A').to_int+1) {
@@ -125,21 +98,19 @@ class ViClone
     }
     # result is -1 --> canceled to select
     def selectStrings(message:String, strings:SortableList<String>):int {
-        var result = -1;
+        result := -1;
 
-        var cursor = 0;
-        var scroll_top = 0;
-        var maxy = getmaxy();
+        cursor := 0;
+        scroll_top := 0;
+        maxy := getmaxy();
 
         while(true) {
             clearWithoutBlink();
 
-            var n = 0;
+            n := 0;
             mvprintw(0, 0 , message);
 
-            strings.subList(scroll_top
-                    , scroll_top+maxy-1).each 
-            {
+            strings.subList(scroll_top, scroll_top+maxy-1).each  {
                 if(cursor == n) {
                     attron(A_REVERSE);
                     mvprintw(n+1, 0, it);
@@ -153,7 +124,7 @@ class ViClone
 
             refresh();
 
-            var key := getch();
+            key := getch();
 
             when(key) {
                 case (('['-'A').to_int+1, ('C'-'A').to_int + 1) {
@@ -206,45 +177,6 @@ class ViClone
         "\{getenv("HOME")}/.clover2/vicl/cpos/";
     } 
 
-    def writeToFile():bool {
-        if(fileName == null) {
-            fileName = inputStringLine("input file name:");
-            
-            if(access(fileName, F_OK) == 0) {
-                var n := selectStrings("overwite to \{fileName}?", slist { "yes", "no" });
-
-                if(n == 0) {
-                    if(access(fileName, W_OK) == 0) {
-                        texts.join("\n").write(fileName);
-                    }
-                    else {
-                        messageBox("permission denied \{fileName}");
-                        return false;
-                    }
-                }
-            }
-            else {
-                try {
-                    texts.join("\n").write(fileName);
-                }
-                catch(e:Exception) {
-                    messageBox("vicl can't write file. (\{fileName})");
-                    return false;
-                }
-            }
-        }
-        else {
-            if(access(fileName, W_OK) == 0) {
-                texts.join("\n").write(fileName);
-            }
-            else {
-                messageBox("permission denyed \{fileName}");
-                return false;
-            }
-        }
-
-        return true;
-    }
     def defaultKeyEvents() {
         keyEvents['Z'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             if(key2 == 'Z'.to_int) {
@@ -255,14 +187,6 @@ class ViClone
         }
     }
     
-    def openFile(file_name:String, line_num:int) {
-        writeToFile().if {
-            readFile(file_name);
-            scrollTopY = line_num-1;
-            cursorX = 0;
-            makeVisibleTexts();
-        }
-    }
     
     def insertText(text:String) {
         insert_texts := text.split(/\n/);

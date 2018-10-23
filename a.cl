@@ -1,26 +1,25 @@
 alnum
+str
 afalskdfaldjfaldkafa asdlfkadlfafjldaldkfa adslfaslafl aa strcmpalsdasdfalsdfsldfjsdfasfsadlfjlsdjfsdkfladfjadsfjsldfasfafdladflkdslflsdjflsdkjflsajfdaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa 
 1
 2
+aaaaa
+asdlkfsldfals asldkflasdflasd alsd lasdfj alsdfaldfjsala sd aslkdjl sds asdfasdfas
+
+adlfalsdfa lla ldals fla flafjlasd laslasd lkasdlasfalkflas aslf lasfkalsd flsalf lasalsalsjaljflasdfjals  alsdf lasfjlaslf lasaj lsdjfalslsjfl
+alsdkfdlsaj lasd jflasjlasd alslas
+asdlfsajl
+str
+12345 67890 12345
+
 3
 4
+alnum
 5
 6
 7
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa8zzzasdfakdlaldjadkjfladladjaldjfadsklaldakdladjslakdladladlallll
-9
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+9a sdfdsf asdfadf
+alnum
+str
+alnum

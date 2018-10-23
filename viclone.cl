@@ -27,7 +27,7 @@ while(!vicl.endOfAplication) {
 
     read_ok = mask.clone();
 
-    result := select(FD_SETSIZE, read_ok, null, null, null);
+    result := select(sockfd+1, read_ok, null, null, null);
 
     if(FD_ISSET(0, read_ok)) {
         key := System.getch();

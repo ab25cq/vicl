@@ -3,14 +3,14 @@ include "vicl1Lib.clcl"
 class ViClone
 {
     dirName:String;
-
-    fileNames: SortableList<String>;
     dirScrollTop: int;
     dirCursor:int; 
-    
     dirPaneLength: int; 
-    
     visibleDirPane: bool
+    fileNames: SortableList<String>;
+    
+    fileName:String?;
+    texts:SortableList<String>;
       
     def initialize() {
         inherit();
@@ -23,6 +23,27 @@ class ViClone
         dirPaneLength = maxx/6;
         
         changeDirectory(getcwd());
+    
+        readFile(fileName);
+    }
+
+    def writeToFile():bool {
+        if(fileName == null) {
+#            fileName = inputStringLine("input file name:");
+        }
+        else {
+            fname := dirName.clone().append("/").append(fileName);
+
+            if(access(fname, W_OK) == 0) {
+                texts.join("\n").write(fname);
+            }
+            else {
+                messageBox("permission denyed \{fileName}");
+                return false;
+            }
+        }
+
+        return true;
     }
     
     def changeDirectory(path:String) {
@@ -38,10 +59,10 @@ class ViClone
                     } 
                 }
                 else {
-                    var ext1 = it.toPath().extname(); 
-                    var ext2 = it2.toPath().extname(); 
+                    ext1 := it.toPath().extname(); 
+                    ext2 := it2.toPath().extname(); 
                     
-                    var comp = ext1.compare(ext2); 
+                    comp := ext1.compare(ext2); 
                      
                     if(comp == 0) {
                         return it.compare(it2); 
@@ -51,6 +72,9 @@ class ViClone
                     } 
                 } 
             } 
+
+        dirCursor = 0;
+        dirScrollTop = 0;
     } 
     
     def setDirCursor(fname:String) {
@@ -189,11 +213,41 @@ class ViClone
             case (('W'-'A').to_int+1,('['-'A').to_int+1) {
                 dirPaneOff(); 
             }
-            case ('\n'.to_int) {
+            case (('H'-'A').to_int+1, KEY_BACKSPACE) {
+                fpath := realpath(dirName.clone().append("/").append(".."));
                 writeToFile().if {
                     saveCursorPos();
-                    readFile(fileNames.items(dirScrollTop+dirCursor));
-                    dirPaneOff(); 
+                    changeDirectory(fpath);
+                    fileName = null;
+                    texts = SortableList<String>();
+                    texts.add("");
+                    makeVisibleTexts();
+                    fixCursorAndScrollTop(0);
+                }
+            }
+
+            case ('\n'.to_int) {
+                fname := fileNames.items(dirScrollTop+dirCursor);
+                fpath := dirName.clone().append("/").append(fname);
+                
+                if(fpath.toPath().to_stat().S_ISDIR())
+                {
+                    writeToFile().if {
+                        saveCursorPos();
+                        changeDirectory(fpath);
+                        fileName = null;
+                        texts = SortableList<String>();
+                        texts.add("");
+                        makeVisibleTexts();
+                        fixCursorAndScrollTop(0);
+                    }
+                }
+                else {
+                    writeToFile().if {
+                        saveCursorPos();
+                        readFile(fname);
+                        dirPaneOff(); 
+                    }
                 }
             }
             case ('/'.to_int) {
@@ -226,4 +280,101 @@ class ViClone
             dirMode(key);
         }
     }
+
+    def saveCursorPos() {
+        try {          
+            if(access(getCursorPositionDir(), X_OK) != 0) {
+                mkdir(getCursorPositionDir(), 0755);
+            }
+            
+            path := getCursorPositionDir().append(fileName);
+            (scrollTopY+cursorY+1).toString().write(path);
+        } catch(e:Exception) {
+        }         
+    }
+    
+    def readFile(fname:String?) {
+        file_path := dirName.clone().append("/").append(fname);
+        
+        if(fname == null) {
+            texts = SortableList<String>();
+            texts.add("");
+             
+            fileName = null;
+        }
+        elif(access(file_path, R_OK) == 0) {
+            texts = file_path.toPath().read().toString().split(/\n/);
+
+            if(texts.length() == 0) {
+                texts = SortableList<String>();
+                texts.add("");
+            }
+             
+            fileName = fname.clone();
+        }
+        else {
+            texts = SortableList<String>();
+            texts.add("");
+             
+            fileName = null;
+        }
+
+        var file_line_num = (getCursorPositionDir().append(fileName).toPath()?.read().toString():"-1").to_int();
+        cursorX = 0;
+        cursorY = 0;
+        scrollTopY = 0;
+        scrollTopX = 0;
+
+        makeMaxxy();
+        makeSpaces();
+        
+        makeVisibleTexts();
+
+        if(argmentLineNum == -1) {
+            argmentLineNum = file_line_num;
+        }
+
+        if(argmentLineNum != -1) {
+            argmentLineNum--;
+
+            if(argmentLineNum >= texts.length()) {
+                argmentLineNum = texts.length()-1;
+            }
+            if(argmentLineNum < 0) {
+                argmentLineNum = 0;
+            }
+
+            cursorY = argmentLineNum;
+
+            scrollTopY = cursorY - (MaxY-2) /2;
+            
+            cursorY -= scrollTopY;
+
+            if(scrollTopY < 0) {
+                cursorY += scrollTopY;
+                scrollTopY = 0;
+            }
+
+            fixCursorAndScrollTop(scrollTopY);
+
+            makeVisibleTexts();
+        }
+        
+        if(fileName != null) { 
+            setDirCursor(fileName); 
+        } 
+
+        argmentLineNum = -1;
+    
+        clearUndoText();
+    }
+    def openFile(file_name:String, line_num:int) {
+        writeToFile().if {
+            readFile(file_name);
+            scrollTopY = line_num-1;
+            cursorX = 0;
+            makeVisibleTexts();
+        }
+    }
+    
 }

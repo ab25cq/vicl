@@ -107,41 +107,24 @@ class ViClone
         keyEvents['%'.to_int] = lambda(self:ViClone, key:int, key2:int) { 
             c := getCursorChar();
 
-            line_num := -1;
-            cursor_num := -1;
+            y := -1;
+            x := -1;
             
             if(c == '(') {
-                (line_num, cursor_num) = forwardBrace('(', ')');
+                (y, x) = forwardBrace('(', ')');
             }
             elif(c == '{') {
-                (line_num, cursor_num) = forwardBrace('{', '}');
+                (y, x) = forwardBrace('{', '}');
             }
             elif(c == '}') {
-                (line_num, cursor_num) = backwordBrace('}', '{');
+                (y, x) = backwordBrace('}', '{');
             }
             elif(c == ')') {
-                (line_num, cursor_num) = backwordBrace(')', '(');
+                (y, x) = backwordBrace(')', '(');
             }
             
-            if(line_num != -1 && cursor_num != -1) 
-            {
-                y := line_num;
-                x := cursor_num;
-
-                if(y >= scrollTopY && y <= getRealPosYOfMaxY()) {
-                    (cursorY, cursorX) = realPosToViewPos(y, x);
-                }
-                else {
-                    scroll_size := (MaxY-1)/2;
-                    scrollTopY = getRealPosY() - scroll_size;
-
-                    fixCursorAndScrollTop(scrollTopY);
-                    makeVisibleTexts();
-
-                    (cursorY, cursorX) = realPosToViewPos(y, x);
-
-                    makeVisibleTexts();
-                }
+            if(y != -1 && y != -1)  {
+                moveCursor(y, x);
             } 
         }
     }

@@ -39,45 +39,20 @@ class ViClone
                     real_y := getRealPosY();
                     real_x := getRealPosX();
 
-                    (x,y, scrolltop_y) := forwardWord(0); 
+                    (y, x) := forwardWord(0); 
 
-                    try {
-                        (y2, x2, line_size2) := viewPosToRealPos(y, x);
-
-                        if(y2 != real_y) {
-                            y2 = real_y;
-                            x2 = -1;
-                        }
-
-                        line := texts.items(y2);
+                    if(y == real_y) {
+                        line := texts.items(real_y);
                         
-                        line.delete(real_x, x2);
+                        line.delete(real_x, x);
 
                         makeVisibleTexts();                     
                         fixCursorAndScrollTop(scrollTopY);
                     }
-                    catch (e:Exception) {
-                        cursorX = getRealPosX();
-                        scrollTopY = getRealPosY();
-                        cursorY = 0;
-
-                        makeVisibleTexts();
-                        fixCursorAndScrollTop(scrollTopY);
-                        real_y := getRealPosY();
-                        real_x := getRealPosX();
-
-                        (x,y, scrolltop_y) := forwardWord(0); 
-
-                        (y2, x2, line_size2) := viewPosToRealPos(y, x);
-
-                        if(y2 != real_y) {
-                            y2 = real_y;
-                            x2 = -1;
-                        }
-
-                        line := texts.items(y2);
+                    else {
+                        line := texts.items(real_y);
                         
-                        line.delete(real_x, x2);
+                        line.delete(real_x, -1);
 
                         makeVisibleTexts();                     
                         fixCursorAndScrollTop(scrollTopY);
