@@ -37,10 +37,6 @@ class ViClone
             if(access(fname, W_OK) == 0) {
                 texts.join("\n").write(fname);
             }
-            else {
-                messageBox("permission denyed \{fileName}");
-                return false;
-            }
         }
 
         return true;
@@ -48,6 +44,23 @@ class ViClone
     
     def changeDirectory(path:String) {
         dirName = path.clone();
+        rereadDir();
+    } 
+    
+    def setDirCursor(fname:String) {
+        dirCursor = fileNames.indexOf(fname).filter { if(it == -1) { 0 } else { it } };
+        
+        dirScrollTop = dirCursor - (MaxY-2) / 2; 
+        
+        dirCursor -= dirScrollTop;
+        
+        if(dirScrollTop < 0) {
+            dirCursor += dirScrollTop; 
+            dirScrollTop = 0; 
+        } 
+    } 
+    
+    def rereadDir() {
         fileNames = dirName.toPath().entries().map { it.toPath().basename().toString() }
             .sort {
                 if(it.chars(0) == '.') {
@@ -75,36 +88,32 @@ class ViClone
 
         dirCursor = 0;
         dirScrollTop = 0;
-    } 
-    
-    def setDirCursor(fname:String) {
-        dirCursor = fileNames.indexOf(fname).filter { if(it == -1) { 0 } else { it } };
-        
-        dirScrollTop = dirCursor - (MaxY-2) / 2; 
-        
-        dirCursor -= dirScrollTop;
-        
-        if(dirScrollTop < 0) {
-            dirCursor += dirScrollTop; 
-            dirScrollTop = 0; 
-        } 
-    } 
+    }
     
     def dirPaneOn() {
         mode = DIRMODE;
         visibleDirPane = true;
         maxx := getmaxx();
-        dirPaneLength = maxx/6;
+        dirPaneLength = maxx/2;
         makeMaxxy(); 
+        makeVisibleTexts()
+        clear();
+        view();
     } 
     
     def dirPaneOff() {
+        maxx := getmaxx();
+        dirPaneLength = maxx/6;
+        makeMaxxy(); 
 /*
         visibleDirPane = false;
         dirPaneLength = 0; 
         makeMaxxy(); 
 */
         mode = EDITMODE; 
+        makeVisibleTexts()
+        clear();
+        view();
     } 
 
     def defaultKeyEvents() {
@@ -252,7 +261,7 @@ class ViClone
             }
             case ('/'.to_int) {
                 endwin();
-                iclover2 -s 'a := grep("-ne", "", glob("*")).selector().scan(/^(.+):(\\d+)/); vicl_open_file(a.items(1), a.items(2))' -p 18 -c
+                iclover2 -s 'a := grep("-Ine", "", glob("*")).selector().scan(/^(.+):(\\d+)/); vicl_open_file(a.items(1), a.items(2))' -p 19 -c
                 initscr();
                 keypad(stdscr, true);
                 noecho();
@@ -263,6 +272,38 @@ class ViClone
                 initscr();
                 keypad(stdscr, true);
                 noecho();
+                rereadDir();
+            }
+            case ('c'.to_int) {
+                endwin();
+                fname := fileNames.items(dirScrollTop+dirCursor);
+                fpath := dirName.add("/").add(fname);
+                cmdline := "cp -r \{fpath} "
+                iclover2("-c", "--controlling-terminal", "-s", cmdline);
+                initscr();
+                keypad(stdscr, true);
+                noecho();
+                rereadDir();
+            }
+            case ('d'.to_int) {
+                endwin();
+                fname := fileNames.items(dirScrollTop+dirCursor);
+                fpath := dirName.add("/").add(fname);
+                cmdline := "rm -ir \{fpath} "
+                iclover2("-c", "--controlling-terminal", "-s", cmdline);
+                initscr();
+                keypad(stdscr, true);
+                noecho();
+                rereadDir();
+            }
+            case ('n'.to_int) {
+                endwin();
+                cmdline := "touch "
+                iclover2("-c", "--controlling-terminal", "-s", cmdline);
+                initscr();
+                keypad(stdscr, true);
+                noecho();
+                rereadDir();
             }
             case (':'.to_int) {
                 enterCommandMode();
@@ -368,13 +409,22 @@ class ViClone
     
         clearUndoText();
     }
-    def openFile(file_name:String, line_num:int) {
+    def openFile(file_path:String, line_num:int) {
         writeToFile().if {
+            file_path2 := "";
+            
+            try {
+                file_path2 = realpath(file_path);
+            }
+            catch(e:Exception) {
+            }
+            
+            dir_name := dirname(file_path2);
+            file_name := basename(file_path2);
+            changeDirectory(dir_name);
             readFile(file_name);
-            scrollTopY = line_num-1;
-            cursorX = 0;
-            makeVisibleTexts();
+            
+            gotoLine(line_num-1);
         }
     }
-    
 }

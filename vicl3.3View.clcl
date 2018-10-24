@@ -187,7 +187,7 @@ class ViClone
     }
     
     def makeSpaces() {
-        var maxx = getmaxx();
+        maxx := getmaxx();
 
         spaceString = " ".multiply(maxx);
     }
@@ -199,7 +199,15 @@ class ViClone
             mvprintw(i, 0, spaceString);
         }
     }
-
+    
+    def gotoLine(y:int) {
+        scrollTopY = y;
+        cursorX = 0;
+        cursorY = 0;
+        makeVisibleTexts();
+        
+    }
+    
     def view() {
         clearWithoutBlink(); 
         
@@ -251,7 +259,7 @@ class ViClone
 
        attron(A_REVERSE);
        try {
-           mvprintw(MaxY-1, 0, "%s %d %d undo(%d:%d) size(%d,%d) cursor(%d,%d) scroll(%d,%d)", array { (self.fileName?.nothing():""), scrollTopY+cursorY, scrollTopX+cursorX, undoIndex, undoTexts.length(), MaxX, MaxY, cursorX, cursorY, scrollTopX, scrollTopY });
+           mvprintw(MaxY-1, 0, "%s %d %d undo(%d:%d)", array { (self.fileName?.nothing():""), getRealPosY() + 1, getRealPosX(), undoIndex, undoTexts.length() });
        }
        catch (e:Exception) {
        }
@@ -263,7 +271,7 @@ class ViClone
             if(keyEvents[key] != null) {
                 var key2 := 0;
                 when(key) {
-                    case ('d'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int, 'z'.to_int) {
+                    case ('d'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int, 'z'.to_int, '['.to_int, ']'.to_int) {
                         key2 = getch();
                     }
                 }

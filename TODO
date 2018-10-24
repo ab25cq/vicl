@@ -7,8 +7,6 @@ gv
 
 word completion at the end of visible line occurs bug
 
-moving directory
-
 dt
 ct
 
@@ -17,6 +15,8 @@ ma `a
 
 method completion
 
---- end
+--- end ---
 #
 *
+
+moving directory

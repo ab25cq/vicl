@@ -71,8 +71,7 @@ class ViClone
         return y;
     }
 
-    def realPosToViewPos(y:int, x:int): Tuple2<Integer, Integer>
-    {
+    def realPosToViewPos(y:int, x:int): Tuple2<Integer, Integer> {
         for(i:=0; i<visibleTextsPos.length(); i++)
         {
             (y2, x2, line_num) := visibleTextsPos.items(i);
