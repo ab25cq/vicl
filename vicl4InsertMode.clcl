@@ -340,7 +340,7 @@ class ViClone
             }
             
             case (('X'-'A').to_int+1) {
-                clover2Completion();
+                completion();
             }
 
             case (('I'-'A').to_int+1) {
@@ -356,7 +356,12 @@ class ViClone
                         } 
                     }
                     else {
-                        completion();
+                        if(fileName.match(/.+\.cl/) || fileName.match(/.+\.clcl/)) {
+                            clover2Completion();
+                        }
+                        else {
+                            completion();
+                        }
                     }
                 }
                 

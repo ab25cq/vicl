@@ -1,0 +1,15 @@
+class ClassA {
+    a:int;
+    b:String;
+    
+    def initialize() {
+        a = 123;
+        b = "ABC";
+    }
+    
+    def method(a:int, b:String) {
+        a = 123;
+        c := a + b;
+        c.
+    }
+}

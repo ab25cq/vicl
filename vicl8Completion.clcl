@@ -75,10 +75,39 @@ class ViClone
     }
 
     def methodNameCompletion(line:String) {
-        line2 := line.scan(/\s*(.+)\..*$/).items(1);
+        source := "";
+        if(fileName.match(/.+\.clcl/)) {
+            (y, x) := getMethodDefinitionTop();
+            
+            source := "";
+            
+            line2 := texts.items(y);
+            source.append(line2.subString(x+1, -1));
+            source.append("\n");
+            
+            for(i:=y; i<getRealPosY(); i++) {
+                line2 = texts.items(i);
+                source.append(line2);
+                source.append("\n");
+            }
+            
+            line2 = texts.items(getRealPosY());
+            line2 = line2.scan(/\s*(.+)\..*$/).items(1);
+            source.append(line2);
+        }
+        else {
+            for(i:=0; i<getRealPosY(); i++) {
+                line2 := texts.items(i);
+                source.append(line2);
+                source.append("\n");
+            }
+            line2 := texts.items(i);
+            line2 = line2.scan(/^(.+)\..*$/).items(1);
+            source.append(line2);
+        }
         
-        type_name := line2.toCommand().tyclover2().toString();
-        
+        type_name := source.toCommand().tyclover2().toString();
+
         type_name2 := type_name.chomp();
         if(type_name2.match(/\s*(.+)\s*/)) {
             type_name2 = type_name2.scan(/\s*(.+)\s*/).items(0);
@@ -88,10 +117,21 @@ class ViClone
         
         class_name := boxing_type_name;
         if(boxing_type_name.match(/.+<.+>/)) {
-            class_name = boxing_type_name.scan(/(.+)<.+>/).items(0);
+            class_name = boxing_type_name.scan(/(.+)<.+>/).items(1);
         }
-        
-        klass := Class(class_name);
+
+        if(class_name.equals("")) {
+            messageBox("require type for Method name completion");
+            return; 
+        }
+
+        klass:Class? = null;
+        try {
+            klass = Class(class_name);
+        } catch(e:Exception) {
+            messageBox("class not found \{class_name}");
+            return;
+        }
 
         methods := klass.getMethods();
 
@@ -101,8 +141,12 @@ class ViClone
         }
 
         ### getting inputing word ###
+        start_i := getRealPosX()-1;
+        if(start_i >= line.length()) {
+            start_i = line.length()-1;
+        }
         inputing_text := "";
-        for(i:=getRealPosX()-1; i >= 0; i--) {
+        for(i:=start_i; i >= 0; i--) {
             if(line.chars(i).isalnum() || line.chars(i) == '_') 
             {
                 inputing_text.insert(0, line.chars(i)); 
@@ -125,8 +169,7 @@ class ViClone
             it.subString(0, MaxX-1) 
         }.select { 
             it.indexOf(inputing_text) == 0 && !it.equals(inputing_text)
-        }.sort()
-        .uniq();
+        }.sort().uniq();
 
         if(candidates.length() == 0) {
         }
