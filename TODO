@@ -1,5 +1,3 @@
-[[
-
 v finish visual mode after operator
 gv
 
@@ -10,13 +8,14 @@ word completion at the end of visible line occurs bug
 dt
 ct
 
-ma `a
-``
-
-method completion
+clover2 completion
 
 --- end ---
+[[
 #
 *
 
 moving directory
+
+ma `a
+``

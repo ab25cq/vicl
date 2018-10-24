@@ -265,6 +265,7 @@ class ViClone
                 initscr();
                 keypad(stdscr, true);
                 noecho();
+                raw();
             }
             case ('!'.to_int) {
                 endwin();
@@ -272,6 +273,7 @@ class ViClone
                 initscr();
                 keypad(stdscr, true);
                 noecho();
+                raw();
                 rereadDir();
             }
             case ('c'.to_int) {
@@ -283,6 +285,7 @@ class ViClone
                 initscr();
                 keypad(stdscr, true);
                 noecho();
+                raw();
                 rereadDir();
             }
             case ('d'.to_int) {
@@ -303,6 +306,7 @@ class ViClone
                 initscr();
                 keypad(stdscr, true);
                 noecho();
+                raw();
                 rereadDir();
             }
             case (':'.to_int) {

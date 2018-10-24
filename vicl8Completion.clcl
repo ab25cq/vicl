@@ -205,7 +205,11 @@ class ViClone
         line := texts.items(getRealPosY());
         
         ### getting inputing word ###
-        var inputing_text = "";
+        start_i := getRealPosX()-1;
+        if(start_i >= line.length()) {
+            start_i = line.length()-1;
+        }
+        inputing_text := "";
         for(i:=getRealPosX()-1; i >= 0; i--) {
             if(line.chars(i).isalnum() || line.chars(i) == '_') 
             {

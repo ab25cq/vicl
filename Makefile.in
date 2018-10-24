@@ -46,7 +46,7 @@ CLParser.oclcl: CLParser.clcl
 	if test -e CLParser.bc; then bclover2 CLParser.bc; fi
 
 ViClone.oclcl: vicl1Lib.clcl
-	cclover2 vicl11VisualMode.clcl
+	cclover2 vicl12grave.clcl
 	if test -e ViClone.bc; then bclover2 ViClone.bc; fi
 
 viclone.ocl: viclone.cl

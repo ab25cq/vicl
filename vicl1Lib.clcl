@@ -23,7 +23,7 @@ class ViClone
         initscr();
         setEscapeDelay(0);
         keypad(stdscr, true);
-        #raw();
+        raw();
         #nodelay(stdscr, true);
         noecho();
 
