@@ -8,7 +8,17 @@ word completion at the end of visible line occurs bug
 dt
 ct
 
-clover2 completion
+clcl method completion
+
+local variable completion
+
+Class Name completion
+
+Command Name completion
+
+inner method completion
+
+brace checking blink
 
 --- end ---
 [[

@@ -1,2 +1,2 @@
 a := slist { "1", "2", "3" }
-a.
+a.map { it.count() }.map { it.

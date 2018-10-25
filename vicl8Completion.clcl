@@ -44,7 +44,18 @@ class ViClone
 
         return (-1, -1)
     }
-    
+
+    def getInnerClassDefinitionName(): String {
+        for(i:=getRealPosY()-1; i>=0; i--) {
+            line := texts.items(i);
+
+            if(line.match(/class\s+[a-zA-Z0-9_]+/)) {
+                return line.scan(/class\s+([a-zA-Z0-9_]+)/).items(1);
+            }
+        }
+
+        return "";
+    }
     
     def defaultKeyEvents() {
         inherit();
@@ -73,27 +84,77 @@ class ViClone
             }
         }
     }
-
-    def methodNameCompletion(line:String) {
+    
+    def getSource(method_name_completion:bool):String {
         source := "";
         if(fileName.match(/.+\.clcl/)) {
             (y, x) := getMethodDefinitionTop();
             
-            source := "";
+            ### get argument variable ###
+            class_name := getInnerClassDefinitionName();
+            
+            source.append("self:\{class_name}? = null;\n");
+
+            for(i:=y; i>=0; i--) {
+                line2 := texts.items(i);
+                
+                if(line2.match(/def\s+(.+)\(.*\)/)) {
+                    line_arguments := line2.scan(/def\s+.+\((.*)\)/).items(1);
+                    
+                    variable_name := "";
+                    type_name := "";
+                    flag := true;
+                    for(i:=0; i<line_arguments.length(); i++) {
+                        c := line_arguments.chars(i);
+                        
+                        if(c == ':') {
+                            flag = false;
+                        }
+                        elif(c == ' ' || c == '\t') {
+                        }
+                        elif(c == ',') {
+                            boxing_type_name := Clover.primitiveClassToBoxingClass(type_name);
+                            source.append("\{variable_name}:\{boxing_type_name}? = null;");
+                            variable_name = "";
+                            type_name = "";
+                            flag = true;
+                        }
+                        else {
+                            if(flag) {
+                                variable_name.append(c);
+                            }
+                            else {
+                                type_name.append(c);
+                            }
+                        }
+                    }
+                    
+                    if(!type_name.equals("") && !variable_name.equals("")) {
+                        boxing_type_name := Clover.primitiveClassToBoxingClass(type_name);
+                        source.append("\{variable_name}:\{boxing_type_name}? = null;\n");
+                    }
+                }
+            }
             
             line2 := texts.items(y);
             source.append(line2.subString(x+1, -1));
             source.append("\n");
             
-            for(i:=y; i<getRealPosY(); i++) {
+            for(i=y+1; i<getRealPosY(); i++) {
                 line2 = texts.items(i);
                 source.append(line2);
                 source.append("\n");
             }
             
-            line2 = texts.items(getRealPosY());
-            line2 = line2.scan(/\s*(.+)\..*$/).items(1);
-            source.append(line2);
+            line2 = texts.items(i);
+
+            if(method_name_completion) {
+                line2 = line2.scan(/^(.+)\..*$/).items(1);
+                source.append(line2);
+            }
+            else {
+                source.append(line2);
+            }
         }
         else {
             for(i:=0; i<getRealPosY(); i++) {
@@ -102,11 +163,193 @@ class ViClone
                 source.append("\n");
             }
             line2 := texts.items(i);
-            line2 = line2.scan(/^(.+)\..*$/).items(1);
-            source.append(line2);
+            if(method_name_completion) {
+                line2 = line2.scan(/^(.+)\..*$/).items(1);
+                source.append(line2);
+            }
+            else {
+                source.append(line2);
+            }
         }
         
+        return source;
+    }
+
+    def localVariableCompletion():SortableList<String> {
+        local_variables := SortableList<String>();
+
+        source := getSource(false);
+        
+        n := 0;
+        list1 := source.scan(/\s*([a-zA-Z0-9_]+)\s*:=/).select { n++; n % 2 == 0; }
+        local_variables.append(list1);
+        n = 0;
+        list2 := source.scan(/\s*([a-zA-Z0-9_]+)\s*:/).select { n++; n % 2 == 0; }
+        local_variables.append(list2);
+        n = 0;
+        list3 := source.scan(/\s*var\s+([a-zA-Z0-9_]+)/).select{ n++; n % 2 == 0 }
+        local_variables.append(list3);
+
+        return local_variables.sort().uniq();
+    }
+
+    def skipBlock(line_num:int):int {
+        p := texts.subList(line_num, -1).join("\n").toBuffer();
+        p.append('\0');
+
+        squote := false;
+        dquote := false;
+        regex_flag := false;
+
+        nest := 0;
+        while(p->byte != '\0') {
+            if(p->byte == '\n') {
+                line_num++;
+                p++;
+            }
+            elif(!squote && !dquote && p->byte == '/') {
+                regex_flag = !regex_flag;
+                p++;
+            }
+            elif(!squote && !regex_flag && p->byte == '"') {
+                dquote = !dquote;
+                p++;
+            }
+            elif(!dquote && !regex_flag && p->byte == '\'') {
+                squote = !squote;
+                p++;
+            }
+            elif(squote || dquote || regex_flag) {
+                p++;
+            }
+            elif(p->byte == '{') {
+                p++
+                nest++;
+            }
+            elif(p->byte == '}') {
+                p++;
+                if(nest == 1) {
+                    return line_num;
+                }
+                nest--;
+            }
+            else {
+                p++;
+            }
+        }
+
+        return -1;
+    }
+
+    def innerFieldsCompletion(): SortableList<String> {
+        inner_fields := SortableList<String>();
+        inner_class_name := getInnerClassDefinitionName();
+
+        inner_class_flag := false;
+        for(i:=0; i<texts.length(); i++) {
+            line := texts.items(i);
+
+            if(line.match(/class\s+[a-zA-Z0-9_]+/)) {
+                class_name := line.scan(/class\s+([a-zA-Z0-9_]+)/).items(1);
+
+                if(inner_class_name.equals(class_name)) {
+                    inner_class_flag = true;
+                }
+                else {
+                    inner_class_flag = false;
+                }
+            }
+
+            if(inner_class_flag) {
+                if(line.match(/def\s+[a-zA-Z0-9_]+\(/)) {
+                    ### skip block ###
+                    n := skipBlock(i);
+                    if(n == -1) {
+                        break;
+                    }
+
+                    i = n + 1;
+                }
+                elif(line.match(/[a-zA-Z0-9_]+:[a-zA-Z0-9_]+/)) {
+                    field_name := line.scan(/([a-zA-Z0-9_]+):[a-zA-Z0-9_]+/).items(1);
+
+                    inner_fields.add(field_name);
+                }
+                elif(line.match(/var\s+[a-zA-Z0-9_]+\s*:/)) {
+                    field_name := line.scan(/var\s+([a-zA-Z0-9_]+)\s*:/).items(1);
+
+                    inner_fields.add(field_name);
+                }
+            }
+        }
+
+        return inner_fields;
+    }
+
+    def innerMethodCompletion(): SortableList<String> {
+        inner_methods := SortableList<String>();
+        inner_class_name := getInnerClassDefinitionName();
+
+        inner_class_flag := false;
+        for(i:=0; i<texts.length(); i++) {
+            line := texts.items(i);
+
+            if(line.match(/class\s+[a-zA-Z0-9_]+/)) {
+                class_name := line.scan(/class\s+([a-zA-Z0-9_]+)/).items(1);
+
+                if(inner_class_name.equals(class_name)) {
+                    inner_class_flag = true;
+                }
+                else {
+                    inner_class_flag = false;
+                }
+            }
+
+            if(inner_class_flag) {
+                if(line.match(/def\s+[a-zA-Z0-9_]+\(.*\)/)) {
+                    method_name := line.scan(/def\s+([a-zA-Z0-9_]+\(.*\))/).items(1);
+
+                    inner_methods.add(method_name);
+
+                    ### skip block ###
+                    n := skipBlock(i);
+                    if(n == -1) {
+                        break;
+                    }
+
+                    i = n + 1;
+                }
+            }
+        }
+
+        return inner_methods;
+    }
+    
+    def topLevelCompletion() {
+        words := SortableList<String>();
+
+        local_variables := localVariableCompletion();
+        words.append(local_variables);
+
+        if(fileName.match(/.+\.clcl$/)) {
+            inner_fields := innerFieldsCompletion();
+            words.append(inner_fields);
+
+            inner_methods := innerMethodCompletion();
+            words.append(inner_methods);
+        }
+        
+        completion_core(words);
+    }
+
+    def methodNameCompletion(line:String) {
+        source := getSource(true);
+        
+"source \{source}\n".write("XXX", true);
+        
         type_name := source.toCommand().tyclover2().toString();
+
+"type_name \{type_name}\n".write("XXX", true);
 
         type_name2 := type_name.chomp();
         if(type_name2.match(/\s*(.+)\s*/)) {
@@ -116,8 +359,12 @@ class ViClone
         boxing_type_name := Clover.primitiveClassToBoxingClass(type_name2);
         
         class_name := boxing_type_name;
-        if(boxing_type_name.match(/.+<.+>/)) {
-            class_name = boxing_type_name.scan(/(.+)<.+>/).items(1);
+        if(class_name.match(/.+<.+>/)) {
+            class_name = class_name.scan(/(.+)<.+>/).items(1);
+        }
+        
+        if(class_name.match(/.+\?/)) {
+            class_name = class_name.scan(/(.+)\?/).items(1);
         }
 
         if(class_name.equals("")) {
@@ -133,13 +380,21 @@ class ViClone
             return;
         }
 
+"class_name \{class_name}\n".write("XXX", true);
+
         methods := klass.getMethods();
 
         words := SortableList<String>();
         methods.each {
             words.add(it.methodNameAndParams);
         }
-
+        
+        completion_core(words);
+    }
+        
+    def completion_core(words:SortableList<String>) {
+        line := texts.items(getRealPosY());
+        
         ### getting inputing word ###
         start_i := getRealPosX()-1;
         if(start_i >= line.length()) {
@@ -147,70 +402,6 @@ class ViClone
         }
         inputing_text := "";
         for(i:=start_i; i >= 0; i--) {
-            if(line.chars(i).isalnum() || line.chars(i) == '_') 
-            {
-                inputing_text.insert(0, line.chars(i)); 
-            }
-            elif(line.chars(i) == '\.') {
-                break;
-            }
-            else {
-                break; 
-            } 
-        }
-        if(i < 0) {
-            i = 0;
-        }
-        else {
-            i++;
-        }
-
-        candidates := words.map { 
-            it.subString(0, MaxX-1) 
-        }.select { 
-            it.indexOf(inputing_text) == 0 && !it.equals(inputing_text)
-        }.sort().uniq();
-
-        if(candidates.length() == 0) {
-        }
-        elif(candidates.length() == 1) {
-            selected_string := candidates.items(0).scan(/^(.+\()/).items(1);
-
-            line.delete(i, getRealPosX()); 
-            line.insert(i, selected_string);
-            cursorX += selected_string.length() - (getRealPosX() - i)
-        }
-        else {
-            index := selectStrings(line.subString(0, MaxX-1), candidates);
-
-            if(index != -1) {
-                selected_string := candidates.items(index).scan(/^(.+\()/).items(1);
-                line.delete(i, getRealPosX());
-                line.insert(i, selected_string);
-                cursorX += selected_string.length() - (getRealPosX() - i)
-            }
-        }
-    }
-    
-    def clover2Completion() {
-        line := texts.items(getRealPosY());
-        
-        if(line.match(/(.+)\..*/)) {
-            methodNameCompletion(line);
-        }
-    }
-    
-    def completion() {
-        words := texts.join("\n").scan(/[a-zA-Z_]+/);
-        line := texts.items(getRealPosY());
-        
-        ### getting inputing word ###
-        start_i := getRealPosX()-1;
-        if(start_i >= line.length()) {
-            start_i = line.length()-1;
-        }
-        inputing_text := "";
-        for(i:=getRealPosX()-1; i >= 0; i--) {
             if(line.chars(i).isalnum() || line.chars(i) == '_') 
             {
                 inputing_text.insert(0, line.chars(i)); 
@@ -238,6 +429,10 @@ class ViClone
         elif(candidates.length() == 1) {
             selected_string := candidates.items(0);
 
+            if(selected_string.match(/.+\(/)) {
+                selected_string = selected_string.scan(/(.+)\(/).items(1);
+            }
+
             line.delete(i, getRealPosX()); 
             line.insert(i, selected_string);
             cursorX += selected_string.length() - (getRealPosX() - i)
@@ -247,10 +442,31 @@ class ViClone
 
             if(index != -1) {
                 selected_string := candidates.items(index);
+
+                if(selected_string.match(/.+\(/)) {
+                    selected_string = selected_string.scan(/(.+)\(/).items(1);
+                }
+
                 line.delete(i, getRealPosX());
                 line.insert(i, selected_string);
                 cursorX += selected_string.length() - (getRealPosX() - i)
             }
         }
     } 
+    
+    def clover2Completion() {
+        line := texts.items(getRealPosY());
+        
+        if(line.match(/(.+)\..*/)) {
+            methodNameCompletion(line);
+        }
+        else {
+            topLevelCompletion();
+        }
+    }
+    
+    def completion() {
+        words := texts.join("\n").scan(/[a-zA-Z_]+/);
+        completion_core(words)
+    }  
 }
