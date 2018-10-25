@@ -8,15 +8,11 @@ word completion at the end of visible line occurs bug
 dt
 ct
 
-clcl method completion
-
-local variable completion
+inner method completion with include
 
 Class Name completion
 
 Command Name completion
-
-inner method completion
 
 brace checking blink
 
@@ -29,3 +25,7 @@ moving directory
 
 ma `a
 ``
+
+local variable completion
+
+inner method completion
