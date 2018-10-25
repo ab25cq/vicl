@@ -345,11 +345,7 @@ class ViClone
     def methodNameCompletion(line:String) {
         source := getSource(true);
         
-"source \{source}\n".write("XXX", true);
-        
         type_name := source.toCommand().tyclover2().toString();
-
-"type_name \{type_name}\n".write("XXX", true);
 
         type_name2 := type_name.chomp();
         if(type_name2.match(/\s*(.+)\s*/)) {
@@ -379,8 +375,6 @@ class ViClone
             messageBox("class not found \{class_name}");
             return;
         }
-
-"class_name \{class_name}\n".write("XXX", true);
 
         methods := klass.getMethods();
 
