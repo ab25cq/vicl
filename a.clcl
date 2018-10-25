@@ -1,3 +1,5 @@
+include "b.clcl"
+
 class ClassCloverTest {
     abc:int;
     bcd:String;
@@ -44,5 +46,6 @@ class ClassCloverTest2 {
     
     def method(xyz:int) {
         ggg := "";
+        
     }
 }

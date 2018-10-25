@@ -1,0 +1,15 @@
+class ClassCloverTest {
+    ZZZ:List<String>;
+
+    def getZZZ():List<String> {
+        return ZZZ
+    }
+}
+
+class ClassCloverTest2 {
+    YYY:Path;
+
+    def getYYY():Path {
+        return YYY;
+    }
+}

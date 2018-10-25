@@ -49,8 +49,8 @@ class ViClone
         for(i:=getRealPosY()-1; i>=0; i--) {
             line := texts.items(i);
 
-            if(line.match(/class\s+[a-zA-Z0-9_]+/)) {
-                return line.scan(/class\s+([a-zA-Z0-9_]+)/).items(1);
+            if(line.match(/^class\s+[a-zA-Z0-9_]+/)) {
+                return line.scan(/^class\s+([a-zA-Z0-9_]+)/).items(1);
             }
         }
 
@@ -93,7 +93,7 @@ class ViClone
             ### get argument variable ###
             class_name := getInnerClassDefinitionName();
             source.append("self:\{class_name}? = null;\n");
-
+            
             for(i:=y; i>=0; i--) {
                 line2 := texts.items(i);
                 
@@ -189,7 +189,7 @@ class ViClone
         n = 0;
         list3 := source.scan(/\s*var\s+([a-zA-Z0-9_]+)/).select{ n++; n % 2 == 0 }
         local_variables.append(list3);
-
+        
         return local_variables.sort().uniq();
     }
 
@@ -241,13 +241,21 @@ class ViClone
         return -1;
     }
 
-    def innerFieldsCompletion(): SortableList<String> {
-        inner_fields := SortableList<String>();
-        inner_class_name := getInnerClassDefinitionName();
-
+    def innerFieldsCompletion(source:SortableList<String>, inner_fields:SortableList<String>, inner_class_name:String) 
+    {
         inner_class_flag := false;
-        for(i:=0; i<texts.length(); i++) {
-            line := texts.items(i);
+        for(i:=0; i<source.length(); i++) {
+            line := source.items(i);
+
+/*
+            if(line.match(/include ".+"/)) {
+                file_name := line.scan(/include "(.+)"/).items(1);
+
+                source2 := file_name.toPath().read().toString().split(/\n/);
+
+                innerFieldsCompletion(source2, inner_fields, inner_class_name);
+            }
+*/
 
             if(line.match(/class\s+[a-zA-Z0-9_]+/)) {
                 class_name := line.scan(/class\s+([a-zA-Z0-9_]+)/).items(1);
@@ -282,17 +290,23 @@ class ViClone
                 }
             }
         }
-
-        return inner_fields;
     }
 
-    def innerMethodCompletion(): SortableList<String> {
-        inner_methods := SortableList<String>();
-        inner_class_name := getInnerClassDefinitionName();
-
+    def innerMethodCompletion(source:SortableList<String>, inner_methods:SortableList<String>, inner_class_name:String): SortableList<String> 
+    {
         inner_class_flag := false;
-        for(i:=0; i<texts.length(); i++) {
-            line := texts.items(i);
+        for(i:=0; i<source.length(); i++) {
+            line := source.items(i);
+
+/*
+            if(line.match(/include ".+"/)) {
+                file_name := line.scan(/include "(.+)"/).items(1);
+
+                source2 := file_name.toPath().read().toString().split(/\n/);
+
+                innerMethodCompletion(source2, inner_methods, inner_class_name);
+            }
+*/
 
             if(line.match(/class\s+[a-zA-Z0-9_]+/)) {
                 class_name := line.scan(/class\s+([a-zA-Z0-9_]+)/).items(1);
@@ -310,7 +324,7 @@ class ViClone
                     method_name := line.scan(/def\s+([a-zA-Z0-9_]+\(.*\))/).items(1);
 
                     inner_methods.add(method_name);
-
+                    
                     ### skip block ###
                     n := skipBlock(i);
                     if(n == -1) {
@@ -321,22 +335,42 @@ class ViClone
                 }
             }
         }
-
-        return inner_methods;
     }
     
     def topLevelCompletion() {
         words := SortableList<String>();
-
+        
         local_variables := localVariableCompletion();
         words.append(local_variables);
-
+        
         if(fileName.match(/.+\.clcl$/)) {
-            inner_fields := innerFieldsCompletion();
-            words.append(inner_fields);
+            inner_class_name := getInnerClassDefinitionName();
 
-            inner_methods := innerMethodCompletion();
+            class_name := Clover.primitiveClassToBoxingClass(inner_class_name);
+        
+            klass:Class? = null;
+            try {
+                klass = Class(class_name);
+            } catch(e:Exception) {
+                messageBox("class not found \{class_name}");
+                return;
+            }
+
+            inner_methods := SortableList<String>();
+            methods := klass.getMethods();
+            for(i:=0; i<methods.length(); i++) {
+                method := methods.items(i);
+                inner_methods.add(method.methodNameAndParams);
+            }
             words.append(inner_methods);
+
+            inner_fields := SortableList<String>();
+            fields := klass.getFields();
+            for(i=0; i<fields.length(); i++) {
+                field := fields.items(i);
+                inner_fields.add(field.name);
+            }
+            words.append(inner_fields);
         }
         
         completion_core(words);
@@ -344,7 +378,7 @@ class ViClone
 
     def methodNameCompletion(line:String) {
         source := getSource(true);
-
+        
         type_name := "";
         if(fileName.match(/.+\.clcl/)) {
             class_name := getInnerClassDefinitionName();
