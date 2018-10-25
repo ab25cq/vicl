@@ -31,7 +31,18 @@ class ClassCloverTest {
         
         test1 := "ABC";
         lelolelo := "ABC";
-        
-        self
+    }
+}
+
+class ClassCloverTest2 {
+    GGG:int;
+    HHH:String;
+    
+    def getInt():int {
+        return 123;
+    }
+    
+    def method(xyz:int) {
+        ggg := "";
     }
 }

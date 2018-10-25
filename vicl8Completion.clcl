@@ -92,7 +92,6 @@ class ViClone
             
             ### get argument variable ###
             class_name := getInnerClassDefinitionName();
-            
             source.append("self:\{class_name}? = null;\n");
 
             for(i:=y; i>=0; i--) {
@@ -133,6 +132,7 @@ class ViClone
                         boxing_type_name := Clover.primitiveClassToBoxingClass(type_name);
                         source.append("\{variable_name}:\{boxing_type_name}? = null;\n");
                     }
+                    break;
                 }
             }
             
@@ -344,17 +344,28 @@ class ViClone
 
     def methodNameCompletion(line:String) {
         source := getSource(true);
-        
-        type_name := source.toCommand().tyclover2().toString();
 
-        type_name2 := type_name.chomp();
-        if(type_name2.match(/\s*(.+)\s*/)) {
-            type_name2 = type_name2.scan(/\s*(.+)\s*/).items(0);
+        type_name := "";
+        if(fileName.match(/.+\.clcl/)) {
+            class_name := getInnerClassDefinitionName();
+
+            if(class_name.equals("")) {
+                type_name = source.toCommand().tyclover2().toString().chomp();
+            }
+            else {
+                type_name = source.toCommand().tyclover2(class_name).toString().chomp();
+            }
+        }
+        else {
+            type_name = source.toCommand().tyclover2().toString().chomp();
+        }
+
+        if(type_name.match(/\s*(.+)\s*/)) {
+            type_name = type_name.scan(/\s*(.+)\s*/).items(0);
         }
         
-        boxing_type_name := Clover.primitiveClassToBoxingClass(type_name2);
+        class_name := Clover.primitiveClassToBoxingClass(type_name);
         
-        class_name := boxing_type_name;
         if(class_name.match(/.+<.+>/)) {
             class_name = class_name.scan(/(.+)<.+>/).items(1);
         }
@@ -364,7 +375,7 @@ class ViClone
         }
 
         if(class_name.equals("")) {
-            messageBox("require type for Method name completion");
+            messageBox("require type for Method name completion. Maybe not compiled this source file");
             return; 
         }
 
@@ -385,7 +396,7 @@ class ViClone
         
         completion_core(words);
     }
-        
+
     def completion_core(words:SortableList<String>) {
         line := texts.items(getRealPosY());
         
