@@ -176,8 +176,6 @@ class ViClone
         source = source.sub(regex "#.+\n"g, "").sub(/\n/g, " ")
         source = source.sub(/\/\*.+\*\//g, "")
         
-"source (\{source})".write("XXX", true);
-        
         return source;
     }
 
