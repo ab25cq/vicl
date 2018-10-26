@@ -172,6 +172,12 @@ class ViClone
             }
         }
         
+        ### remove comment ###
+        source = source.sub(regex "#.+\n"g, "").sub(/\n/g, " ")
+        source = source.sub(/\/\*.+\*\//g, "")
+        
+"source (\{source})".write("XXX", true);
+        
         return source;
     }
 
@@ -246,7 +252,7 @@ class ViClone
         inner_class_flag := false;
         for(i:=0; i<source.length(); i++) {
             line := source.items(i);
-
+            
 /*
             if(line.match(/include ".+"/)) {
                 file_name := line.scan(/include "(.+)"/).items(1);
@@ -297,7 +303,7 @@ class ViClone
         inner_class_flag := false;
         for(i:=0; i<source.length(); i++) {
             line := source.items(i);
-
+            
 /*
             if(line.match(/include ".+"/)) {
                 file_name := line.scan(/include "(.+)"/).items(1);
@@ -337,11 +343,41 @@ class ViClone
         }
     }
     
+    def classNameCompletion():SortableList<String>
+    {
+        return tyclover2("--class").toString().split(/\n/)
+    }
+    
+    def commandNameCompletion():SortableList<String>
+    {
+        return tyclover2("--command").toString().split(/\n/)
+    }
+    
     def topLevelCompletion() {
         words := SortableList<String>();
         
         local_variables := localVariableCompletion();
         words.append(local_variables);
+        
+        class_names := classNameCompletion()
+        words.append(class_names);
+        
+/*
+        command_names := commandNameCompletion();
+        words.append(command_names);
+*/
+
+        words.append(slist { "if", "when", "while", "for", "break", "true", "false", "null", "wildcard", "throw", "try", "return", "new", "closure", "lambda", "var", "val", "def", "inherit", "unset", "list", "elist", "slist", "tuple", "hash", "array", "earray", "sarray" });
+        
+        klass := Class("Global");
+        methods := klass.getMethods();
+
+        global_methods := SortableList<String>();
+        for(i:=0; i<methods.length(); i++) {
+            method := methods.items(i);
+            global_methods.add(method.methodNameAndParams);
+        }
+        words.append(global_methods);
         
         if(fileName.match(/.+\.clcl$/)) {
             inner_class_name := getInnerClassDefinitionName();
@@ -375,7 +411,7 @@ class ViClone
         
         completion_core(words);
     }
-
+    
     def methodNameCompletion(line:String) {
         source := getSource(true);
         
@@ -420,10 +456,18 @@ class ViClone
             messageBox("class not found \{class_name}");
             return;
         }
-
+        
+        words := SortableList<String>();
         methods := klass.getMethods();
 
-        words := SortableList<String>();
+/*
+        if(class_name.equals("Command")) {
+            command_names := commandNameCompletion();
+
+            words.append(command_names);
+        }
+*/
+
         methods.each {
             words.add(it.methodNameAndParams);
         }
