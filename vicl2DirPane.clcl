@@ -263,17 +263,20 @@ class ViClone
                 endwin();
                 iclover2 -s 'a := grep("-Ine", "", glob("*")).selector().scan(/^(.+):(\\d+)/); vicl_open_file(a.items(1), a.items(2))' -p 19 -c
                 initscr();
+                setEscapeDelay(0);
                 keypad(stdscr, true);
-                noecho();
                 raw();
+                noecho();
             }
             case ('!'.to_int) {
                 endwin();
                 iclover2
                 initscr();
+                setEscapeDelay(0);
                 keypad(stdscr, true);
-                noecho();
                 raw();
+                noecho();
+
                 rereadDir();
             }
             case ('c'.to_int) {
@@ -283,9 +286,11 @@ class ViClone
                 cmdline := "cp -r \{fpath} "
                 iclover2("-c", "--controlling-terminal", "-s", cmdline);
                 initscr();
+                setEscapeDelay(0);
                 keypad(stdscr, true);
-                noecho();
                 raw();
+                noecho();
+
                 rereadDir();
             }
             case ('d'.to_int) {
@@ -295,8 +300,11 @@ class ViClone
                 cmdline := "rm -ir \{fpath} "
                 iclover2("-c", "--controlling-terminal", "-s", cmdline);
                 initscr();
+                setEscapeDelay(0);
                 keypad(stdscr, true);
+                raw();
                 noecho();
+
                 rereadDir();
             }
             case ('n'.to_int) {
@@ -304,9 +312,11 @@ class ViClone
                 cmdline := "touch "
                 iclover2("-c", "--controlling-terminal", "-s", cmdline);
                 initscr();
+                setEscapeDelay(0);
                 keypad(stdscr, true);
-                noecho();
                 raw();
+                noecho();
+
                 rereadDir();
             }
             case (':'.to_int) {
