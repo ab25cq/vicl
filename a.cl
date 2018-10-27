@@ -5,6 +5,20 @@ afalskdfaldjfaldkafa asdlfkadlfafjldaldkfa adslfaslafl aa strcmpalsdasdfalsdfsld
 2
 aaaaa
 asdlkfsldfals asldkflasdflasd alsd lasdfj alsdfaldfjsala sd aslkdjl sds asdfasdfas
+asdlkasflasdf asd fasldfaslaslkfa lsf a
+asdffs
+if(a == 1) {
+    c = 123;
+}
+else {
+    b = 123;
+}
+
+def main() {
+    println("HELLO WORLD");
+    println("HELLO WORLD");
+    println("HELLO WORLD");
+}
 
 adlfalsdfa lla ldals fla flafjlasd laslasd lkasdlasfalkflas aslf lasfkalsd flsalf lasalsalsjaljflasdfjals  alsdf lasfjlaslf lasaj lsdjfalslsjfl
 alsdkfdlsaj lasd jflasjlasd alslas

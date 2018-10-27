@@ -45,7 +45,6 @@ class ClassCloverTest2 {
     }
     
     def method(xyz:int) {
-        ggg := "";
-        
+        ggg := slist { 1,2,3 }
     }
 }

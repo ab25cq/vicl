@@ -85,7 +85,7 @@ class ViClone
         }
     }
     
-    def getSource(method_name_completion:bool):String {
+    def getSource():String {
         source := "";
         if(fileName.match(/.+\.clcl/)) {
             (y, x) := getMethodDefinitionTop();
@@ -147,14 +147,7 @@ class ViClone
             }
             
             line2 = texts.items(i);
-
-            if(method_name_completion) {
-                line2 = line2.scan(/^(.+)\..*$/).items(1);
-                source.append(line2);
-            }
-            else {
-                source.append(line2);
-            }
+            source.append(line2.subString(0, getRealPosX()));
         }
         else {
             for(i:=0; i<getRealPosY(); i++) {
@@ -163,13 +156,7 @@ class ViClone
                 source.append("\n");
             }
             line2 := texts.items(i);
-            if(method_name_completion) {
-                line2 = line2.scan(/^(.+)\..*$/).items(1);
-                source.append(line2);
-            }
-            else {
-                source.append(line2);
-            }
+            source.append(line2.subString(0, getRealPosX()));
         }
         
         ### remove comment ###
@@ -182,7 +169,7 @@ class ViClone
     def localVariableCompletion():SortableList<String> {
         local_variables := SortableList<String>();
 
-        source := getSource(false);
+        source := getSource();
         
         n := 0;
         list1 := source.scan(/\s*([a-zA-Z0-9_]+)\s*:=/).select { n++; n % 2 == 0; }
@@ -359,7 +346,12 @@ class ViClone
         
         class_names := classNameCompletion()
         words.append(class_names);
-        
+
+/*
+        class_names2 := getClassNameInSource();
+        words.append(class_names2);
+*/
+      
 /*
         command_names := commandNameCompletion();
         words.append(command_names);
@@ -409,9 +401,41 @@ class ViClone
         
         completion_core(words);
     }
+
+    def get_class_names(source:SortableList<String>, result:SortableList<String>)
+    {
+        for(i:=0; i<source.length(); i++) {
+            line := source.items(i);
+
+            if(line.match(/^class [a-zA-Z0-9_]+/)) {
+                class_name := line.scan(/^class ([a-zA-Z0-9_]+)/).items(1);
+
+                result.add(class_name);
+            }
+            if(line.match(/include ".+"/)) {
+                file_name := line.scan(/include "(.+)"/).items(1);
+
+                try {
+                    source2 := file_name.toPath().read().toString().split(/\n/);
+
+                    get_class_names(source2, result);
+                } catch(e:Exception) {
+                }
+            }
+        }
+    }
+
+    def getClassNameInSource():SortableList<String>
+    {
+        result := SortableList<String>();
+
+        get_class_names(texts, result);
+
+        return result;
+    }
     
     def methodNameCompletion(line:String) {
-        source := getSource(true);
+        source := getSource();
         
         type_name := "";
         if(fileName.match(/.+\.clcl/)) {
@@ -458,13 +482,11 @@ class ViClone
         words := SortableList<String>();
         methods := klass.getMethods();
 
-/*
         if(class_name.equals("Command")) {
             command_names := commandNameCompletion();
 
             words.append(command_names);
         }
-*/
 
         methods.each {
             words.add(it.methodNameAndParams);
