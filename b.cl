@@ -1,18 +1,3 @@
-if(true) {
-    println("HELLO WORLD");
-    println("AAA"); 
-    println("DDD"); 
-}
-else {
-    println("HELLO WORLD2"); 
-}
+aaa := { 1, 2, 3 }
 
-println(
-    "BBB"
-    , "DDD"
-    , "GGG" 
-    , "FFF" 
-    , "EEE" 
-    , "CCC"
-    , "DDD" 
-    , "EEE");
+aaa.map { hhh := "AAA"; iii := {"AAA", "BBB"}; kkk := {1,2,3}; kkk.map { ggg := "ABC"; 

@@ -1,3 +1,15 @@
+Command Name completion with cache
+
+Toplevel Command name completion
+
+shell mode completion
+
+file name completion
+
+Path expression completion
+
+brace checking blink
+
 v finish visual mode after operator
 gv
 
@@ -7,14 +19,6 @@ word completion at the end of visible line occurs bug
 
 dt
 ct
-
-inner method completion with include
-
-Class Name completion
-
-Command Name completion
-
-brace checking blink
 
 --- end ---
 [[

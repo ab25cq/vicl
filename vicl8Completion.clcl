@@ -167,21 +167,11 @@ class ViClone
     }
 
     def localVariableCompletion():SortableList<String> {
-        local_variables := SortableList<String>();
-
         source := getSource();
         
-        n := 0;
-        list1 := source.scan(/\s*([a-zA-Z0-9_]+)\s*:=/).select { n++; n % 2 == 0; }
-        local_variables.append(list1);
-        n = 0;
-        list2 := source.scan(/\s*([a-zA-Z0-9_]+)\s*:/).select { n++; n % 2 == 0; }
-        local_variables.append(list2);
-        n = 0;
-        list3 := source.scan(/\s*var\s+([a-zA-Z0-9_]+)/).select{ n++; n % 2 == 0 }
-        local_variables.append(list3);
-        
-        return local_variables.sort().uniq();
+        local_variables := source.toCommand().tyclover2("--lvar").toString().split(/\n/);
+
+        return local_variables;
     }
 
     def skipBlock(line_num:int):int {
@@ -560,7 +550,7 @@ class ViClone
     def clover2Completion() {
         line := texts.items(getRealPosY());
         
-        if(line.match(/(.+)\..*/)) {
+        if(line.match(/(.+)\.[a-zA-Z_]*$/)) {
             methodNameCompletion(line);
         }
         else {

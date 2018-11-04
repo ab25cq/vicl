@@ -1,6 +1,9 @@
 class ClassCloverTest {
     ZZZ:List<String>;
 
+    def initialize() {
+    }
+
     def getZZZ():List<String> {
         return ZZZ
     }
@@ -9,7 +12,14 @@ class ClassCloverTest {
 class ClassCloverTest2 {
     YYY:Path;
 
+    def initialize() {
+    }
+
     def getYYY():Path {
+        a := ClassCloverTest();
+        
+
+        
         return YYY;
     }
 }

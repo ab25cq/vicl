@@ -18,6 +18,7 @@ def main() {
     println("HELLO WORLD");
     println("HELLO WORLD");
     println("HELLO WORLD");
+    println("AAA");
 }
 
 adlfalsdfa lla ldals fla flafjlasd laslasd lkasdlasfalkflas aslf lasfkalsd flsalf lasalsalsjaljflasdfjals  alsdf lasfjlaslf lasaj lsdjfalslsjfl
