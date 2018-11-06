@@ -67,7 +67,7 @@ while(!vicl.endOfAplication) {
     }
 
     if(loop_num % 256 == 0) {
-        Clover.gc();
+#        Clover.gc();
         Clover.compaction();
     }
     

@@ -102,13 +102,14 @@ class ViClone
 
         cursor := 0;
         scroll_top := 0;
-        maxy := getmaxy();
+        maxy := getmaxy()-1;
+        maxx := getmaxx();
 
         while(true) {
             clearWithoutBlink();
 
             n := 0;
-            mvprintw(0, 0 , message);
+            mvprintw(0, 0 , message.subString(0, maxx-1));
 
             strings.subList(scroll_top, scroll_top+maxy-1).each  {
                 if(cursor == n) {

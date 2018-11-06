@@ -2,8 +2,11 @@ include "vicl7Undo.clcl"
 
 class ViClone
 {
+    completionCommandNames:SortableList<String>;
+    
     def initialize() {
         inherit();
+        completionCommandNames = tyclover2("--command").toString().split(/\n/)
     }
 
     def getMethodDefinitionTop(): Tuple2<Integer, Integer> {
@@ -325,7 +328,7 @@ class ViClone
     
     def commandNameCompletion():SortableList<String>
     {
-        return tyclover2("--command").toString().split(/\n/)
+        return completionCommandNames;
     }
     
     def topLevelCompletion() {
@@ -342,10 +345,8 @@ class ViClone
         words.append(class_names2);
 */
       
-/*
         command_names := commandNameCompletion();
         words.append(command_names);
-*/
 
         words.append(slist { "if", "when", "while", "for", "break", "true", "false", "null", "wildcard", "throw", "try", "return", "new", "closure", "lambda", "var", "val", "def", "inherit", "unset", "list", "elist", "slist", "tuple", "hash", "array", "earray", "sarray" });
         
@@ -389,7 +390,8 @@ class ViClone
             words.append(inner_fields);
         }
         
-        completion_core(words);
+        (inputing_text,j) := gettingInputingWord();
+        completion_core(inputing_text, j, words)
     }
 
     def get_class_names(source:SortableList<String>, result:SortableList<String>)
@@ -482,10 +484,197 @@ class ViClone
             words.add(it.methodNameAndParams);
         }
         
-        completion_core(words);
+        (inputing_text,i) := gettingInputingWord();
+        completion_core(inputing_text, i, words)
     }
 
-    def completion_core(words:SortableList<String>) {
+    def fileCompletion(line:String) {
+        p := line.toBuffer();
+        p += p.length() -1;
+
+        dquort := false;
+        squort := false;
+
+        while(p >= p.head()) {
+            if(p->byte == ' ' || p->byte == '\t') {
+                p++;
+                break;
+            }
+            elif(p->byte == '"') {
+                dquort = true;
+                p++;
+                break;
+            }
+            elif(p->byte == '\'') {
+                squort = true;
+                p++;
+                break;
+            }
+            else {
+                p--;
+            }
+        }
+
+        word := p.toStringFromPointedPoint();
+        i := p - p.head();
+
+        dir := dirname(word);
+
+        if(word.equals("/")) {
+            dir = "/";
+        }
+        elif(word.chars(-1) == '/') {
+            dir = word.subString(0, -2)
+        }
+
+        completion_success := false;
+        if(dir.equals(".")) {
+            words := p".".entries().map { it.subString(2, -1); }
+
+            completion_success = completion_core(word, i, words)
+        }
+        elif(dir.equals("/")) {
+            words := dir.toPath().entries().map { it.subString(dir.length(), -1) }
+
+            completion_success = completion_core(word.subString(dir.length(), -1), i+dir.length(), words);
+        }
+        else {
+            words := dir.toPath().entries().map { it.subString(dir.length()+1, -1) }
+
+            completion_success = completion_core(word.subString(dir.length()+1, -1), i+dir.length()+1, words);
+        }
+
+        if(completion_success) {
+            completionedFileName := line.subString(i, -1);
+
+            try {
+                if(completionedFileName.toPath().to_stat().S_ISDIR()) {
+                    line.append("/");
+                    cursorX++;
+                }
+                elif(squort) {
+                    line.append("' ");
+                    cursorX+=2;
+                }
+                elif(dquort) {
+                    line.append("\" ");
+                    cursorX+=2;
+                }
+                else {
+                    line.append(" ");
+                    cursorX++;
+                }
+            }
+            catch(e:Exception) {
+            }
+        }
+    }
+
+    def shellModeCompletion(line:String) {
+        command_name_completion := true;
+
+        p := line.toBuffer();
+        p.append('\0');
+
+        squort := false;
+        dquort := false;
+
+        while(p->byte == ' ' || p->byte == '\t') {
+            p++;
+        }
+
+        while(p->byte != '\0') {
+            if(p->byte == '\\') {
+                p++;
+                if(p->byte != '\0') {
+                    p++;
+                }
+            }
+            elif(!squort && p->byte == '"') {
+                dquort = !dquort;
+                p++;
+            }
+            elif(!dquort && p->byte == '\'') {
+                squort = !squort;
+                p++;
+            }
+            elif(squort || dquort) {
+                p++;
+            }
+            elif((p->byte == '|' && (p+1)->byte == '|')
+              || (p->byte == '&' && (p+1)->byte == '&'))
+            {
+                p += 2;
+                command_name_completion = true;
+
+                while(p->byte == ' ' 
+                    || p->byte == '\t') 
+                {
+                    p++;
+                }
+
+                while(p->byte != '\0') {
+                    if(p->byte == ' ' 
+                        || p->byte == '\t')
+                    {
+                        p++;
+                        command_name_completion = false;
+                        break;
+                    }
+                    else {
+                        p++;
+                    }
+                }
+
+            }
+            elif(p->byte == '|' || p->byte == ';') {
+                p++;
+                command_name_completion = true;
+
+                while(p->byte == ' ' 
+                    || p->byte == '\t') 
+                {
+                    p++;
+                }
+
+                while(p->byte != '\0') {
+                    if(p->byte == ' ' 
+                        || p->byte == '\t')
+                    {
+                        p++;
+                        command_name_completion = false;
+                        break;
+                    }
+                    else {
+                        p++;
+                    }
+                }
+
+            }
+            elif(p->byte == ' ' || p->byte == '\t') {
+                p++;
+                command_name_completion = false;
+            }
+            else {
+                p++;
+            }
+        }
+
+        if(command_name_completion) {
+            words := SortableList<String>();
+            command_names := commandNameCompletion();
+
+            words.append(command_names);
+
+            (inputing_text,i) := gettingInputingWord();
+            completion_core(inputing_text, i, words)
+        }
+        else {
+            fileCompletion(line);
+        }
+    }
+
+    def gettingInputingWord():Tuple2<String,Integer> {
         line := texts.items(getRealPosY());
         
         ### getting inputing word ###
@@ -510,12 +699,13 @@ class ViClone
             i++;
         }
 
-        candidates := words.map { 
-            it.subString(0, MaxX-1) 
-        }.select { 
-            it.indexOf(inputing_text) == 0 && !it.equals(inputing_text)
-        }.sort()
-        .uniq();
+        return (inputing_text, i);
+    }
+
+    def completion_core(inputing_text:String, i:int, words:SortableList<String>):bool {
+        line := texts.items(getRealPosY());
+        
+        candidates := words.select { it.indexOf(inputing_text) == 0 && !it.equals(inputing_text) }.sort().uniq();
 
         if(candidates.length() == 0) {
         }
@@ -533,7 +723,10 @@ class ViClone
         else {
             index := selectStrings(line.subString(0, MaxX-1), candidates);
 
-            if(index != -1) {
+            if(index == -1) {
+                return false;
+            }
+            else {
                 selected_string := candidates.items(index);
 
                 if(selected_string.match(/.+\(/)) {
@@ -545,12 +738,19 @@ class ViClone
                 cursorX += selected_string.length() - (getRealPosX() - i)
             }
         }
+
+        return true;
     } 
     
     def clover2Completion() {
         line := texts.items(getRealPosY());
         
-        if(line.match(/(.+)\.[a-zA-Z_]*$/)) {
+        is_shell_mode := line.toCommand().tyclover2("--shell").toString().chomp().equals("true");
+        
+        if(is_shell_mode) {
+            shellModeCompletion(line);
+        }
+        elif(line.match(/(.+)\.[a-zA-Z_]*$/)) {
             methodNameCompletion(line);
         }
         else {
@@ -560,6 +760,7 @@ class ViClone
     
     def completion() {
         words := texts.join("\n").scan(/[a-zA-Z_]+/);
-        completion_core(words)
+        (inputing_text,i) := gettingInputingWord();
+        completion_core(inputing_text, i, words)
     }  
 }
