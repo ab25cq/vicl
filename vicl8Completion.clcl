@@ -747,7 +747,12 @@ class ViClone
         
         is_shell_mode := line.toCommand().tyclover2("--shell").toString().chomp().equals("true");
         
-        if(is_shell_mode) {
+        path_name_completion := line.match(regex "p\".*$");
+        
+        if(path_name_completion) {
+            fileCompletion(line);
+        }
+        elif(is_shell_mode) {
             shellModeCompletion(line);
         }
         elif(line.match(/(.+)\.[a-zA-Z_]*$/)) {

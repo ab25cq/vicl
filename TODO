@@ -1,11 +1,3 @@
-Command Name completion with cache
-
-Toplevel Command name completion
-
-shell mode completion
-
-file name completion
-
 Path expression completion
 
 brace checking blink
@@ -13,12 +5,12 @@ brace checking blink
 v finish visual mode after operator
 gv
 
-.
-
 word completion at the end of visible line occurs bug
 
+t
 dt
 ct
+.
 
 --- end ---
 [[
@@ -33,3 +25,10 @@ ma `a
 local variable completion
 
 inner method completion
+
+shell mode completion
+
+file name completion
+
+Toplevel Command name completion
+Command Name completion with cache
