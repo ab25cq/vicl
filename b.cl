@@ -4,4 +4,6 @@ texts := { "a", "b", "c" };
 
 line := texts.items(0);
 
-1.toString().append("CCC");
+1.toString().append
+
+l

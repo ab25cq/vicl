@@ -1,11 +1,9 @@
-ct
+.
 
 v finish visual mode after operator
 gv
 
 word completion at the end of visible line occurs bug
-
-.
 
 --- end ---
 Path expression completion
@@ -31,3 +29,4 @@ Command Name completion with cache
 brace checking blink
 t
 dt
+
