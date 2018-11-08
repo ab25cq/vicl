@@ -252,7 +252,21 @@ class ViClone
                      
                     enterInsertMode();
                 }
-                case ('d'.to_int) {
+                case ('t'.to_int) {
+                    key3 := getch();
+
+                    (y, x) := findChar(key3.to_char);
+
+                    if(y != -1 && x != -1) {
+                        line := texts.items(getRealPosY());
+
+                        line.delete(getRealPosX(), x);
+
+                        makeVisibleTexts();                     
+                        fixCursorAndScrollTop(scrollTopY);
+                    }
+                     
+                    enterInsertMode();
                 }
             }
         }
@@ -260,6 +274,23 @@ class ViClone
             makeVisibleTexts()
             clear();
             view();
+        }
+        keyEvents['C'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            x := getRealPosX();
+            y := getRealPosY();
+
+            line := texts.items(y);
+
+            if(line.identifyWith(null).negative() && x < line.length()-1) {
+                addUndoText();
+
+                line.delete(x, -1);
+
+                makeVisibleTexts();
+                fixCursorAndScrollTop(scrollTopY);
+            }
+
+            enterInsertMode();
         }
     }
 
@@ -367,6 +398,7 @@ class ViClone
                 
                 makeVisibleTexts();
             }
+
             else {
                 (y, x, line_size) := viewPosToRealPos(cursorY, cursorX);
                 line := texts.items(y);
@@ -377,6 +409,11 @@ class ViClone
                         line.insert(x, c.toString());
 
                         makeVisibleTexts();
+                    
+                        if(key == '}' || key == ')')
+                        {
+                            blinkParen();
+                        }
                         cursorX++;
                         
                         fixCursorAndScrollTop(scrollTopY);

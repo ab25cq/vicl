@@ -18,7 +18,6 @@ class ClassCloverTest2 {
 
     def getYYY():Path {
         a := ClassCloverTest();
-        
         return YYY;
     }
 }

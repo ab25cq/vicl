@@ -426,7 +426,9 @@ class ViClone
         return result;
     }
     
-    def methodNameCompletion(line:String) {
+    def methodNameCompletion() {
+        line := texts.items(getRealPosY());
+
         source := getSource();
         
         type_name := "";
@@ -488,7 +490,9 @@ class ViClone
         completion_core(inputing_text, i, words)
     }
 
-    def fileCompletion(line:String) {
+    def fileCompletion() {
+        line := texts.items(getRealPosY());
+
         p := line.toBuffer();
         p += p.length() -1;
 
@@ -570,7 +574,9 @@ class ViClone
         }
     }
 
-    def shellModeCompletion(line:String) {
+    def shellModeCompletion() {
+        line := texts.items(getRealPosY());
+
         command_name_completion := true;
 
         p := line.toBuffer();
@@ -670,7 +676,7 @@ class ViClone
             completion_core(inputing_text, i, words)
         }
         else {
-            fileCompletion(line);
+            fileCompletion();
         }
     }
 
@@ -743,20 +749,20 @@ class ViClone
     } 
     
     def clover2Completion() {
-        line := texts.items(getRealPosY());
-        
+        line := getSource();
+
         is_shell_mode := line.toCommand().tyclover2("--shell").toString().chomp().equals("true");
         
         path_name_completion := line.match(regex "p\".*$");
         
         if(path_name_completion) {
-            fileCompletion(line);
+            fileCompletion();
         }
         elif(is_shell_mode) {
-            shellModeCompletion(line);
+            shellModeCompletion();
         }
         elif(line.match(/(.+)\.[a-zA-Z_]*$/)) {
-            methodNameCompletion(line);
+            methodNameCompletion();
         }
         else {
             topLevelCompletion();

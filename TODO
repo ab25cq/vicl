@@ -1,18 +1,14 @@
-Path expression completion
-
-brace checking blink
+ct
 
 v finish visual mode after operator
 gv
 
 word completion at the end of visible line occurs bug
 
-t
-dt
-ct
 .
 
 --- end ---
+Path expression completion
 [[
 #
 *
@@ -32,3 +28,6 @@ file name completion
 
 Toplevel Command name completion
 Command Name completion with cache
+brace checking blink
+t
+dt

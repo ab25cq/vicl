@@ -271,7 +271,7 @@ class ViClone
             if(keyEvents[key] != null) {
                 var key2 := 0;
                 when(key) {
-                    case ('d'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int, 'z'.to_int, '['.to_int, ']'.to_int, '`'.to_int, 'm'.to_int) 
+                    case ('d'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int, 'z'.to_int, '['.to_int, ']'.to_int, '`'.to_int, 'm'.to_int, 't'.to_int) 
                     {
                         key2 = getch();
                     }

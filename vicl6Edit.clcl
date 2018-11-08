@@ -2,6 +2,23 @@ include "vicl5CommandMode.clcl"
 
 class ViClone
 {
+    def findChar(key:char): Tuple2<Integer, Integer> 
+    {
+        y := getRealPosY();
+        line := texts.items(y);
+        
+        x := line.subString(getRealPosX()+1, -1).indexOf(key.toString());
+        
+        if(x != -1) {
+            x += getRealPosX() + 1;
+        }
+        else {
+            x = -1;
+            y = -1;
+        }
+        
+        return (y, x);
+    }
     def defaultKeyEvents() {
         inherit();
 
@@ -79,6 +96,20 @@ class ViClone
                     makeVisibleTexts();                     
                     fixCursorAndScrollTop(scrollTopY);
                 }
+                case ('t'.to_int) {
+                    key3 := getch();
+
+                    (y, x) := findChar(key3.to_char);
+
+                    if(y != -1 && x != -1) {
+                        line := texts.items(getRealPosY());
+
+                        line.delete(getRealPosX(), x);
+
+                        makeVisibleTexts();                     
+                        fixCursorAndScrollTop(scrollTopY);
+                    }
+                }
             }
         }
         keyEvents['x'.to_int] = lambda(self:ViClone, key:int, key2:int) {
@@ -110,6 +141,12 @@ class ViClone
 
                 makeVisibleTexts();
                 fixCursorAndScrollTop(scrollTopY);
+            }
+        }
+        keyEvents['t'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            (y, x) := findChar(key2.to_char);
+            if(y != -1 && x != -1) {
+                moveCursor(y, x);
             }
         }
         keyEvents['z'.to_int] = lambda(self:ViClone, key:int, key2:int) {

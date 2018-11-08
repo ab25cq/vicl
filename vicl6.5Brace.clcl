@@ -100,6 +100,37 @@ class ViClone
         
         return (line_num, cursor_num); 
     } 
+    
+    def blinkParen() {
+        2.times {
+            c := getCursorChar();
+    
+            y := -1;
+            x := -1;
+            
+            if(c == '(') {
+                (y, x) = forwardBrace('(', ')');
+            }
+            elif(c == '{') {
+                (y, x) = forwardBrace('{', '}');
+            }
+            elif(c == '}') {
+                (y, x) = backwordBrace('}', '{');
+            }
+            elif(c == ')') {
+                (y, x) = backwordBrace(')', '(');
+            }
+            
+            if(y != -1 && y != -1)  {
+                moveCursor(y, x);
+            } 
+            
+            view();
+            refresh();
+            
+            usleep(100000);
+        }
+    }
 
     def defaultKeyEvents() {
         inherit();
