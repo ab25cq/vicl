@@ -35,7 +35,7 @@ all: vicl
 vicl: CLParser.oclcl ViClone.oclcl viclone.ocl viclone_open_file.ocl viclone_insert_file.ocl Clover.oclcl preinstall 
 
 Clover.oclcl: Fundamental.clcl CLParser.clcl
-	cclover2 -core Fundamental.clcl
+	cclover2 Fundamental.clcl
 	if test -e Clover.bc; then bclover2 Clover.bc; fi
 
 CLParser.oclcl: CLParser.clcl
@@ -46,7 +46,7 @@ CLParser.oclcl: CLParser.clcl
 	if test -e CLParser.bc; then bclover2 CLParser.bc; fi
 
 ViClone.oclcl: vicl1Lib.clcl
-	cclover2 vicl12grave.clcl
+	cclover2 vicl13dot.clcl
 	if test -e ViClone.bc; then bclover2 ViClone.bc; fi
 
 viclone.ocl: viclone.cl
