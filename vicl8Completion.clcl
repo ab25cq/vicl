@@ -52,8 +52,11 @@ class ViClone
         for(i:=getRealPosY()-1; i>=0; i--) {
             line := texts.items(i);
 
-            if(line.match(/^(class|inherit)\s+[a-zA-Z0-9_]+/)) {
-                return line.scan(/^(class|inherit)\s+([a-zA-Z0-9_]+)/).items(1);
+            if(line.match(/^class\s+[a-zA-Z0-9_]+/)) {
+                return line.scan(/^class\s+([a-zA-Z0-9_]+)/).items(1);
+            }
+            if(line.match(/^inherit\s+[a-zA-Z0-9_]+/)) {
+                return line.scan(/^inherit\s+([a-zA-Z0-9_]+)/).items(1);
             }
         }
 
