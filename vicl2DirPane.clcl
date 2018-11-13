@@ -146,6 +146,47 @@ class ViClone
             } 
         } 
     } 
+    
+    def dirPaneIncrementalSearch() {
+        maxy := getmaxy();
+
+        status_line_in_search_mode := "";
+
+        end_flag := false;
+        
+        while(!end_flag) {
+            view();
+            mvprintw(maxy-1, 0, "/%s", array { status_line_in_search_mode });
+            refresh();
+
+            key := getch();
+            
+            when(key) {
+                case (('J' - 'A').to_int +1) {
+                    end_flag;
+                }
+                case (('H' - 'A').to_int + 1) {
+                    if(status_line_in_search_mode.length() > 0) {
+                        status_line_in_search_mode.delete(-2, -1);
+                    }
+                }
+                else {
+                    status_line_in_search_mode.append(key.to_char);
+                    
+                    n := 0;
+                    fileNames.each {
+                        if(it.indexOf(status_line_in_search_mode) != -1) {
+                            dirScrollTop = n;
+                            dirCursor = 0;
+                            end_flag = true;
+                        }
+                        
+                        n++;
+                    }
+                }
+            }
+        }
+    }
 
     def dirMode(key:int) {
         when(key) {
@@ -260,6 +301,9 @@ class ViClone
                 }
             }
             case ('/'.to_int) {
+                dirPaneIncrementalSearch();
+            }
+            case ('f'.to_int) {
                 endwin();
                 iclover2 -s 'a := grep("-Ine", "", glob("*")).selector().scan(/^(.+):(\\d+)/); vicl_open_file(a.items(1), a.items(2))' -p 19 -c
                 initscr();
@@ -366,6 +410,8 @@ class ViClone
             }
              
             fileName = fname.clone();
+
+            rehashCCompletion();
         }
         else {
             texts = SortableList<String>();

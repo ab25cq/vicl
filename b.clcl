@@ -3,6 +3,7 @@ class ClassCloverTest {
 
     def initialize() {
         ggg := {1,2,3}
+        
     }
 
     def getZZZ():List<String> {

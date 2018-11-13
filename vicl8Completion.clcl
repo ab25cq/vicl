@@ -52,8 +52,8 @@ class ViClone
         for(i:=getRealPosY()-1; i>=0; i--) {
             line := texts.items(i);
 
-            if(line.match(/^class\s+[a-zA-Z0-9_]+/)) {
-                return line.scan(/^class\s+([a-zA-Z0-9_]+)/).items(1);
+            if(line.match(/^(class|inherit)\s+[a-zA-Z0-9_]+/)) {
+                return line.scan(/^(class|inherit)\s+([a-zA-Z0-9_]+)/).items(1);
             }
         }
 
@@ -718,8 +718,8 @@ class ViClone
         elif(candidates.length() == 1) {
             selected_string := candidates.items(0);
 
-            if(selected_string.match(/.+\(/)) {
-                selected_string = selected_string.scan(/(.+)\(/).items(1);
+            if(selected_string.match(/[a-zA-Z_]+\s*\(/)) {
+                selected_string = selected_string.scan(/([a-zA-Z_]+)\s*\(/).items(1);
             }
 
             line.delete(i, getRealPosX()); 
@@ -735,8 +735,8 @@ class ViClone
             else {
                 selected_string := candidates.items(index);
 
-                if(selected_string.match(/.+\(/)) {
-                    selected_string = selected_string.scan(/(.+)\(/).items(1);
+                if(selected_string.match(/[a-zA-Z_]+\s*\(/)) {
+                    selected_string = selected_string.scan(/([a-zA-Z_]+)\s*\(/).items(1);
                 }
 
                 line.delete(i, getRealPosX());

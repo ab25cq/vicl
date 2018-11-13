@@ -32,10 +32,10 @@ CXXFLAGS=@CXXFLAGS@
 ##########################################################
 all: vicl
 
-vicl: CLParser.oclcl ViClone.oclcl viclone.ocl viclone_open_file.ocl viclone_insert_file.ocl Clover.oclcl preinstall 
+vicl: CLParser.oclcl ViClone.oclcl viclone.ocl viclone_open_file.ocl viclone_insert_file.ocl Clover.oclcl preinstall
 
 Clover.oclcl: Fundamental.clcl CLParser.clcl
-	cclover2 -core Fundamental.clcl
+	cclover2 Fundamental.clcl
 	if test -e Clover.bc; then bclover2 Clover.bc; fi
 
 CLParser.oclcl: CLParser.clcl
@@ -46,7 +46,7 @@ CLParser.oclcl: CLParser.clcl
 	if test -e CLParser.bc; then bclover2 CLParser.bc; fi
 
 ViClone.oclcl: vicl1Lib.clcl
-	cclover2 vicl12grave.clcl
+	cclover2 vicl14CCompletion.clcl
 	if test -e ViClone.bc; then bclover2 ViClone.bc; fi
 
 viclone.ocl: viclone.cl
@@ -107,7 +107,7 @@ permission:
 # clean
 ########################################################
 clean:
-	rm -fR core.* core a.out *.oclcl *.bc *.s *.o *.ocl *.clm src/*.dwo *.ll *.so.1.0.0 *.so vgcore*
+	rm -fR core.* core a.out *.oclcl *.bc *.s *.o *.ocl *.clm src/*.dwo *.ll *.so.1.0.0 *.so vgcore* tags cstdlib-tags
 
 distclean: clean
 	rm -fR Makefile autom4te.cache

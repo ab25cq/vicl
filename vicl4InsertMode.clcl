@@ -390,6 +390,9 @@ class ViClone
                         if(fileName.match(/.+\.cl/) || fileName.match(/.+\.clcl/)) {
                             clover2Completion();
                         }
+                        elif(fileName.match(/.+\.c/)) {
+                            CCompletion();
+                        }
                         else {
                             completion();
                         }

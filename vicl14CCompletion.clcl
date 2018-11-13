@@ -1,0 +1,57 @@
+include "vicl13dot.clcl"
+
+class ViClone
+{
+    ccompletionCandidates: SortableList<String>;
+    
+    def initialize() {
+        inherit();
+
+        rehashCCompletion();
+    }
+
+    def rehashCCompletion() {
+        if(fileName.match(/.+\.c/)) {
+            ccompletionCandidates = SortableList<String>();
+            
+            ccompletionCandidates.append(getCFuncTags())
+            ccompletionCandidates.append(getCMacros());
+        }
+    }
+
+    def getCMacros():SortableList<String> {
+        result := SortableList<String>();
+
+        gcc("-I", ".", "-E","-dM", "-x", "c", fileName).toString().scan(regex "#define ([a-zA-Z_]+)") {
+            |match_string:String, group_strings:SortableList<String>|:String
+
+            result.add(group_strings.items(0));
+        }
+
+        return result;
+    }
+
+    def getCFuncTags():SortableList<String> {
+        result := SortableList<String>();
+        
+        gcc("-E", fileName).toString().scan(/extern\s+[a-zA-Z_]+\s*\**\s*([a-zA-Z_]+\s\(.+)/) {
+            |match_string:String, group_strings:SortableList<String>|:String
+
+            result.add(group_strings.items(0));
+        }
+
+        return result;
+    }
+
+    def topLevelCCompletion() {
+        words := ccompletionCandidates;
+        words.append(texts.join("\n").scan(/[a-zA-Z_]+/));
+        
+        (inputing_text,j) := gettingInputingWord();
+        completion_core(inputing_text, j, words)
+    }
+
+    def CCompletion() {
+        topLevelCCompletion();
+    }
+}

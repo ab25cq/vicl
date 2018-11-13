@@ -1,0 +1,20 @@
+include "vicl12grave.clcl"
+
+class ViClone
+{
+    def initialize() {
+        inherit();
+    }
+
+    def defaultKeyEvents() {
+        inherit();
+
+        ### Insert Mode ###
+        keyEvents['.'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+        }
+    }
+
+    def runKeyEvents(key:int) {
+        inherit(key);
+    }
+}
