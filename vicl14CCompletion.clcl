@@ -15,7 +15,7 @@ class ViClone
             ccompletionCandidates = SortableList<String>();
             
             ccompletionCandidates.append(getCFuncTags())
-            ccompletionCandidates.append(getCMacros());
+            #ccompletionCandidates.append(getCMacros());
         }
     }
 
@@ -32,15 +32,7 @@ class ViClone
     }
 
     def getCFuncTags():SortableList<String> {
-        result := SortableList<String>();
-        
-        gcc("-E", fileName).toString().scan(/extern\s+[a-zA-Z_]+\s*\**\s*([a-zA-Z_]+\s\(.+)/) {
-            |match_string:String, group_strings:SortableList<String>|:String
-
-            result.add(group_strings.items(0));
-        }
-
-        return result;
+        return bash("-c", "gcc -I. -E \{dirName}/\{fileName}| grep extern | sed -r 's/^extern [a-zA-Z0-9_]+ \\*?([a-zA-Z0-9_]+ \\(.+)/\\1/'").toString().split(/\n/);
     }
 
     def topLevelCCompletion() {
