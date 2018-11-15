@@ -15,29 +15,21 @@ class ViClone
             ccompletionCandidates = SortableList<String>();
             
             ccompletionCandidates.append(getCFuncTags())
-            #ccompletionCandidates.append(getCMacros());
+            ccompletionCandidates.append(getCMacros());
         }
     }
 
     def getCMacros():SortableList<String> {
-        result := SortableList<String>();
-
-        gcc("-I", ".", "-E","-dM", "-x", "c", fileName).toString().scan(regex "#define ([a-zA-Z_]+)") {
-            |match_string:String, group_strings:SortableList<String>|:String
-
-            result.add(group_strings.items(0));
-        }
-
-        return result;
+        return texts.join("\n").toCommand().bash("-c", "gcc -I . -I \{dirname(dirName.add("/").add(fileName))} -E -dM -xc - | sed -r 's/#define (\\w+) .+/\\1/' | grep -v '#define'").toString().split('\n');
     }
 
     def getCFuncTags():SortableList<String> {
-        return bash("-c", "gcc -I. -E \{dirName}/\{fileName}| grep extern | sed -r 's/^extern [a-zA-Z0-9_]+ \\*?([a-zA-Z0-9_]+ \\(.+)/\\1/'").toString().split(/\n/);
+        return texts.join("\n").toCommand().bash("-c", "gcc -I. -I \{dirname(dirName.add("/").add(fileName))} -E -xc - | grep extern | sed -r 's/^extern [a-zA-Z0-9_]+ \\*?([a-zA-Z0-9_]+ \\(.+)/\\1/'").toString().split('\n');
     }
 
     def topLevelCCompletion() {
         words := ccompletionCandidates;
-        words.append(texts.join("\n").scan(/[a-zA-Z_]+/));
+        words.append(getWords());
         
         (inputing_text,j) := gettingInputingWord();
         completion_core(inputing_text, j, words)

@@ -26,20 +26,15 @@ class ViClone
     def searchString() {
         if(searchMode == SEARCHMODE_NORMAL) {
             y := getRealPosY();
-            x := texts.items(y)
-                .subString(getRealPosX()+1, -1)
-                .indexOf(statusLineInSearchMode);
+            x := texts.items(y).subString(getRealPosX()+1, -1).indexOf(statusLineInSearchMode);
              
             if(x != -1) { 
                 x += getRealPosX() + 1;
             }
             else { 
-                for(y = getRealPosY()+1; y < texts.length(); y++)
-                { 
+                for(y = getRealPosY()+1; y < texts.length(); y++) { 
                     it := texts.items(y);
-                     
                     x = it.indexOf(statusLineInSearchMode);
-                    
                     if(x != -1) {
                         break; 
                     } 
@@ -51,9 +46,7 @@ class ViClone
             }
             else {
                 scrolltop_y_before := scrollTopY;
-
                 moveCursor(y, x);
-
                 fixCursorAndScrollTop(scrolltop_y_before);
             }
         }
@@ -62,8 +55,7 @@ class ViClone
             x := texts.items(y).subString(0, getRealPosX()).rindexOf(statusLineInSearchMode);
                  
             if(x == -1) { 
-                for(y=getRealPosY()-1; y >= 0; y--)
-                {
+                for(y=getRealPosY()-1; y >= 0; y--) {
                     it := texts.items(y);
 
                     x = it.rindexOf(statusLineInSearchMode);

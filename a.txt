@@ -1,20 +1,8 @@
-int ssock, sock;
-struct sockaddr_un sa = {0};
+aaa bbb ccc
+ddd eee fff_ ggg_
 
-if((ssock = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
-{
-    perror("socket");
-    return -1;
-}
+asdfasf asdlf asdlkfasdlfjasdf asdlfda sjfkasd sd
+++ --
+-- fadsfdas --- *** /// asdflk adjfaj
 
-sa.sun_family = AF_UNIX;
-strcpy(sa.sun_path, "test.unix-socket");
-
-remove(sa.sun_path);
-
-if(bind(ssock, (struct sockaddr*)&sa, sizeof(struct sockaddr_un)) == -1)
-{
-perror("bind");
-close(ssock);
-return -1;
-}
+bbb

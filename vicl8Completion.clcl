@@ -3,7 +3,7 @@ include "vicl7Undo.clcl"
 class ViClone
 {
     completionCommandNames:SortableList<String>;
-    
+
     def initialize() {
         inherit();
         completionCommandNames = tyclover2("--command").toString().split(/\n/)
@@ -63,16 +63,49 @@ class ViClone
         return "";
     }
     
+    def getFunctionDefinitionTop():Tuple2<Integer, Integer> {
+        for(i:=getRealPosY()-1; i>=0; i--) {
+            line := texts.items(i);
+
+            if(line.indexOf("{") == 0) {
+                return (i, 0);
+            }
+        }
+
+        return (-1, -1);
+    }
+    
+    def getNextFunctionDefinitionTop():Tuple2<Integer, Integer> {
+        for(i:=getRealPosY()+1; i<texts.length(); i++) {
+            line := texts.items(i);
+
+            if(line.indexOf("}") == 0) {
+                return (i, 0);
+            }
+        }
+
+        return (-1, -1);
+    }
+    
     def defaultKeyEvents() {
         inherit();
 
         keyEvents['['.to_int] = lambda(self:ViClone, key:int, key2:int) {
             when(key2) {
                 case ('['.to_int) {
-                    (y, x) := getMethodDefinitionTop();
-
-                    if(y != -1 && x != -1) {
-                        moveCursor(y, x);
+                    if(fileName.match(/.+\.cl|.+\.clcl/)) {
+                        (y, x) := getMethodDefinitionTop();
+    
+                        if(y != -1 && x != -1) {
+                            moveCursor(y, x);
+                        }
+                    }
+                    else {
+                        (y, x) := getFunctionDefinitionTop();
+    
+                        if(y != -1 && x != -1) {
+                            moveCursor(y, x);
+                        }
                     }
                 }
             }
@@ -81,10 +114,19 @@ class ViClone
         keyEvents[']'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             when(key2) {
                 case (']'.to_int) {
-                    (y, x) := getNextmethodDefinitionTop();
-
-                    if(y != -1 && x != -1) {
-                        moveCursor(y, x);
+                    if(fileName.match(/.+\.cl|.+\.clcl/)) {
+                        (y, x) := getNextmethodDefinitionTop();
+    
+                        if(y != -1 && x != -1) {
+                            moveCursor(y, x);
+                        }
+                    }
+                    else {
+                        (y, x) := getNextFunctionDefinitionTop();
+    
+                        if(y != -1 && x != -1) {
+                            moveCursor(y, x);
+                        }
                     }
                 }
             }
@@ -392,6 +434,8 @@ class ViClone
             }
             words.append(inner_fields);
         }
+        
+        words.append(texts.join("\n").scan(/\w+/));
         
         (inputing_text,j) := gettingInputingWord();
         completion_core(inputing_text, j, words)
@@ -772,8 +816,13 @@ class ViClone
         }
     }
     
+    def getWords():SortableList<String> {
+        return texts.join("\n").toCommand().bash("-c", "sed -r 's/(\\s|\\W)+/\\n/g' | egrep -v '\\W+' | egrep -v '^$' | sort | uniq").toString().split('\n');
+    }
+    
     def completion() {
-        words := texts.join("\n").scan(/[a-zA-Z_]+/);
+        words := getWords();
+        
         (inputing_text,i) := gettingInputingWord();
         completion_core(inputing_text, i, words)
     }  

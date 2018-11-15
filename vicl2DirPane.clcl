@@ -18,9 +18,14 @@ class ViClone
         dirScrollTop = 0; 
         dirCursor = 0; 
         
+ /*
         visibleDirPane = true; 
         maxx := getmaxx();
         dirPaneLength = maxx/6;
+ */       
+        visibleDirPane = false;
+        dirPaneLength = 0; 
+        makeMaxxy(); 
         
         changeDirectory(getcwd());
     
@@ -105,11 +110,11 @@ class ViClone
         maxx := getmaxx();
         dirPaneLength = maxx/6;
         makeMaxxy(); 
-/*
+        
         visibleDirPane = false;
         dirPaneLength = 0; 
         makeMaxxy(); 
-*/
+        
         mode = EDITMODE; 
         makeVisibleTexts()
         clear();
@@ -402,7 +407,7 @@ class ViClone
             fileName = null;
         }
         elif(access(file_path, R_OK) == 0) {
-            texts = file_path.toPath().read().toString().split(/\n/);
+            texts = file_path.toPath().read().toString().split('\n');
 
             if(texts.length() == 0) {
                 texts = SortableList<String>();
