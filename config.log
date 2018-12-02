@@ -28,7 +28,6 @@ uname -v = #1 SMP Debian 4.9.30-2+deb9u5 (2017-09-19)
 /bin/universe          = unknown
 
 PATH: /home/ab25cq/bin
-PATH: /home/ab25cq/bin
 PATH: /usr/local/bin
 PATH: /usr/bin
 PATH: /bin
