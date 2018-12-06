@@ -7,7 +7,7 @@ class ViClone
     dirCursor:int; 
     dirPaneLength: int; 
     visibleDirPane: bool
-    fileNames: SortableList<String>;
+    fileNames: SortableList<String>?;
     
     fileName:String?;
     texts:SortableList<String>;
@@ -27,7 +27,9 @@ class ViClone
         dirPaneLength = 0; 
         makeMaxxy(); 
         
-        changeDirectory(getcwd());
+        dirName = getcwd();
+        #changeDirectory(getcwd());
+        fileNames = null;
     
         readFile(fileName);
     }
@@ -96,6 +98,10 @@ class ViClone
     }
     
     def dirPaneOn() {
+        if(fileNames == null) {
+            changeDirectory(getcwd());
+        }
+        
         mode = DIRMODE;
         visibleDirPane = true;
         maxx := getmaxx();
@@ -465,10 +471,6 @@ class ViClone
 
             makeVisibleTexts();
         }
-        
-        if(fileName != null) { 
-            setDirCursor(fileName); 
-        } 
 
         argmentLineNum = -1;
     

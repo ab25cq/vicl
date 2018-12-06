@@ -36,14 +36,15 @@ vicl: ViClone.oclcl viclone.ocl viclone_open_file.ocl viclone_insert_file.ocl Cl
 
 Clover.oclcl: Fundamental.clcl
 	cclover2 Fundamental.clcl
-	if test -e Clover.oclcl; then bclover2 Clover.oclcl; fi
+	if which bclover2; then bclover2 Clover.oclcl; fi
 
 ViClone.oclcl: vicl1Lib.clcl
 	cclover2 vicl14CCompletion.clcl
-	if test -e ViClone.oclcl; then bclover2 ViClone.oclcl; fi
+	if which bclover2; then bclover2 ViClone.oclcl; fi
 
 viclone.ocl: viclone.cl
 	cclover2 viclone.cl
+	mkdir -p $(HOME)/.clover2
 	install -m 644 viclone.ocl $(HOME)/.clover2/viclone.ocl
 
 viclone_insert_file.ocl:viclone_insert_file.cl

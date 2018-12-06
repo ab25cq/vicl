@@ -95,14 +95,15 @@ class ViClone
             line := texts.items(getRealPosY());
 
             (y, x) := forwardWord();
+            (y2, x2) := backwardWord();
 
             if(y == getRealPosY()) {
-                str := line.subString(getRealPosX(), x);
+                str := line.subString(x2, x);
                 
                 enterSearchMode(str, SEARCHMODE_NORMAL);
             }
             else {
-                str := line.subString(getRealPosX(), -1);
+                str := line.subString(x2, -1);
                 
                 enterSearchMode(str, SEARCHMODE_NORMAL);
             }
@@ -112,14 +113,15 @@ class ViClone
             line := texts.items(getRealPosY());
 
             (y, x) := forwardWord();
+            (y2, x2) := backwardWord();
 
             if(y == getRealPosY()) {
-                str := line.subString(getRealPosX(), x);
+                str := line.subString(x2, x);
                 
                 enterSearchMode(str, SEARCHMODE_REVERSE);
             }
             else {
-                str := line.subString(getRealPosX(), -1);
+                str := line.subString(x2, -1);
                 
                 enterSearchMode(str, SEARCHMODE_REVERSE);
             }
