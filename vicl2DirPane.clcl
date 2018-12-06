@@ -52,6 +52,9 @@ class ViClone
     def changeDirectory(path:String) {
         dirName = path.clone();
         rereadDir();
+        if(fileName != null) { 
+            setDirCursor(fileName); 
+        }         
     } 
     
     def setDirCursor(fname:String) {
