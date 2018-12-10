@@ -3,7 +3,14 @@ include "vicl6Edit.clcl"
 class ViClone
 {
     def getCursorChar(): char {
-        return visibleTexts.items(cursorY).chars(cursorX);
+        line := visibleTexts.items(cursorY);
+
+        if(cursorX >= 0 && cursorX < line.length()) {
+            return visibleTexts.items(cursorY).chars(cursorX);
+        }
+        else {
+            return 0.to_char;
+        }
     }
     
     def forwardBrace(head_char:char, tail_char:char): Tuple2<Integer, Integer> {

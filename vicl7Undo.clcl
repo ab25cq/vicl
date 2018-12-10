@@ -2,14 +2,14 @@ include "vicl6.5Brace.clcl"
 
 class ViClone
 {
-    var undoTexts:SortableList<String>;
+    var undoTexts:SortableList<SortableList<String>>;
     var undoIndex:int;
     var undoCurosrPosition:EqualableList<Tuple3<Integer, Integer, Integer>>;
 
     def initialize() {
         inherit();
 
-        undoTexts = SortableList<String>();
+        undoTexts = SortableList<SortableList<String>>();
         undoIndex = 0;
 
         undoCurosrPosition = EqualableList<Tuple3<Integer, Integer, Integer>>();
@@ -17,7 +17,7 @@ class ViClone
 
     def addUndoText() {
         undoTexts.deleteWithRange(undoIndex, -1);
-        undoTexts.add(texts.join("\n"));
+        undoTexts.add(texts.clone());
         undoCurosrPosition.deleteWithRange(undoIndex, -1);
         undoCurosrPosition.add((scrollTopY, cursorY, cursorX));
         undoIndex++;
@@ -40,7 +40,7 @@ class ViClone
             }
             if(undoIndex > 0) {
                 undoIndex--;
-                texts = undoTexts.items(undoIndex).split(/\n/);
+                texts = undoTexts.items(undoIndex);
     
                 makeVisibleTexts();
                 
@@ -54,7 +54,7 @@ class ViClone
         keyEvents[('R'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {
             if(undoIndex < undoTexts.length()-1) {
                 undoIndex++;
-                texts = undoTexts.items(undoIndex).split(/\n/);
+                texts = undoTexts.items(undoIndex);
     
                 makeVisibleTexts();
                 

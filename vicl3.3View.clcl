@@ -277,6 +277,10 @@ class ViClone
                     }
                 }
                 keyEvents[key](self, key, key2);
+
+                if(key != '.') {
+                    lastKey = key;
+                }
             }
         }
         else {

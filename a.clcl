@@ -11,7 +11,16 @@ class ClassCloverTest {
         bcd = "ABC";
         XYZ = "DEF";
     }
-    
+aaa    
+aaa
+aaa
+aaa
+aaa
+aaa
+aaa
+aaa
+aaa
+
     def method2(aaa:String, bbb:String):String {
         return aaa.add(bbb);
     }

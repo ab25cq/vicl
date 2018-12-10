@@ -2,8 +2,40 @@ include "vicl12grave.clcl"
 
 class ViClone
 {
+    lastKey: int;
+    lastInsertedTextPos: Tuple2<Integer, Integer>;
+    lastInsertedString: SortableList<String>;
+    
     def initialize() {
         inherit();
+        
+        lastKey = 0;
+        lastInsertedTextPos = (0, 0);
+        
+        lastInsertedString = SortableList<String>();
+    }
+    
+    def setLastInsertedTextPos() {
+        lastInsertedTextPos = (getRealPosY(), getRealPosX());
+    }
+    
+    def getLastInsertedText() {
+        (y, x) := (getRealPosY(), getRealPosX());
+        
+        list := texts.subList(lastInsertedTextPos.value1, y)
+        
+        if(list.length() == 1) {
+            lastInsertedString.add(list.items(0).subString(lastInsertedTextPos.value2, x+1));
+        }
+        elif(list.length() == 2) {
+            lastInsertedString.add(list.items(0).subString(lastInsertedTextPos.value2, -1));
+            lastInsertedString.add(list.items(1).subString(0, x+1));
+        }
+        else {
+            lastInsertedString.add(list.items(0).subString(lastInsertedTextPos.value2, -1));
+            lastInsertedString.add(list.subList(1,-2));
+            lastInsertedString.add(list.items(-1).subString(0, x));
+        }
     }
 
     def defaultKeyEvents() {
@@ -11,10 +43,26 @@ class ViClone
 
         ### Insert Mode ###
         keyEvents['.'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-        }
-    }
+            when(lastKey) {
+                case ('i'.to_int) {
+                    x := getRealPosX();
+                    y := getRealPosY();
+                        
+                    if(lastInsertedString.length() == 1) {
+                        line := texts.items(y);
+                        line.insert(x, lastInsertedString.items(0));
 
-    def runKeyEvents(key:int) {
-        inherit(key);
+                        makeVisibleTexts();
+                    }
+                    elif(lastInsertedString.length() > 1) {
+                        line := texts.items(y);
+                        line.insert(x, lastInsertedString.items(0));
+                        texts.insert(y+1, lastInsertedString().subList(1,-1));
+
+                        makeVisibleTexts();
+                    }
+                }
+            }
+        }
     }
 }
