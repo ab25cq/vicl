@@ -278,8 +278,9 @@ class ViClone
                 dirPaneOff(); 
             }
             case (('H'-'A').to_int+1, KEY_BACKSPACE) {
-                fpath := realpath(dirName.clone().append("/").append(".."));
                 writeToFile().if {
+                    fpath := realpath(dirName.clone().append("/").append(".."));
+                    
                     saveCursorPos();
                     changeDirectory(fpath);
                     fileName = null;
