@@ -164,6 +164,7 @@ class ViClone
 
     def enterInsertMode() {
         mode = INSERTMODE;
+        setLastInsertedTextPos();
     }
 
     def defaultKeyEvents() {
@@ -179,12 +180,12 @@ class ViClone
         keyEvents['a'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             addUndoText();
 
+            enterInsertMode();
+
             cursorX++;
 
             clear();
             view();
-
-            enterInsertMode();
         }
         keyEvents['A'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             addUndoText();
@@ -228,6 +229,8 @@ class ViClone
              
             when(key2) {
                 case ('e'.to_int, 'w'.to_int) {
+                    enterInsertMode();
+
                     (y, x) := forwardWord(0); 
                     
                     real_pos_y := getRealPosY();
@@ -249,8 +252,6 @@ class ViClone
                         makeVisibleTexts();                     
                         fixCursorAndScrollTop(scrollTopY);
                     } 
-                     
-                    enterInsertMode();
                 }
                 case ('t'.to_int) {
                     key3 := getch();
@@ -299,6 +300,7 @@ class ViClone
             case (('['-'A').to_int+1, ('C'-'A').to_int+1) {
                 mode = EDITMODE;
                 #fixCursorAndScrollTop(scrollTopY);
+                getLastInsertedText();
             }
 
             ### Backspace ###
@@ -426,13 +428,13 @@ class ViClone
         }
     }
 
-    def runKeyEvents(key:int) {
+    def runKeyEvents(key:int, key2:int) {
         if(mode == INSERTMODE) {
             modifiedText = true;
             insertMode(key);
         }
         else {
-            inherit(key);
+            inherit(key, key2);
         }
     }
 

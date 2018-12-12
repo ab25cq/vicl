@@ -20,9 +20,12 @@ aaa
 aaa
 aaa
 aaa
+aaa
+bbb
+ccc
 
     def method2(aaa:String, bbb:String):String {
-        return aaa.add(bbb);
+        return aaa.push(bbb);
     }
     
     def method3():String {

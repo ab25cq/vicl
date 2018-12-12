@@ -310,12 +310,12 @@ class ViClone
                 elif(line.match(/[a-zA-Z0-9_]+:[a-zA-Z0-9_]+/)) {
                     field_name := line.scan(/([a-zA-Z0-9_]+):[a-zA-Z0-9_]+/).items(1);
 
-                    inner_fields.add(field_name);
+                    inner_fields.push(field_name);
                 }
                 elif(line.match(/var\s+[a-zA-Z0-9_]+\s*:/)) {
                     field_name := line.scan(/var\s+([a-zA-Z0-9_]+)\s*:/).items(1);
 
-                    inner_fields.add(field_name);
+                    inner_fields.push(field_name);
                 }
             }
         }
@@ -352,7 +352,7 @@ class ViClone
                 if(line.match(/def\s+[a-zA-Z0-9_]+\(.*\)/)) {
                     method_name := line.scan(/def\s+([a-zA-Z0-9_]+\(.*\))/).items(1);
 
-                    inner_methods.add(method_name);
+                    inner_methods.push(method_name);
                     
                     ### skip block ###
                     n := skipBlock(i);
@@ -401,7 +401,7 @@ class ViClone
         global_methods := SortableList<String>();
         for(i:=0; i<methods.length(); i++) {
             method := methods.items(i);
-            global_methods.add(method.methodNameAndParams);
+            global_methods.push(method.methodNameAndParams);
         }
         words.append(global_methods);
         
@@ -422,7 +422,7 @@ class ViClone
             methods := klass.getMethods();
             for(i:=0; i<methods.length(); i++) {
                 method := methods.items(i);
-                inner_methods.add(method.methodNameAndParams);
+                inner_methods.push(method.methodNameAndParams);
             }
             words.append(inner_methods);
 
@@ -430,7 +430,7 @@ class ViClone
             fields := klass.getFields();
             for(i=0; i<fields.length(); i++) {
                 field := fields.items(i);
-                inner_fields.add(field.name);
+                inner_fields.push(field.name);
             }
             words.append(inner_fields);
         }
@@ -449,7 +449,7 @@ class ViClone
             if(line.match(/^class [a-zA-Z0-9_]+/)) {
                 class_name := line.scan(/^class ([a-zA-Z0-9_]+)/).items(1);
 
-                result.add(class_name);
+                result.push(class_name);
             }
             if(line.match(/include ".+"/)) {
                 file_name := line.scan(/include "(.+)"/).items(1);
@@ -530,7 +530,7 @@ class ViClone
         }
 
         methods.each {
-            words.add(it.methodNameAndParams);
+            words.push(it.methodNameAndParams);
         }
         
         (inputing_text,i) := gettingInputingWord();

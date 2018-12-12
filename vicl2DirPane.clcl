@@ -284,7 +284,7 @@ class ViClone
                     changeDirectory(fpath);
                     fileName = null;
                     texts = SortableList<String>();
-                    texts.add("");
+                    texts.push("");
                     makeVisibleTexts();
                     fixCursorAndScrollTop(0);
                 }
@@ -301,7 +301,7 @@ class ViClone
                         changeDirectory(fpath);
                         fileName = null;
                         texts = SortableList<String>();
-                        texts.add("");
+                        texts.push("");
                         makeVisibleTexts();
                         fixCursorAndScrollTop(0);
                     }
@@ -388,7 +388,7 @@ class ViClone
         }
     }
 
-    def runKeyEvents(key:int) {
+    def runKeyEvents(key:int, key2:int) {
         if(mode == DIRMODE) {
             dirMode(key);
         }
@@ -411,7 +411,7 @@ class ViClone
         
         if(fname == null) {
             texts = SortableList<String>();
-            texts.add("");
+            texts.push("");
              
             fileName = null;
         }
@@ -420,7 +420,7 @@ class ViClone
 
             if(texts.length() == 0) {
                 texts = SortableList<String>();
-                texts.add("");
+                texts.push("");
             }
              
             fileName = fname.clone();
@@ -429,7 +429,7 @@ class ViClone
         }
         else {
             texts = SortableList<String>();
-            texts.add("");
+            texts.push("");
              
             fileName = null;
         }

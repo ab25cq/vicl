@@ -87,12 +87,12 @@ class ViClone
             enterCommandMode();
         }
     }
-    def runKeyEvents(key:int) {
+    def runKeyEvents(key:int, key2:int) {
         if(mode == COMMANDMODE) {
             commandMode(key);
         }
         else {
-            inherit(key);
+            inherit(key, key2);
         }
     }
 }

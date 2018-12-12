@@ -3,6 +3,7 @@ include "vicl12grave.clcl"
 class ViClone
 {
     lastKey: int;
+    lastKey2: int;
     lastInsertedTextPos: Tuple2<Integer, Integer>;
     lastInsertedString: SortableList<String>;
     
@@ -10,6 +11,7 @@ class ViClone
         inherit();
         
         lastKey = 0;
+        lastKey2 = 0;
         lastInsertedTextPos = (0, 0);
         
         lastInsertedString = SortableList<String>();
@@ -17,24 +19,48 @@ class ViClone
     
     def setLastInsertedTextPos() {
         lastInsertedTextPos = (getRealPosY(), getRealPosX());
+        lastInsertedString = SortableList<String>();
     }
     
     def getLastInsertedText() {
         (y, x) := (getRealPosY(), getRealPosX());
-        
-        list := texts.subList(lastInsertedTextPos.value1, y)
-        
+
+        list := texts.subList(lastInsertedTextPos.value1, y+1)
+
         if(list.length() == 1) {
-            lastInsertedString.add(list.items(0).subString(lastInsertedTextPos.value2, x+1));
+            lastInsertedString.push(list.items(0).subString(lastInsertedTextPos.value2, x+1));
         }
         elif(list.length() == 2) {
-            lastInsertedString.add(list.items(0).subString(lastInsertedTextPos.value2, -1));
-            lastInsertedString.add(list.items(1).subString(0, x+1));
+            lastInsertedString.push(list.items(0).subString(lastInsertedTextPos.value2, -1));
+            lastInsertedString.push(list.items(1).subString(0, x+1));
         }
         else {
-            lastInsertedString.add(list.items(0).subString(lastInsertedTextPos.value2, -1));
-            lastInsertedString.add(list.subList(1,-2));
-            lastInsertedString.add(list.items(-1).subString(0, x));
+            lastInsertedString.push(list.items(0).subString(lastInsertedTextPos.value2, -1));
+            lastInsertedString.push(list.subList(1,-2));
+            lastInsertedString.push(list.items(-1).subString(0, x+1));
+        }
+    }
+    
+    def insertOnceMore() {
+        x := getRealPosX();
+        y := getRealPosY();
+
+        if(lastInsertedString.length() == 1) {
+            addUndoText();
+
+            line := texts.items(y);
+            line.insert(x, lastInsertedString.items(0));
+
+            makeVisibleTexts();
+        }
+        elif(lastInsertedString.length() > 1) {
+            addUndoText();
+
+            line := texts.items(y);
+            line.insert(x, lastInsertedString.items(0));
+            texts.insert(y+1, lastInsertedString().subList(1,-1));
+
+            makeVisibleTexts();
         }
     }
 
@@ -45,24 +71,54 @@ class ViClone
         keyEvents['.'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             when(lastKey) {
                 case ('i'.to_int) {
-                    x := getRealPosX();
-                    y := getRealPosY();
+                    insertOnceMore();
+                }
+                case ('a'.to_int) {
+                    insertOnceMore();
+                }
+                case ('o'.to_int) {
+                    insertOnceMore();
+                }
+                case ('A'.to_int) {
+                    insertOnceMore();
+                }
+                case ('c'.to_int) {
+                    if(lastKey2 == 'w'.to_int || lastKey2 == 'e'.to_int) {
+                        addUndoText();
+
+                        (y, x) := forwardWord(0); 
                         
-                    if(lastInsertedString.length() == 1) {
-                        line := texts.items(y);
-                        line.insert(x, lastInsertedString.items(0));
+                        (y2, x2) := (getRealPosY(), getRealPosX());
+                     
+                        line := texts.items(y2);
+                        
+                        if(y > y2) {
+                            line.delete(x2, -1);
+                        } 
+                        else { 
+                            line.delete(x2, x); 
+                        } 
 
-                        makeVisibleTexts();
-                    }
-                    elif(lastInsertedString.length() > 1) {
-                        line := texts.items(y);
-                        line.insert(x, lastInsertedString.items(0));
-                        texts.insert(y+1, lastInsertedString().subList(1,-1));
-
-                        makeVisibleTexts();
+                        insertOnceMore();
                     }
                 }
             }
+        }
+    }
+    def runKeyEvents(key:int, key2:int) {
+        if(mode == EDITMODE) {
+            inherit(key, key2);
+
+            if(keyEvents[key] != null) {
+                if(key != '.' && key != 'j' && key != 'k' && key != 'l' && key != 'h' && key != ('D'-'A').to_int+1 && key != ('U'-'A').to_int+1 && key != '/' && key != 'u' && key != 'n' && key != 'N' && key != 'g') 
+                {
+                    lastKey = key;
+                    lastKey2 = key2;
+                }
+            }
+        }
+        else {
+            inherit(key, key2);
         }
     }
 }

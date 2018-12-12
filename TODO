@@ -1,8 +1,5 @@
 .
 
-v finish visual mode after operator
-gv
-
 word completion at the end of visible line occurs bug
 
 --- end ---

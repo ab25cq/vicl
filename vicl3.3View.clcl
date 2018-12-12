@@ -37,16 +37,16 @@ class ViClone
             if(line.length() > MaxX-1) {
                 x := 0;
                 while(x < line.length() && y < MaxY-1) {
-                    visibleTexts.add(line.subString(x, x+MaxX-1));
-                    visibleTextsPos.add((i, x, line.length() / (MaxX-1)+1));
+                    visibleTexts.push(line.subString(x, x+MaxX-1));
+                    visibleTextsPos.push((i, x, line.length() / (MaxX-1)+1));
                     
                     x += MaxX-1;
                     y++;
                 }
             }
             else {
-                visibleTexts.add(line);
-                visibleTextsPos.add((i, 0, 1));
+                visibleTexts.push(line);
+                visibleTextsPos.push((i, 0, 1));
                 y++;
             }
         }
@@ -178,6 +178,9 @@ class ViClone
 
                 fixCursorAndScrollTop(scrolltop_y_before);
             }
+            elif(key2 == 'v'.to_int) {
+                renterVisualMode();
+            }
         }
         keyEvents[('L'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {  # Control-L
             makeVisibleTexts()
@@ -266,25 +269,14 @@ class ViClone
        attroff(A_REVERSE);
     }
 
-    def runKeyEvents(key:int) {
+    def runKeyEvents(key:int, key2:int) {
         if(mode == EDITMODE) {
             if(keyEvents[key] != null) {
-                var key2 := 0;
-                when(key) {
-                    case ('d'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int, 'z'.to_int, '['.to_int, ']'.to_int, '`'.to_int, 'm'.to_int, 't'.to_int) 
-                    {
-                        key2 = getch();
-                    }
-                }
                 keyEvents[key](self, key, key2);
-
-                if(key != '.') {
-                    lastKey = key;
-                }
             }
         }
         else {
-            inherit(key);
+            inherit(key, key2);
         }
     }
 }

@@ -3,12 +3,14 @@ include "vicl10MessageBox.clcl"
 class ViClone
 {
     visualModeStart:int;
+    visualModeEnd:int;
     clipBoard:SortableList<String>;
      
     def initialize() {
         inherit();
 
-        visualModeStart = 0;
+        visualModeStart = -1;
+        visualModeEnd = -1;
 
         clipBoard = SortableList<String>();
     }
@@ -18,12 +20,26 @@ class ViClone
 
         visualModeStart = getRealPosY();
     }
+    
+    def finishVisualMode() {
+        mode = EDITMODE;
+        visualModeEnd = getRealPosY();
+        fixCursorAndScrollTop(scrollTopY);
+    }
+    
+    def renterVisualMode() {
+        if(visualModeStart != -1 && visualModeEnd != -1) {
+            mode = VISUALMODE;
+            moveCursor(visualModeEnd, 0);
+            view();
+        }
+    }
 
     def clearClipBoard() {
         clipBoard.clear();
     }
     def addClipBoard(line:String) {
-        clipBoard.add(line);
+        clipBoard.push(line);
     }
 
     def pasteBeforeCursor() {
@@ -63,8 +79,7 @@ class ViClone
     def visualMode(key:int) {
         when(key) {
             case (('['-'A').to_int+1) {
-                mode = EDITMODE;
-                fixCursorAndScrollTop(scrollTopY);
+                finishVisualMode(); 
             }
             
             case ('j'.to_int, KEY_DOWN) {
@@ -132,9 +147,7 @@ class ViClone
                     clipBoard = texts.subList(line, visualModeStart+1);
                 }
 
-                mode = EDITMODE;
-
-                fixCursorAndScrollTop(scrollTopY);
+                finishVisualMode(); 
             }
 
             case ('d'.to_int) {
@@ -147,20 +160,19 @@ class ViClone
                     texts.deleteWithRange(visualModeStart, real_pos_y+1);
                     
                     if(texts.length() == 0) {
-                        texts.add("");
+                        texts.push("");
                     }
                 }
                 else {
                     clipBoard = texts.subList(real_pos_y, visualModeStart+1);
                     texts.deleteWithRange(real_pos_y, visualModeStart+1);
                     if(texts.length() == 0) {
-                        texts.add("");
+                        texts.push("");
                     }
                 }
 
                 makeVisibleTexts(); 
-                fixCursorAndScrollTop(scrollTopY);
-                mode = EDITMODE;
+                finishVisualMode(); 
                 moveCursor(visualModeStart, 0);
             }
             case ('>'.to_int) {
@@ -239,12 +251,12 @@ class ViClone
         }
     }
 
-    def runKeyEvents(key:int) {
+    def runKeyEvents(key:int, key2:int) {
         if(mode == VISUALMODE) {
             visualMode(key);
         }
         else {
-            inherit(key);
+            inherit(key, key2);
         }
     }
 }

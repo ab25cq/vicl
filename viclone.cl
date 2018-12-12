@@ -32,7 +32,18 @@ while(!vicl.endOfAplication) {
     if(FD_ISSET(0, read_ok)) {
         key := System.getch();
 
-        vicl.runKeyEvents(key);
+        key2 := 0;
+
+        if(vicl.mode == ViClone.EDITMODE) {
+            when(key) {
+                case ('d'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int, 'z'.to_int, '['.to_int, ']'.to_int, '`'.to_int, 'm'.to_int, 't'.to_int) 
+                {
+                    key2 = getch();
+                }
+            }
+        }
+
+        vicl.runKeyEvents(key, key2);
     }
     elif(FD_ISSET(sockfd, read_ok)) {
         caddr := sockaddr_un();

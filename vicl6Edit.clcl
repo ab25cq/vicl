@@ -87,7 +87,7 @@ class ViClone
                     }
 
                     if(texts.length() == 0) {
-                        texts.add("");
+                        texts.push("");
                         cursorX = 0;
                         cursorY = 0;
                         scrollTopY = 0;

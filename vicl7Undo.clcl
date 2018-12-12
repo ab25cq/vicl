@@ -17,9 +17,9 @@ class ViClone
 
     def addUndoText() {
         undoTexts.deleteWithRange(undoIndex, -1);
-        undoTexts.add(texts.clone());
+        undoTexts.push(texts.clone());
         undoCurosrPosition.deleteWithRange(undoIndex, -1);
-        undoCurosrPosition.add((scrollTopY, cursorY, cursorX));
+        undoCurosrPosition.push((scrollTopY, cursorY, cursorX));
         undoIndex++;
     }
     
