@@ -1,17 +1,16 @@
-include "vicl13dot.clcl"
 
-class ViClone
+inherit ViClone
 {
     ccompletionCandidates: SortableList<String>;
     
-    def initialize() {
+    def initialize():dynamic {
         inherit();
 
         rehashCCompletion();
     }
 
-    def rehashCCompletion() {
-        if(fileName.match(/.+\.c/)) {
+    def rehashCCompletion():dynamic {
+        if(win.fileName.match(/.+\.c/)) {
             ccompletionCandidates = SortableList<String>();
             
             ccompletionCandidates.append(getCFuncTags())
@@ -20,11 +19,11 @@ class ViClone
     }
 
     def getCMacros():SortableList<String> {
-        return texts.join("\n").toCommand().bash("-c", "gcc -I . -I \{dirname(dirName.add("/").add(fileName))} -E -dM -xc - | sed -r 's/#define (\\w+) .+/\\1/' | grep -v '#define'").toString().split('\n');
+        return win.texts.join("\n").toCommand().bash("-c", "gcc -I . -I \{dirname(dirName.add("/").add(win.fileName))} -E -dM -xc - | sed -r 's/#define (\\w+) .+/\\1/' | grep -v '#define'").toString().split('\n');
     }
 
     def getCFuncTags():SortableList<String> {
-        return texts.join("\n").toCommand().bash("-c", "gcc -I. -I \{dirname(dirName.add("/").add(fileName))} -E -xc - | grep extern | sed -r 's/^extern [a-zA-Z0-9_]+ \\*?([a-zA-Z0-9_]+ \\(.+)/\\1/'").toString().split('\n');
+        return win.texts.join("\n").toCommand().bash("-c", "gcc -I. -I \{dirname(dirName.add("/").add(win.fileName))} -E -xc - | grep extern | sed -r 's/^extern [a-zA-Z0-9_]+ \\*?([a-zA-Z0-9_]+ \\(.+)/\\1/'").toString().split('\n');
     }
 
     def topLevelCCompletion() {
@@ -35,7 +34,7 @@ class ViClone
         completion_core(inputing_text, j, words)
     }
 
-    def CCompletion() {
+    def CCompletion():dynamic {
         topLevelCCompletion();
     }
 }

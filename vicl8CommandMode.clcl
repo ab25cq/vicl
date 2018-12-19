@@ -1,18 +1,19 @@
-include "vicl4.5Word.clcl"
 
-class ViClone
+inherit ViClone
 {
-    var modifiedText:bool;
     var statusLineInCommandMode:String;
 
-    def initialize() {
+    def initialize():dynamic {
         inherit();
 
         statusLineInCommandMode = "";
-        modifiedText = false;
+
+        keyEvents[':'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            enterCommandMode();
+        }
     }
 
-    def enterCommandMode() {
+    def enterCommandMode():dynamic {
         mode = COMMANDMODE;
         statusLineInCommandMode = "";
     }
@@ -37,10 +38,9 @@ class ViClone
             }
             case (KEY_ENTER, ('J'-'A').to_int+1) {
                 if(statusLineInCommandMode.match(/w/) && statusLineInCommandMode.match(/q/)) {
-                    writeToFile().if {
-                        endOfAplication = true;
-                        saveCursorPos();
-                    }
+                    writeToFile();
+                    endOfAplication = true;
+                    saveCursorPos();
                 }
                 elif(statusLineInCommandMode.match(/q/) && statusLineInCommandMode.match(/!/)) {
                     endOfAplication = true;
@@ -48,10 +48,9 @@ class ViClone
                     saveCursorPos();
                 }
                 elif(statusLineInCommandMode.match(/w/)) {
-                    writeToFile().if {
-                        modifiedText = false;
-                        saveCursorPos();
-                    }
+                    writeToFile();
+                    modifiedText = false;
+                    saveCursorPos();
                 }
                 elif(statusLineInCommandMode.match(/q/)) {
                     if(!modifiedText) {
@@ -66,9 +65,8 @@ class ViClone
             }
         }
     }
-    def view() {
-        inherit();
-         
+
+    def statusView(): dynamic {
         if(mode == COMMANDMODE) {
             maxy := getmaxy();
 
@@ -78,16 +76,12 @@ class ViClone
             mvprintw(maxy-1, 0, ":\{statusLineInCommandMode}");
             attroff(A_REVERSE);
         }
-    }
-
-    def defaultKeyEvents() {
-        inherit();
-
-        keyEvents[':'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            enterCommandMode();
+        else {
+            inherit();
         }
     }
-    def runKeyEvents(key:int, key2:int) {
+
+    def runKeyEvents(key:int, key2:int):dynamic {
         if(mode == COMMANDMODE) {
             commandMode(key);
         }

@@ -1,13 +1,12 @@
-include "vicl12grave.clcl"
 
-class ViClone
+inherit ViClone
 {
     lastKey: int;
     lastKey2: int;
     lastInsertedTextPos: Tuple2<Integer, Integer>;
     lastInsertedString: SortableList<String>;
     
-    def initialize() {
+    def initialize():dynamic {
         inherit();
         
         lastKey = 0;
@@ -15,57 +14,6 @@ class ViClone
         lastInsertedTextPos = (0, 0);
         
         lastInsertedString = SortableList<String>();
-    }
-    
-    def setLastInsertedTextPos() {
-        lastInsertedTextPos = (getRealPosY(), getRealPosX());
-        lastInsertedString = SortableList<String>();
-    }
-    
-    def getLastInsertedText() {
-        (y, x) := (getRealPosY(), getRealPosX());
-
-        list := texts.subList(lastInsertedTextPos.value1, y+1)
-
-        if(list.length() == 1) {
-            lastInsertedString.push(list.items(0).subString(lastInsertedTextPos.value2, x+1));
-        }
-        elif(list.length() == 2) {
-            lastInsertedString.push(list.items(0).subString(lastInsertedTextPos.value2, -1));
-            lastInsertedString.push(list.items(1).subString(0, x+1));
-        }
-        else {
-            lastInsertedString.push(list.items(0).subString(lastInsertedTextPos.value2, -1));
-            lastInsertedString.push(list.subList(1,-2));
-            lastInsertedString.push(list.items(-1).subString(0, x+1));
-        }
-    }
-    
-    def insertOnceMore() {
-        x := getRealPosX();
-        y := getRealPosY();
-
-        if(lastInsertedString.length() == 1) {
-            addUndoText();
-
-            line := texts.items(y);
-            line.insert(x, lastInsertedString.items(0));
-
-            makeVisibleTexts();
-        }
-        elif(lastInsertedString.length() > 1) {
-            addUndoText();
-
-            line := texts.items(y);
-            line.insert(x, lastInsertedString.items(0));
-            texts.insert(y+1, lastInsertedString().subList(1,-1));
-
-            makeVisibleTexts();
-        }
-    }
-
-    def defaultKeyEvents() {
-        inherit();
 
         ### Insert Mode ###
         keyEvents['.'.to_int] = lambda(self:ViClone, key:int, key2:int) {
@@ -84,13 +32,13 @@ class ViClone
                 }
                 case ('c'.to_int) {
                     if(lastKey2 == 'w'.to_int || lastKey2 == 'e'.to_int) {
-                        addUndoText();
+                        win.addUndoText();
 
                         (y, x) := forwardWord(0); 
                         
-                        (y2, x2) := (getRealPosY(), getRealPosX());
+                        (y2, x2) := (win.getRealPosY(), win.getRealPosX());
                      
-                        line := texts.items(y2);
+                        line := win.texts.items(y2);
                         
                         if(y > y2) {
                             line.delete(x2, -1);
@@ -105,7 +53,55 @@ class ViClone
             }
         }
     }
-    def runKeyEvents(key:int, key2:int) {
+    
+    def setLastInsertedTextPos():dynamic {
+        lastInsertedTextPos = (win.getRealPosY(), win.getRealPosX());
+        lastInsertedString = SortableList<String>();
+    }
+    
+    def getLastInsertedText():dynamic {
+        (y, x) := (win.getRealPosY(), win.getRealPosX());
+
+        list := win.texts.subList(lastInsertedTextPos.value1, y+1)
+
+        if(list.length() == 1) {
+            lastInsertedString.push(list.items(0).subString(lastInsertedTextPos.value2, x));
+        }
+        elif(list.length() == 2) {
+            lastInsertedString.push(list.items(0).subString(lastInsertedTextPos.value2, -1));
+            lastInsertedString.push(list.items(1).subString(0, x+1));
+        }
+        else {
+            lastInsertedString.push(list.items(0).subString(lastInsertedTextPos.value2, -1));
+            lastInsertedString.push(list.subList(1,-2));
+            lastInsertedString.push(list.items(-1).subString(0, x+1));
+        }
+    }
+    
+    def insertOnceMore() {
+        x := win.getRealPosX();
+        y := win.getRealPosY();
+
+        if(lastInsertedString.length() == 1) {
+            win.addUndoText();
+
+            line := win.texts.items(y);
+            line.insert(x, lastInsertedString.items(0));
+
+            win.makeVisibleTexts();
+        }
+        elif(lastInsertedString.length() > 1) {
+            win.addUndoText();
+
+            line := win.texts.items(y);
+            line.insert(x, lastInsertedString.items(0));
+            win.texts.insert(y+1, lastInsertedString().subList(1,-1));
+
+            win.makeVisibleTexts();
+        }
+    }
+
+    def runKeyEvents(key:int, key2:int):dynamic {
         if(mode == EDITMODE) {
             inherit(key, key2);
 

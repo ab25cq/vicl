@@ -1,6 +1,5 @@
-include "vicl6Edit.clcl"
 
-class ViClone
+inherit ViCloneWindow
 {
     def getCursorChar(): char {
         line := visibleTexts.items(cursorY);
@@ -13,13 +12,17 @@ class ViClone
         }
     }
     
+}
+
+inherit ViClone
+{
     def forwardBrace(head_char:char, tail_char:char): Tuple2<Integer, Integer> {
-        line_num := getRealPosY();
+        line_num := win.getRealPosY();
         cursor_num := -1; 
         nest := 0; 
 
-        it := texts.items(line_num);
-        for(i:=getRealPosX()+1; i<it.length(); i++) {
+        it := win.texts.items(line_num);
+        for(i:=win.getRealPosX()+1; i<it.length(); i++) {
             if(it.chars(i) == head_char) {
                 nest++; 
             } 
@@ -35,7 +38,7 @@ class ViClone
         if(cursor_num == -1) {
             line_num++;
 
-            texts.subList(line_num, -1).each {
+            win.texts.subList(line_num, -1).each {
                 for(i:=0; i<it.length(); i++) {
                     if(it.chars(i) == head_char) {
                         nest++; 
@@ -61,12 +64,12 @@ class ViClone
     } 
 
     def backwordBrace(head_char:char, tail_char:char): Tuple2<Integer, Integer> {
-        line_num := getRealPosY();
+        line_num := win.getRealPosY();
         
         cursor_num := -1; 
         nest := 0; 
-        it := texts.items(line_num);
-        for(i:=getRealPosX()-1; i>=0; i--) 
+        it := win.texts.items(line_num);
+        for(i:=win.getRealPosX()-1; i>=0; i--) 
         {
             if(it.chars(i) == head_char) {
                 nest++; 
@@ -83,7 +86,7 @@ class ViClone
         if(cursor_num == -1) {
             line_num--;
 
-            texts.subList(0, line_num+1).reverse() .each {
+            win.texts.subList(0, line_num+1).reverse() .each {
                 for(i:=it.length()-1; i>=0; i--) {
                     if(it.chars(i) == head_char) {
                         nest++; 
@@ -110,7 +113,7 @@ class ViClone
     
     def blinkParen() {
         2.times {
-            c := getCursorChar();
+            c := win.getCursorChar();
     
             y := -1;
             x := -1;
@@ -129,7 +132,7 @@ class ViClone
             }
             
             if(y != -1 && y != -1)  {
-                moveCursor(y, x);
+                win.moveCursor(y, x);
             } 
             
             view();
@@ -139,11 +142,11 @@ class ViClone
         }
     }
 
-    def defaultKeyEvents() {
+    def initialize():dynamic {
         inherit();
 
         keyEvents['%'.to_int] = lambda(self:ViClone, key:int, key2:int) { 
-            c := getCursorChar();
+            c := win.getCursorChar();
 
             y := -1;
             x := -1;
@@ -162,7 +165,7 @@ class ViClone
             }
             
             if(y != -1 && y != -1)  {
-                moveCursor(y, x);
+                win.moveCursor(y, x);
             } 
         }
     }

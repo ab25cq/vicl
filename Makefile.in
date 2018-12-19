@@ -38,9 +38,24 @@ Clover.oclcl: Fundamental.clcl
 	cclover2 Fundamental.clcl
 	if which bclover2; then bclover2 Clover.oclcl; fi
 
-ViClone.oclcl: vicl1Lib.clcl
-	cclover2 vicl14CCompletion.clcl
+ViClone.oclcl: vicl1App.clcl
+	cclover2 vicl1App.clcl
+	cclover2 vicl2Win.clcl
+	cclover2 vicl3InsertMode.clcl
+	cclover2 vicl4Edit.clcl
+	cclover2 vicl5Word.clcl
+	cclover2 vicl6Brace.clcl
+	cclover2 vicl7DirPane.clcl
+	cclover2 vicl8CommandMode.clcl
+	cclover2 vicl9SearchMode.clcl
+	cclover2 vicl10VisualMode.clcl
+	cclover2 vicl11Undo.clcl
+	cclover2 vicl12grave.clcl
+	cclover2 vicl13dot.clcl
+	cclover2 vicl14Completion.clcl
+	cclover2 vicl15CCompletion.clcl
 	if which bclover2; then bclover2 ViClone.oclcl; fi
+	if which bclover2; then bclover2 ViCloneWindow.oclcl; fi
 
 viclone.ocl: viclone.cl
 	cclover2 viclone.cl

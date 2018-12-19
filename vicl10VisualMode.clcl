@@ -1,0 +1,198 @@
+
+inherit ViClone
+{
+    visualModeStart:int;
+    visualModeEnd:int;
+    clipBoard:SortableList<String>;
+     
+    def initialize():dynamic {
+        inherit();
+
+        visualModeStart = -1;
+        visualModeEnd = -1;
+
+        clipBoard = SortableList<String>();
+
+        ### Insert Mode ###
+        keyEvents['V'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            enterVisualMode();
+        }
+        keyEvents['p'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            pasteAfterCursor();
+        }
+        keyEvents['P'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            pasteBeforeCursor();
+        }
+    }
+
+    def enterVisualMode() {
+        mode = VISUALMODE;
+
+        visualModeStart = win.getRealPosY();
+    }
+    
+    def finishVisualMode() {
+        mode = EDITMODE;
+        visualModeEnd = win.getRealPosY();
+        win.fixCursorAndScrollTop(win.scrollTopY);
+    }
+    
+    def renterVisualMode() {
+        if(visualModeStart != -1 && visualModeEnd != -1) {
+            mode = VISUALMODE;
+            win.moveCursor(visualModeEnd, 0);
+            view();
+        }
+    }
+
+    def clearClipBoard(): dynamic {
+        clipBoard.clear();
+    }
+    def addClipBoard(line:String):dynamic {
+        clipBoard.push(line);
+    }
+
+    def pasteBeforeCursor() {
+        win.addUndoText();
+
+        line := win.getRealPosY();
+        win.texts.insert(line, clipBoard.clone());
+
+        win.makeVisibleTexts();
+        win.fixCursorAndScrollTop(win.scrollTopY);
+    }
+    def pasteAfterCursor() {
+        win.addUndoText();
+
+        line := win.getRealPosY();
+        win.texts.insert(line+1, clipBoard.clone());
+
+        win.makeVisibleTexts();
+        win.fixCursorAndScrollTop(win.scrollTopY);
+    }
+
+    def visualMode(key:int) {
+        when(key) {
+            case (('['-'A').to_int+1) {
+                finishVisualMode(); 
+            }
+
+            case ('y'.to_int) {
+                line := win.getRealPosY();
+
+                if(visualModeStart < line) {
+                    clipBoard = win.texts.subList(visualModeStart, line+1);
+                }
+                else {
+                    clipBoard = win.texts.subList(line, visualModeStart+1);
+                }
+
+                finishVisualMode(); 
+            }
+
+            case ('d'.to_int) {
+                win.addUndoText();
+
+                real_pos_y := win.getRealPosY();
+
+                if(visualModeStart < real_pos_y) {
+                    clipBoard = win.texts.subList(visualModeStart, real_pos_y+1);
+                    win.texts.deleteWithRange(visualModeStart, real_pos_y+1);
+                    
+                    if(win.texts.length() == 0) {
+                        win.texts.push("");
+                    }
+                }
+                else {
+                    clipBoard = win.texts.subList(real_pos_y, visualModeStart+1);
+                    win.texts.deleteWithRange(real_pos_y, visualModeStart+1);
+                    if(win.texts.length() == 0) {
+                        win.texts.push("");
+                    }
+                }
+
+                win.makeVisibleTexts(); 
+                finishVisualMode(); 
+                win.moveCursor(visualModeStart, 0);
+            }
+            case ('>'.to_int) {
+                win.addUndoText();
+
+                win.texts.subList(visualModeStart, win.getRealPosY()+1).each 
+                {
+                    it.insert(0, "    ");
+                } 
+                
+                win.makeVisibleTexts(); 
+                win.fixCursorAndScrollTop(win.scrollTopY);
+            }
+            case ('<'.to_int) {
+                win.addUndoText();
+
+                y := visualModeStart; 
+                y2 := win.getRealPosY();
+                
+                lines := win.texts.subList(visualModeStart, y2+1).map {
+                    it.sub(/^    /, "");
+                } 
+                
+                win.texts.deleteWithRange(visualModeStart, y2+1).insert(visualModeStart, lines); 
+                
+                win.makeVisibleTexts(); 
+                win.fixCursorAndScrollTop(win.scrollTopY);
+            }
+            else {
+                mode = EDITMODE;
+                key2 := 0;
+                when(key) {
+                    case ('d'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int, 'z'.to_int, '['.to_int, ']'.to_int, '`'.to_int, 'm'.to_int, 't'.to_int) 
+                    {
+                        key2 = getch();
+                    }
+                }
+                runKeyEvents(key, key2);
+                mode = VISUALMODE;
+            }
+        }
+    }
+
+    def view():dynamic {
+        if(mode == VISUALMODE) {
+            for(y:=0; y<win.visibleTexts.length(); y++) {
+                line := win.visibleTexts.items(y);
+
+                if(line == null) {
+                    break;
+                }
+
+                y2 := win.viewYToRealY(y);
+                cursor_line := win.viewYToRealY(win.cursorY);
+
+                if((y2 >= visualModeStart && y2 <= cursor_line) || (y2 >= cursor_line && y2 <= visualModeStart))
+                {
+                    attron(A_REVERSE);
+                }
+
+                ### cursor line ####
+                mvprintw(y, 0 + dirPaneLength, line);
+
+                if((y2 >= visualModeStart && y2 <= cursor_line) || (y2 >= cursor_line && y2 <= visualModeStart))
+                {
+                    attroff(A_REVERSE);
+                }
+           }
+        }
+        else {
+            inherit();
+        }
+    }
+
+    def runKeyEvents(key:int, key2:int):dynamic {
+        if(mode == VISUALMODE) {
+            visualMode(key);
+        }
+        else {
+            inherit(key, key2);
+        }
+    }
+}

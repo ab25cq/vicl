@@ -4,7 +4,7 @@ Vi Clone by Clover2.
 
 This is under constructing. I recommended that you use this for Clover2 test sources.
 
-require Clover2 version 8.0.0 later
+require Clover2 version 8.1.8 later
 
 * Install
 

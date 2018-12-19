@@ -1,5 +1,0 @@
-include "vicl2DirPane.clcl"
-
-class ViClone
-{
-}

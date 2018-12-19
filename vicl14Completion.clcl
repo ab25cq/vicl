@@ -1,21 +1,133 @@
-include "vicl7Undo.clcl"
 
-class ViClone
+inherit ViClone
 {
     completionCommandNames:SortableList<String>;
 
-    def initialize() {
+    # result is -1 --> canceled to select
+    def selectStrings(message:String, strings:SortableList<String>):int {
+        result := -1;
+
+        cursor := 0;
+        scroll_top := 0;
+        maxy := getmaxy()-1;
+        maxx := getmaxx();
+
+        while(true) {
+            clearWithoutBlink();
+
+            n := 0;
+            mvprintw(0, 0 , message.subString(0, maxx-1));
+
+            strings.subList(scroll_top, scroll_top+maxy-1).each  {
+                if(cursor == n) {
+                    attron(A_REVERSE);
+                    mvprintw(n+1, 0, it);
+                    attroff(A_REVERSE);
+                }
+                else {
+                    mvprintw(n+1, 0, it);
+                }
+                n++;
+            }
+
+            refresh();
+
+            key := getch();
+
+            when(key) {
+                case (('['-'A').to_int+1, ('C'-'A').to_int + 1) {
+                    break;
+                }
+                case (KEY_UP, 'k'.to_int) {
+                    cursor--;
+                }
+                case (KEY_DOWN, 'j'.to_int, ('I'-'A').to_int + 1) {
+                    cursor++;
+                }
+                case (('J'-'A').to_int + 1) {
+                    result = scroll_top + cursor;
+                    break;
+                }
+            }
+
+            if(cursor >= n) {
+                scroll_top++;
+                cursor = n -2;
+
+                if(scroll_top >= strings.length()) {
+                    scroll_top = strings.length()-1;
+                    cursor = strings.length()-1-scroll_top;
+                }
+            }
+
+            if(cursor < 0) {
+                scroll_top--;
+                cursor++;
+
+                if(scroll_top < 0) {
+                    scroll_top = 0;
+                    cursor = 0;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    def initialize():dynamic {
         inherit();
         completionCommandNames = tyclover2("--command").toString().split(/\n/)
+
+        keyEvents['['.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            when(key2) {
+                case ('['.to_int) {
+                    if(win.fileName.match(/.+\.cl|.+\.clcl/)) {
+                        (y, x) := getMethodDefinitionTop();
+    
+                        if(y != -1 && x != -1) {
+                            win.moveCursor(y, x);
+                        }
+                    }
+                    else {
+                        (y, x) := getFunctionDefinitionTop();
+    
+                        if(y != -1 && x != -1) {
+                            win.moveCursor(y, x);
+                        }
+                    }
+                }
+            }
+        }
+
+        keyEvents[']'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            when(key2) {
+                case (']'.to_int) {
+                    if(win.fileName.match(/.+\.cl|.+\.clcl/)) {
+                        (y, x) := getNextmethodDefinitionTop();
+    
+                        if(y != -1 && x != -1) {
+                            win.moveCursor(y, x);
+                        }
+                    }
+                    else {
+                        (y, x) := getNextFunctionDefinitionTop();
+    
+                        if(y != -1 && x != -1) {
+                            win.moveCursor(y, x);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     def getMethodDefinitionTop(): Tuple2<Integer, Integer> {
-        for(i:=getRealPosY()-1; i>=0; i--) {
-            line := texts.items(i);
+        for(i:=win.getRealPosY()-1; i>=0; i--) {
+            line := win.texts.items(i);
 
             if(line.match(/def\s+.+\(/)) {
-                for(y := i; y<texts.length(); y++) {
-                    line := texts.items(y);
+                for(y := i; y<win.texts.length(); y++) {
+                    line := win.texts.items(y);
 
                     x := line.indexOf("{");
 
@@ -29,12 +141,12 @@ class ViClone
         return (-1, -1)
     }
     def getNextmethodDefinitionTop(): Tuple2<Integer, Integer> {
-        for(i:=getRealPosY()+1; i<texts.length(); i++) {
-            line := texts.items(i);
+        for(i:=win.getRealPosY()+1; i<win.texts.length(); i++) {
+            line := win.texts.items(i);
 
             if(line.match(/def\s+.+\(/)) {
-                for(y := i; y<texts.length(); y++) {
-                    line := texts.items(y);
+                for(y := i; y<win.texts.length(); y++) {
+                    line := win.texts.items(y);
 
                     x := line.indexOf("{");
 
@@ -49,8 +161,8 @@ class ViClone
     }
 
     def getInnerClassDefinitionName(): String {
-        for(i:=getRealPosY()-1; i>=0; i--) {
-            line := texts.items(i);
+        for(i:=win.getRealPosY()-1; i>=0; i--) {
+            line := win.texts.items(i);
 
             if(line.match(/^class\s+[a-zA-Z0-9_]+/)) {
                 return line.scan(/^class\s+([a-zA-Z0-9_]+)/).items(1);
@@ -64,8 +176,8 @@ class ViClone
     }
     
     def getFunctionDefinitionTop():Tuple2<Integer, Integer> {
-        for(i:=getRealPosY()-1; i>=0; i--) {
-            line := texts.items(i);
+        for(i:=win.getRealPosY()-1; i>=0; i--) {
+            line := win.texts.items(i);
 
             if(line.indexOf("{") == 0) {
                 return (i, 0);
@@ -76,8 +188,8 @@ class ViClone
     }
     
     def getNextFunctionDefinitionTop():Tuple2<Integer, Integer> {
-        for(i:=getRealPosY()+1; i<texts.length(); i++) {
-            line := texts.items(i);
+        for(i:=win.getRealPosY()+1; i<win.texts.length(); i++) {
+            line := win.texts.items(i);
 
             if(line.indexOf("}") == 0) {
                 return (i, 0);
@@ -87,55 +199,9 @@ class ViClone
         return (-1, -1);
     }
     
-    def defaultKeyEvents() {
-        inherit();
-
-        keyEvents['['.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            when(key2) {
-                case ('['.to_int) {
-                    if(fileName.match(/.+\.cl|.+\.clcl/)) {
-                        (y, x) := getMethodDefinitionTop();
-    
-                        if(y != -1 && x != -1) {
-                            moveCursor(y, x);
-                        }
-                    }
-                    else {
-                        (y, x) := getFunctionDefinitionTop();
-    
-                        if(y != -1 && x != -1) {
-                            moveCursor(y, x);
-                        }
-                    }
-                }
-            }
-        }
-
-        keyEvents[']'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            when(key2) {
-                case (']'.to_int) {
-                    if(fileName.match(/.+\.cl|.+\.clcl/)) {
-                        (y, x) := getNextmethodDefinitionTop();
-    
-                        if(y != -1 && x != -1) {
-                            moveCursor(y, x);
-                        }
-                    }
-                    else {
-                        (y, x) := getNextFunctionDefinitionTop();
-    
-                        if(y != -1 && x != -1) {
-                            moveCursor(y, x);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
     def getSource():String {
         source := "";
-        if(fileName.match(/.+\.clcl/)) {
+        if(win.fileName.match(/.+\.clcl/)) {
             (y, x) := getMethodDefinitionTop();
             
             ### get argument variable ###
@@ -143,7 +209,7 @@ class ViClone
             source.append("self:\{class_name}? = null;\n");
             
             for(i:=y; i>=0; i--) {
-                line2 := texts.items(i);
+                line2 := win.texts.items(i);
                 
                 if(line2.match(/def\s+(.+)\(.*\)/)) {
                     line_arguments := line2.scan(/def\s+.+\((.*)\)/).items(1);
@@ -184,27 +250,27 @@ class ViClone
                 }
             }
             
-            line2 := texts.items(y);
+            line2 := win.texts.items(y);
             source.append(line2.subString(x+1, -1));
             source.append("\n");
             
-            for(i=y+1; i<getRealPosY(); i++) {
-                line2 = texts.items(i);
+            for(i=y+1; i<win.getRealPosY(); i++) {
+                line2 = win.texts.items(i);
                 source.append(line2);
                 source.append("\n");
             }
             
-            line2 = texts.items(i);
-            source.append(line2.subString(0, getRealPosX()));
+            line2 = win.texts.items(i);
+            source.append(line2.subString(0, win.getRealPosX()));
         }
         else {
-            for(i:=0; i<getRealPosY(); i++) {
-                line2 := texts.items(i);
+            for(i:=0; i<win.getRealPosY(); i++) {
+                line2 := win.texts.items(i);
                 source.append(line2);
                 source.append("\n");
             }
-            line2 := texts.items(i);
-            source.append(line2.subString(0, getRealPosX()));
+            line2 := win.texts.items(i);
+            source.append(line2.subString(0, win.getRealPosX()));
         }
         
         ### remove comment ###
@@ -223,7 +289,7 @@ class ViClone
     }
 
     def skipBlock(line_num:int):int {
-        p := texts.subList(line_num, -1).join("\n").toBuffer();
+        p := win.texts.subList(line_num, -1).join("\n").toBuffer();
         p.append('\0');
 
         squote := false;
@@ -276,16 +342,6 @@ class ViClone
         for(i:=0; i<source.length(); i++) {
             line := source.items(i);
             
-/*
-            if(line.match(/include ".+"/)) {
-                file_name := line.scan(/include "(.+)"/).items(1);
-
-                source2 := file_name.toPath().read().toString().split(/\n/);
-
-                innerFieldsCompletion(source2, inner_fields, inner_class_name);
-            }
-*/
-
             if(line.match(/class\s+[a-zA-Z0-9_]+/)) {
                 class_name := line.scan(/class\s+([a-zA-Z0-9_]+)/).items(1);
 
@@ -326,16 +382,6 @@ class ViClone
         inner_class_flag := false;
         for(i:=0; i<source.length(); i++) {
             line := source.items(i);
-            
-/*
-            if(line.match(/include ".+"/)) {
-                file_name := line.scan(/include "(.+)"/).items(1);
-
-                source2 := file_name.toPath().read().toString().split(/\n/);
-
-                innerMethodCompletion(source2, inner_methods, inner_class_name);
-            }
-*/
 
             if(line.match(/class\s+[a-zA-Z0-9_]+/)) {
                 class_name := line.scan(/class\s+([a-zA-Z0-9_]+)/).items(1);
@@ -405,7 +451,7 @@ class ViClone
         }
         words.append(global_methods);
         
-        if(fileName.match(/.+\.clcl$/)) {
+        if(win.fileName.match(/.+\.clcl$/)) {
             inner_class_name := getInnerClassDefinitionName();
 
             class_name := Clover.primitiveClassToBoxingClass(inner_class_name);
@@ -435,7 +481,7 @@ class ViClone
             words.append(inner_fields);
         }
         
-        words.append(texts.join("\n").scan(/\w+/));
+        words.append(win.texts.join("\n").scan(/\w+/));
         
         (inputing_text,j) := gettingInputingWord();
         completion_core(inputing_text, j, words)
@@ -468,18 +514,18 @@ class ViClone
     {
         result := SortableList<String>();
 
-        get_class_names(texts, result);
+        get_class_names(win.texts, result);
 
         return result;
     }
     
     def methodNameCompletion() {
-        line := texts.items(getRealPosY());
+        line := win.texts.items(win.getRealPosY());
 
         source := getSource();
         
         type_name := "";
-        if(fileName.match(/.+\.clcl/)) {
+        if(win.fileName.match(/.+\.clcl/)) {
             class_name := getInnerClassDefinitionName();
 
             if(class_name.equals("")) {
@@ -538,7 +584,7 @@ class ViClone
     }
 
     def fileCompletion() {
-        line := texts.items(getRealPosY());
+        line := win.texts.items(win.getRealPosY());
 
         p := line.toBuffer();
         p += p.length() -1;
@@ -601,19 +647,19 @@ class ViClone
             try {
                 if(completionedFileName.toPath().to_stat().S_ISDIR()) {
                     line.append("/");
-                    cursorX++;
+                    win.cursorX++;
                 }
                 elif(squort) {
                     line.append("' ");
-                    cursorX+=2;
+                    win.cursorX+=2;
                 }
                 elif(dquort) {
                     line.append("\" ");
-                    cursorX+=2;
+                    win.cursorX+=2;
                 }
                 else {
                     line.append(" ");
-                    cursorX++;
+                    win.cursorX++;
                 }
             }
             catch(e:Exception) {
@@ -622,7 +668,7 @@ class ViClone
     }
 
     def shellModeCompletion() {
-        line := texts.items(getRealPosY());
+        line := win.texts.items(win.getRealPosY());
 
         command_name_completion := true;
 
@@ -728,10 +774,10 @@ class ViClone
     }
 
     def gettingInputingWord():Tuple2<String,Integer> {
-        line := texts.items(getRealPosY());
+        line := win.texts.items(win.getRealPosY());
         
         ### getting inputing word ###
-        start_i := getRealPosX()-1;
+        start_i := win.getRealPosX()-1;
         if(start_i >= line.length()) {
             start_i = line.length()-1;
         }
@@ -756,7 +802,7 @@ class ViClone
     }
 
     def completion_core(inputing_text:String, i:int, words:SortableList<String>):bool {
-        line := texts.items(getRealPosY());
+        line := win.texts.items(win.getRealPosY());
         
         candidates := words.select { it.indexOf(inputing_text) == 0 && !it.equals(inputing_text) }.sort().uniq();
 
@@ -769,12 +815,12 @@ class ViClone
                 selected_string = selected_string.scan(/([a-zA-Z_]+)\s*\(/).items(1);
             }
 
-            line.delete(i, getRealPosX()); 
+            line.delete(i, win.getRealPosX()); 
             line.insert(i, selected_string);
-            cursorX += selected_string.length() - (getRealPosX() - i)
+            win.cursorX += selected_string.length() - (win.getRealPosX() - i)
         }
         else {
-            index := selectStrings(line.subString(0, MaxX-1), candidates);
+            index := selectStrings(line.subString(0, win.MaxX-1), candidates);
 
             if(index == -1) {
                 return false;
@@ -786,9 +832,9 @@ class ViClone
                     selected_string = selected_string.scan(/([a-zA-Z_]+)\s*\(/).items(1);
                 }
 
-                line.delete(i, getRealPosX());
+                line.delete(i, win.getRealPosX());
                 line.insert(i, selected_string);
-                cursorX += selected_string.length() - (getRealPosX() - i)
+                win.cursorX += selected_string.length() - (win.getRealPosX() - i)
             }
         }
 
@@ -817,10 +863,10 @@ class ViClone
     }
     
     def getWords():SortableList<String> {
-        return texts.join("\n").toCommand().bash("-c", "sed -r 's/(\\s|\\W)+/\\n/g' | egrep -v '\\W+' | egrep -v '^$' | sort | uniq").toString().split('\n');
+        return win.texts.join("\n").toCommand().bash("-c", "sed -r 's/(\\s|\\W)+/\\n/g' | egrep -v '\\W+' | egrep -v '^$' | sort | uniq").toString().split('\n');
     }
     
-    def completion() {
+    def completion():dynamic {
         words := getWords();
         
         (inputing_text,i) := gettingInputingWord();

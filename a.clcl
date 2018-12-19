@@ -3,7 +3,6 @@ include "b.clcl"
 class ClassCloverTest {
     abc:int;
     bcd:String;
-
     XYZ:String;
     
     def initialize() {
@@ -11,23 +10,7 @@ class ClassCloverTest {
         bcd = "ABC";
         XYZ = "DEF";
     }
-aaa    
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-bbb
-ccc
 
-    def method2(aaa:String, bbb:String):String {
-        return aaa.push(bbb);
-    }
-    
     def method3():String {
         return "ABC";
     }
