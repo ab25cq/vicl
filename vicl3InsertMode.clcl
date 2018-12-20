@@ -4,6 +4,14 @@ inherit ViCloneWindow
     def addUndoText(): dynamic {}
     def clearUndoText():dynamic {}
 
+    var modifiedText:bool;
+
+    def initialize(fname:String, dir_path:String, win_pos:int, arg_line_num:int, vicl:ViClone):dynamic {
+        inherit(fname, dir_path, win_pos, arg_line_num, vicl);
+
+        modifiedText = false;
+    }
+
     def fixCursorAndScrollTopOnInsertMode(scrolltop_y_before:int) {
         y := getRealPosY();
         x := getRealPosX();
@@ -99,8 +107,6 @@ inherit ViCloneWindow
 
 inherit ViClone
 {
-    var modifiedText:bool;
-
     def setLastInsertedTextPos(): dynamic {
     }
     def getLastInsertedText(): dynamic {
@@ -128,8 +134,6 @@ inherit ViClone
 
     def initialize():dynamic {
         inherit();
-
-        modifiedText = false;
 
         ### Insert Mode ###
         keyEvents['i'.to_int] = lambda(self:ViClone, key:int, key2:int) {
@@ -365,7 +369,7 @@ inherit ViClone
 
     def runKeyEvents(key:int, key2:int): dynamic {
         if(mode == INSERTMODE) {
-            modifiedText = true;
+            win.modifiedText = true;
             insertMode(key);
         }
         else {

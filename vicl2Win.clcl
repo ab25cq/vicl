@@ -15,8 +15,11 @@ class ViCloneWindow
 
     var winPos: int;
 
-    def initialize(fname:String, win_pos:int):dynamic {
+    var dirPath:String;
+
+    def initialize(fname:String, dir_path:String, win_pos:int, arg_line_num:int, vicl:ViClone):dynamic {
         fileName = fname.clone();
+        dirPath = dir_path.clone();
 
         winPos = win_pos;
 
@@ -30,7 +33,13 @@ class ViCloneWindow
 
     def makeMaxxy(vicl:ViClone) {
         MaxX = getmaxx() - vicl.dirPaneLength;
-        MaxY = (getmaxy() -1)/ vicl.windows.length();
+
+        len := 1;
+        if(vicl.windows.length() > 1) {
+            len = vicl.windows.length();
+        }
+
+        MaxY = (getmaxy() -1)/ len;
     }
 
     def makeVisibleTexts() {
@@ -192,7 +201,18 @@ inherit ViClone
 
         windows = List<ViCloneWindow>();
 
-        win = ViCloneWindow(argFileName, 0);
+        path := "";
+        
+        try {
+            path = realpath(getcwd().append("/").append(argFileName));
+        }
+        catch(e:Exception) {
+        }
+
+        fname := basename(path);
+        dir_path := dirname(path);
+
+        win = ViCloneWindow(fname, dir_path, 0, argLineNum, self);
 
         windows.push(win);
 

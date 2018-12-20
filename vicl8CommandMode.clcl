@@ -38,26 +38,38 @@ inherit ViClone
             }
             case (KEY_ENTER, ('J'-'A').to_int+1) {
                 if(statusLineInCommandMode.match(/w/) && statusLineInCommandMode.match(/q/)) {
-                    writeToFile();
+                    windows.each {
+                        it.writeToFile();
+                        it.saveCursorPos();
+                    }
                     endOfAplication = true;
-                    saveCursorPos();
                 }
                 elif(statusLineInCommandMode.match(/q/) && statusLineInCommandMode.match(/!/)) {
                     endOfAplication = true;
 
-                    saveCursorPos();
+                    windows.each {
+                        it.saveCursorPos();
+                    }
                 }
                 elif(statusLineInCommandMode.match(/w/)) {
-                    writeToFile();
-                    modifiedText = false;
-                    saveCursorPos();
+                    win.writeToFile();
+                    win.saveCursorPos();
+                    win.modifiedText = false;
                 }
                 elif(statusLineInCommandMode.match(/q/)) {
-                    if(!modifiedText) {
+                    flag := false;
+                    windows.each {
+                        if(it.modifiedText) {
+                            flag = true;
+                        }
+                    }
+                    if(!flag) {
                         endOfAplication = true;
                     }
 
-                    saveCursorPos();
+                    windows.each {
+                        it.saveCursorPos();
+                    }
                 }
 
                 mode = EDITMODE;

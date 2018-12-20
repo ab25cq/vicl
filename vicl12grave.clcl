@@ -5,8 +5,8 @@ inherit ViCloneWindow
     numGraveCursorPosition: int;
     savedCursorPosition: int;
      
-    def initialize(fname:String, win_pos:int):dynamic {
-        inherit(fname, win_pos);
+    def initialize(fname:String, dir_path:String, win_pos:int, arg_line_num:int, vicl:ViClone):dynamic {
+        inherit(fname, dir_path, win_pos, arg_line_num, vicl);
         
         numGraveCursorPosition = 'z'-'a'+1;
         graveCursorPosition = int[numGraveCursorPosition]();

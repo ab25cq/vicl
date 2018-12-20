@@ -1,33 +1,36 @@
 
-inherit ViClone
+inherit ViCloneWindow
 {
     ccompletionCandidates: SortableList<String>;
     
-    def initialize():dynamic {
-        inherit();
+    def getCMacros():SortableList<String> {
+        return texts.join("\n").toCommand().bash("-c", "gcc -I . -I \{dirname(dirPath.add("/").add(fileName))} -E -dM -xc - | sed -r 's/#define (\\w+) .+/\\1/' | grep -v '#define'").toString().split('\n');
+    }
 
-        rehashCCompletion();
+    def getCFuncTags():SortableList<String> {
+        return texts.join("\n").toCommand().bash("-c", "gcc -I. -I \{dirname(dirPath.add("/").add(fileName))} -E -xc - | grep extern | sed -r 's/^extern [a-zA-Z0-9_]+ \\*?([a-zA-Z0-9_]+ \\(.+)/\\1/'").toString().split('\n');
     }
 
     def rehashCCompletion():dynamic {
-        if(win.fileName.match(/.+\.c/)) {
+        if(fileName.match(/.+\.c/)) {
             ccompletionCandidates = SortableList<String>();
             
             ccompletionCandidates.append(getCFuncTags())
             ccompletionCandidates.append(getCMacros());
         }
     }
+}
 
-    def getCMacros():SortableList<String> {
-        return win.texts.join("\n").toCommand().bash("-c", "gcc -I . -I \{dirname(dirName.add("/").add(win.fileName))} -E -dM -xc - | sed -r 's/#define (\\w+) .+/\\1/' | grep -v '#define'").toString().split('\n');
-    }
+inherit ViClone
+{
+    def initialize():dynamic {
+        inherit();
 
-    def getCFuncTags():SortableList<String> {
-        return win.texts.join("\n").toCommand().bash("-c", "gcc -I. -I \{dirname(dirName.add("/").add(win.fileName))} -E -xc - | grep extern | sed -r 's/^extern [a-zA-Z0-9_]+ \\*?([a-zA-Z0-9_]+ \\(.+)/\\1/'").toString().split('\n');
+        win.rehashCCompletion();
     }
 
     def topLevelCCompletion() {
-        words := ccompletionCandidates;
+        words := win.ccompletionCandidates;
         words.append(getWords());
         
         (inputing_text,j) := gettingInputingWord();

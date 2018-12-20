@@ -1,24 +1,5 @@
-class ClassCloverTest {
-    ZZZ:List<String>;
-
-    def initialize() {
-        ggg := {1,2,3}
-    }
-
-    def getZZZ():List<String> {
-        return ZZZ
-    }
-}
-
-class ClassCloverTest2 {
-    YYY:Path;
-
-    def initialize() {
-        ggg := "ABC";
-    }
-
-    def getYYY():Path {
-        a := ClassCloverTest();
-        return YYY;
-    }
-}
+AAA
+BBB
+CCC
+aaaa
+bbbb
