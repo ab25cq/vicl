@@ -145,8 +145,21 @@ inherit ViClone
     dirCursor:int; 
     visibleDirPane: bool
     fileNames: SortableList<String>?;
+    dirWinToggle: int;
 
     def enterCommandMode():dynamic {}
+
+    def getWinIndex():int {
+        n := 0;
+        windows.each {
+            if(win == it) {
+                break;
+            }
+            n++;
+        }
+
+        return n;
+    }
     
     def initialize():dynamic {
         inherit();
@@ -157,12 +170,56 @@ inherit ViClone
         dirCursor = 0; 
         
         visibleDirPane = false;
+
+        dirWinToggle = -1;
         
         dirName = getcwd();
         #changeDirectory(getcwd());
 
-        keyEvents[('W'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {  # Control-W
+        keyEvents[('N'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {
             dirPaneOn(); 
+        }
+        keyEvents[('W'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {
+            when(key2) {
+                case ('j'.to_int) {
+                    n := getWinIndex();
+
+                    if(n+1 < windows.length()) {
+                        win = windows.items(n+1);
+                        dirWinToggle = n;
+                    }
+                }
+                case ('k'.to_int) {
+                    n := getWinIndex();
+
+                    if(n-1 >= 0) {
+                        win = windows.items(n-1);
+                        dirWinToggle = n;
+                    }
+                }
+                case (('W'-'A').to_int+1) {
+                    if(dirWinToggle == -1) {
+                        n := getWinIndex();
+                        dirWinToggle = n;
+
+                        if(n+1 < windows.length()) {
+                            win = windows.items(n+1);
+                        }
+                        else {
+                            win = windows.items(0);
+                        }
+                    }
+                    else {
+                        n := getWinIndex();
+
+                        if(dirWinToggle < windows.length()) {
+                            win = windows.items(dirWinToggle);
+                        }
+
+                        dirWinToggle = n;
+                    }
+                }
+            }
         }
 
         keyEvents['Z'.to_int] = lambda(self:ViClone, key:int, key2:int) {
@@ -524,23 +581,8 @@ inherit ViClone
                 clear();
                 view();
             }
-            case (('W'-'A').to_int+1) {
+            case (('N'-'A').to_int+1) {
                 dirPaneOff(); 
-
-                n := 0;
-                windows.each {
-                    if(win == it) {
-                        break;
-                    }
-                    n++;
-                }
-
-                if(n+1 < windows.length()) {
-                    win = windows.items(n+1);
-                }
-                else {
-                    win = windows.items(0);
-                }
             }
         }
     }
@@ -613,7 +655,7 @@ inherit ViClone
 
                 if(vicl.mode == ViClone.EDITMODE) {
                     when(key) {
-                        case ('d'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int, 'z'.to_int, '['.to_int, ']'.to_int, '`'.to_int, 'm'.to_int, 't'.to_int) 
+                        case ('d'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int, 'z'.to_int, '['.to_int, ']'.to_int, '`'.to_int, 'm'.to_int, 't'.to_int, ('W'-'A').to_int+1) 
                         {
                             key2 = getch();
                         }
