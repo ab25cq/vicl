@@ -617,7 +617,10 @@ inherit ViClone
 
         dir := dirname(word);
 
-        if(word.equals("/")) {
+        if(word.equals("")) {
+            dir = "."
+        }
+        elif(word.equals("/")) {
             dir = "/";
         }
         elif(word.chars(-1) == '/') {
