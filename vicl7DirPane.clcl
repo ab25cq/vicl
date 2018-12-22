@@ -26,7 +26,6 @@ inherit ViCloneWindow
             
             path := getCursorPositionDir().add(fileName);
             (scrollTopY+cursorY+1).toString().write(path);
-        } catch(e:Exception) {
         }
     }
 
@@ -364,14 +363,14 @@ inherit ViClone
                 if(dirCursor == i) {
                     if(i+dirScrollTop < fileNames.length()) {
                         attron(A_REVERSE); 
-                        mvprintw(i, 0, "%-\{dirPaneLength-1}s", array { fileNames.items(i+dirScrollTop).subString(0, dirPaneLength-1) });
+                        mvprintw(i, 0, "%-\{dirPaneLength-1}s", slist { fileNames.items(i+dirScrollTop).subString(0, dirPaneLength-1) });
                         attroff(A_REVERSE); 
                     }
                     mvprintw(i, dirPaneLength-1, "|");
                 }
                 else {
                     if(i+dirScrollTop < fileNames.length()) {
-                        mvprintw(i, 0, "%-\{dirPaneLength-1}s|", array { fileNames.items(i+dirScrollTop).subString(0, dirPaneLength-1) });
+                        mvprintw(i, 0, "%-\{dirPaneLength-1}s|", slist { fileNames.items(i+dirScrollTop).subString(0, dirPaneLength-1) });
                     }
                     else { 
                         mvprintw(i, 0, " ".multiply(dirPaneLength-1).append("|"));
@@ -390,7 +389,7 @@ inherit ViClone
         
         while(!end_flag) {
             view();
-            mvprintw(maxy-1, 0, "/%s", array { status_line_in_search_mode });
+            mvprintw(maxy-1, 0, "/%s", slist { status_line_in_search_mode });
             refresh();
 
             key := getch();
@@ -616,8 +615,6 @@ inherit ViClone
         
         try {
             file_path2 = realpath(file_path);
-        }
-        catch(e:Exception) {
         }
         
         dir_name := dirname(file_path2);

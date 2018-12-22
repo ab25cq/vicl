@@ -504,7 +504,6 @@ inherit ViClone
                     source2 := file_name.toPath().read().toString().split(/\n/);
 
                     get_class_names(source2, result);
-                } catch(e:Exception) {
                 }
             }
         }
@@ -664,8 +663,6 @@ inherit ViClone
                     line.append(" ");
                     win.cursorX++;
                 }
-            }
-            catch(e:Exception) {
             }
         }
     }

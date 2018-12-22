@@ -382,9 +382,7 @@ inherit ViClone
 
         attron(A_REVERSE);
         try {
-            mvprintw(maxy-1, 0, "%s %d %d %s", array { (win.fileName?.nothing():""), win.getRealPosY() + 1, win.getRealPosX(), if(win.modifiedText) { "changed" } else { "no changed" } });
-        }
-        catch (e:Exception) {
+            mvprintw(maxy-1, 0, "%s %d %d %s", { (win.fileName?.nothing():""), win.getRealPosY() + 1, win.getRealPosX(), if(win.modifiedText) { "changed" } else { "no changed" } });
         }
         attroff(A_REVERSE);
     }
@@ -399,10 +397,10 @@ inherit ViClone
 
             attron(A_REVERSE);
             if(win.fileName == null) {
-                mvprintw(maxy-1, 0, "INSERT %d %d", array { win.getRealPosY(), win.getRealPosX() } );
+                mvprintw(maxy-1, 0, "INSERT %d %d", { win.getRealPosY(), win.getRealPosX() } );
             }
             else {
-                mvprintw(maxy-1, 0, "INSERT %s %d %d", array { win.fileName, win.getRealPosY(), win.getRealPosX()});
+                mvprintw(maxy-1, 0, "INSERT %s %d %d", { win.fileName, win.getRealPosY(), win.getRealPosX()});
             }
             attroff(A_REVERSE);
         }
