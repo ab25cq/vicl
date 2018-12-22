@@ -147,7 +147,7 @@ class ViCloneWindow
             }
 
             ### cursor line ####
-            if(cursorY == y) {
+            if(cursorY == y && ViClone.vicl.win == self) {
                 if(line.length() == 0) {
                     attron(A_REVERSE);
                     mvprintw(y + winPos, 0 + ViClone.vicl.dirPaneLength, " ");
@@ -170,18 +170,26 @@ class ViCloneWindow
                         attron(A_REVERSE);
                         mvprintw(y + winPos, cursorX+ViClone.vicl.dirPaneLength
                             , "%s", array { c.toString() });
-                        attroff(A_REVERSE);
+                       attroff(A_REVERSE);
 
-                        mvprintw(y + winPos, cursorX+1+ViClone.vicl.dirPaneLength
-                            , line.subString(cursorX+1, -1));
-                    }
-                }
+                       mvprintw(y + winPos, cursorX+1+ViClone.vicl.dirPaneLength
+                           , line.subString(cursorX+1, -1));
+                   }
+               }
             }
             ### visible line ###
             else {
                 mvprintw(y + winPos, 0 + ViClone.vicl.dirPaneLength, line);
             }
-       }
+        }
+
+        try {
+            attron(A_REVERSE);
+            mvprintw(MaxY -1 + winPos, 0 + ViClone.vicl.dirPaneLength, "%s/%s%s", { dirPath, fileName, " ".multiply(getmaxx()-1-ViClone.vicl.dirPaneLength-dirPath.length()-fileName.length()-1) });
+            attroff(A_REVERSE);
+        }
+        catch(e:Exception) {
+        }
     }
 }
 

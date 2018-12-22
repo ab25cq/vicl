@@ -237,21 +237,35 @@ inherit ViClone
         len := windows.length();
 
         maxy := getmaxy();
+        
+        win_size := (maxy-1) / (len+1);
 
-        win_pos := ((maxy-1) / (len+1)) * len
+        win_pos := win_size * len;
 
         win := ViCloneWindow(fname, dirname, win_pos, line_num, self);
 
         windows.push(win);
 
-        windows.each {
-            it.makeMaxxy(self);
-            it.makeVisibleTexts();
-        }
+        resizeWindows();
 
         return win;
     }
 
+    def resizeWindows() {
+        len := windows.length();
+
+        maxy := getmaxy();
+        win_size := (maxy-1) / len;
+
+        n := 0;
+        windows.each {
+            it.winPos = win_size * n;
+            it.makeMaxxy(self);
+            it.makeVisibleTexts();
+            
+            n++;
+        }
+    }
     
     def changeDirectory(path:String) {
         dirName = path.clone();

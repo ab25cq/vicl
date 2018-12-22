@@ -62,10 +62,7 @@ inherit ViClone
 
                         win = windows.items(-1);
 
-                        windows.each {
-                            it.makeMaxxy(self);
-                            it.makeVisibleTexts();
-                        }
+                        resizeWindows();
                     }
                 }
                 elif(statusLineInCommandMode.match(/q/) && statusLineInCommandMode.match(/!/)) {
@@ -100,10 +97,7 @@ inherit ViClone
 
                             win = windows.items(-1);
 
-                            windows.each {
-                                it.makeMaxxy(self);
-                                it.makeVisibleTexts();
-                            }
+                            resizeWindows();
                         }
                     }
     
