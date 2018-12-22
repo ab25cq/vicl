@@ -26,6 +26,14 @@ inherit ViClone
             case ('q'.to_int) {
                 statusLineInCommandMode.append("q");
             }
+            case ('s'.to_int) {
+                statusLineInCommandMode.append("s");
+            }
+            case ('p'.to_int) {
+                if(statusLineInCommandMode.chars(-1) == 's') {
+                    statusLineInCommandMode.append("p");
+                }
+            }
             case ('!'.to_int) {
                 statusLineInCommandMode.append("!");
             }
@@ -38,11 +46,27 @@ inherit ViClone
             }
             case (KEY_ENTER, ('J'-'A').to_int+1) {
                 if(statusLineInCommandMode.match(/w/) && statusLineInCommandMode.match(/q/)) {
-                    windows.each {
-                        it.writeToFile();
-                        it.saveCursorPos();
+                    if(windows.length() == 1) {
+                        win.writeToFile();
+                        win.saveCursorPos();
+                        win.modifiedText = false;
+    
+                        endOfAplication = true;
                     }
-                    endOfAplication = true;
+                    else {
+                        win.writeToFile();
+                        win.saveCursorPos();
+                        win.modifiedText = false;
+    
+                        windows.deleteByID(win);
+
+                        win = windows.items(-1);
+
+                        windows.each {
+                            it.makeMaxxy(self);
+                            it.makeVisibleTexts();
+                        }
+                    }
                 }
                 elif(statusLineInCommandMode.match(/q/) && statusLineInCommandMode.match(/!/)) {
                     endOfAplication = true;
@@ -50,30 +74,45 @@ inherit ViClone
                     windows.each {
                         it.saveCursorPos();
                     }
+    
+                    mode = EDITMODE;
+                    statusLineInCommandMode = "";
                 }
                 elif(statusLineInCommandMode.match(/w/)) {
                     win.writeToFile();
                     win.saveCursorPos();
                     win.modifiedText = false;
+    
+                    mode = EDITMODE;
+                    statusLineInCommandMode = "";
                 }
                 elif(statusLineInCommandMode.match(/q/)) {
-                    flag := false;
-                    windows.each {
-                        if(it.modifiedText) {
-                            flag = true;
+                    if(windows.length() == 1) {
+                        if(!win.modifiedText) {
+                            win.saveCursorPos();
+                            endOfAplication = true;
                         }
                     }
-                    if(!flag) {
-                        endOfAplication = true;
-                    }
+                    else {
+                        if(!win.modifiedText) {
+                            win.saveCursorPos();
+                            windows.deleteByID(win);
 
-                    windows.each {
-                        it.saveCursorPos();
+                            win = windows.items(-1);
+
+                            windows.each {
+                                it.makeMaxxy(self);
+                                it.makeVisibleTexts();
+                            }
+                        }
                     }
+    
+                    mode = EDITMODE;
+                    statusLineInCommandMode = "";
                 }
-
-                mode = EDITMODE;
-                statusLineInCommandMode = "";
+                elif(statusLineInCommandMode.match(/sp/)) {
+                    dirPaneOn(); 
+                }
             }
         }
     }

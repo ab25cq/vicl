@@ -327,15 +327,6 @@ inherit ViClone
     }
 
     def statusView():dynamic {
-        maxy := getmaxy();
-
-        attron(A_REVERSE);
-        try {
-            mvprintw(maxy-1, 0, "%s %d %d", array { (win.fileName?.nothing():""), win.getRealPosY() + 1, win.getRealPosX() });
-        }
-        catch (e:Exception) {
-        }
-        attroff(A_REVERSE);
     }
     
     def runKeyEvents(key:int, key2:int):dynamic {

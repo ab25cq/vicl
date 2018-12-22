@@ -377,6 +377,18 @@ inherit ViClone
         }
     }
 
+    def statusView():dynamic {
+        maxy := getmaxy();
+
+        attron(A_REVERSE);
+        try {
+            mvprintw(maxy-1, 0, "%s %d %d %s", array { (win.fileName?.nothing():""), win.getRealPosY() + 1, win.getRealPosX(), if(win.modifiedText) { "changed" } else { "no changed" } });
+        }
+        catch (e:Exception) {
+        }
+        attroff(A_REVERSE);
+    }
+
     def view():dynamic {
         inherit(); 
 
