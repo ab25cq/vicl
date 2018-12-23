@@ -72,7 +72,7 @@ inherit ViCloneWindow
 
             cursorY = arg_line_num;
 
-            maxy := getmaxy();
+            maxy := MaxY-2;
 
             scrollTopY = cursorY - (maxy-2) /2;
             
@@ -93,11 +93,45 @@ inherit ViCloneWindow
         clearUndoText();
     }
     
-    def gotoLine(y:int) {
-        scrollTopY = y;
+    def gotoLine(y:int, vicl:ViClone) {
+        arg_line_num := y;
+
         cursorX = 0;
         cursorY = 0;
+        scrollTopY = 0;
+        scrollTopX = 0;
+
+        makeMaxxy(vicl);
+        
         makeVisibleTexts();
+
+        if(arg_line_num != -1) {
+            arg_line_num--;
+
+            if(arg_line_num >= texts.length()) {
+                arg_line_num = texts.length()-1;
+            }
+            if(arg_line_num < 0) {
+                arg_line_num = 0;
+            }
+
+            cursorY = arg_line_num;
+
+            maxy := MaxY-2;
+
+            scrollTopY = cursorY - (maxy-2) /2;
+            
+            cursorY -= scrollTopY;
+
+            if(scrollTopY < 0) {
+                cursorY += scrollTopY;
+                scrollTopY = 0;
+            }
+
+            fixCursorAndScrollTop(scrollTopY);
+
+            makeVisibleTexts();
+        }
     }
 
     def insertText(text:String) {
@@ -258,6 +292,7 @@ inherit ViClone
 
         n := 0;
         windows.each {
+            it.gotoLine(it.getRealPosY()+1, self);
             it.winPos = win_size * n;
             it.makeMaxxy(self);
             it.makeVisibleTexts();
@@ -521,18 +556,6 @@ inherit ViClone
                     win = createNewWin(dirName, fname, -1);
                 }
             }
-            case ('/'.to_int) {
-                dirPaneIncrementalSearch();
-            }
-            case ('f'.to_int) {
-                endwin();
-                iclover2 -s 'a := grep("-Ine", "", glob("*")).selector().scan(/^(.+):(\\d+)/); vicl_open_file(a.items(1), a.items(2))' -p 19 -c
-                initscr();
-                setEscapeDelay(0);
-                keypad(stdscr, true);
-                raw();
-                noecho();
-            }
             case ('!'.to_int) {
                 endwin();
                 iclover2
@@ -584,9 +607,6 @@ inherit ViClone
 
                 rereadDir();
             }
-            case (':'.to_int) {
-                enterCommandMode();
-            }
             case (('L'-'A').to_int+1) {
                 windows.each {
                     it.makeVisibleTexts()
@@ -620,7 +640,7 @@ inherit ViClone
         dir_name := dirname(file_path2);
         file_name := basename(file_path2);
 
-        createNewWin(dir_name, file_name, line_num-1);
+        win = createNewWin(dir_name, file_name, line_num);
     }
 
     def main():static {
@@ -688,12 +708,12 @@ inherit ViClone
                     array := message.scan(/^OPEN_FILE (.+) (\d+)/)
                     
                     file_name := array.items(1);
+                    try {
+                        file_name = realpath(file_name);
+                    }
                     line_num := array.items(2).to_int();
-                    
+
                     vicl.openFile(file_name, line_num);
-                    
-                    vicl.dirPaneOff()
-                    vicl.setDirCursor(file_name)
                 }
                 elif(message.match(/^INSERT_FILE .+$/)) {
                     array := message.scan(/^INSERT_FILE (.+)$/)
