@@ -277,6 +277,17 @@ inherit ViClone
                     mode = EDITMODE;
                     statusLineInCommandMode = "";
                 }
+                elif(statusLineInCommandMode.match(/^make$/)) {
+                    endwin();
+                    iclover2 -s 'a := make().getErrorOutput().selector().scan(/^(.+):(\\d+)/); vicl_open_file(a.items(1), a.items(2))' -p 10 -c
+                    initscr();
+                    setEscapeDelay(0);
+                    keypad(stdscr, true);
+                    raw();
+                    noecho();
+                    mode = EDITMODE;
+                    statusLineInCommandMode = "";
+                }
                 elif(statusLineInCommandMode.match(/^!/)) {
                     word := statusLineInCommandMode.scan(/^!(.+)$/).items(1);
                     

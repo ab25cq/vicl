@@ -4,6 +4,7 @@
 
 int func(int a, int b) 
 {
+    a
     return a + b;
 }
 
