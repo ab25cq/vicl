@@ -1,10 +1,10 @@
-a := slist { "1", "2", "3" }
-a.map { it.println(); }
+a := ClassC(123);
 
-b := slist { ls(), pwd(). ls("-al") }
+str := "ABC";
 
-b.map { it.less() }
+a.a = 1
+a.a += str.length();
 
-c := slist { p"src/main.c", p"src" }
+a.a.toString().println();
 
-c.each { it.read() }
+

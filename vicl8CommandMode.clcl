@@ -303,6 +303,39 @@ inherit ViClone
                     mode = EDITMODE;
                     statusLineInCommandMode = "";
                 }
+                elif(statusLineInCommandMode.match(/^\.!/)) {
+                    word := statusLineInCommandMode.scan(/^\.!(.+)/).items(1);
+                    
+                    command_result := iclover2("-c", word).toString().split('\n');
+                    
+                    y := win.getRealPosY();
+                    x := win.getRealPosX();
+
+                    line := win.texts.items(y);
+
+                    if(line != null) {
+                        if(command_result.length() == 1) {
+                            win.addUndoText();
+
+                            str := command_result.items(0).subString(2, -1);
+                            line.insert(x, str);
+                            win.cursorX += str.length();
+                            win.makeVisibleTexts();
+                        }
+                        elif(command_result.length() > 1) {
+                            win.addUndoText();
+
+                            str := command_result.items(0).subString(2, -1);
+                            line.insert(x, str);
+                            win.cursorX += str.length();
+                            win.texts.insert(y+1, command_result.subList(1,-1));
+                            win.makeVisibleTexts();
+                        }
+                    }
+
+                    mode = EDITMODE;
+                    statusLineInCommandMode = "";
+                }
             }
             case (('I'-'A').to_int+1) {
                 if(statusLineInCommandMode.match(/^sp/)) {
