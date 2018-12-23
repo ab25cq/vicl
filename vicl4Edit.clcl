@@ -65,6 +65,8 @@ inherit ViClone
 
                 win.makeVisibleTexts();
                 win.fixCursorAndScrollTop(win.scrollTopY);
+                
+                win.modifiedText = true;
             }
         }
         keyEvents['x'.to_int] = lambda(self:ViClone, key:int, key2:int) {
@@ -80,6 +82,7 @@ inherit ViClone
                     line.delete(x);
 
                     win.makeVisibleTexts();
+                    win.modifiedText = true;
                 } 
             }
         }
@@ -96,6 +99,7 @@ inherit ViClone
 
                 win.makeVisibleTexts();
                 win.fixCursorAndScrollTop(win.scrollTopY);
+                win.modifiedText = true;
             }
         }
         keyEvents['t'.to_int] = lambda(self:ViClone, key:int, key2:int) {
@@ -158,6 +162,7 @@ inherit ViClone
                         win.makeVisibleTexts();                     
                         win.fixCursorAndScrollTop(win.scrollTopY);
                     }
+                    win.modifiedText = true;
                 }
                 case ('d'.to_int) {
                     y := win.getRealPosY();
@@ -179,6 +184,7 @@ inherit ViClone
 
                     win.makeVisibleTexts();                     
                     win.fixCursorAndScrollTop(win.scrollTopY);
+                    win.modifiedText = true;
                 }
                 case ('t'.to_int) {
                     key3 := getch();
@@ -192,6 +198,7 @@ inherit ViClone
 
                         win.makeVisibleTexts();                     
                         win.fixCursorAndScrollTop(win.scrollTopY);
+                        win.modifiedText = true;
                     }
                 }
             }
