@@ -257,7 +257,7 @@ inherit ViClone
                     word := statusLineInCommandMode.scan(/^grep\s+(.+)/).items(1);
                     
                     endwin();
-                    iclover2("--controlling-terminal", "-s", "a := grep(\"-Ine\", \"\{word}\", glob(\"*\")).selector().scan(/^(.+):(\\d+)/); vicl_open_file(a.items(1), a.items(2))", "-p", (19+word.length()).toString(), "-c")
+                    iclover2("--controlling-terminal", "-s", "a := grep(\"-Ine\", \"\{word}\", glob(\"*\")).selector().scan(/^(.+?):(\\d+)/); vicl_open_file(a.items(1), a.items(2))", "-p", (19+word.length()).toString(), "-c")
                     initscr();
                     setEscapeDelay(0);
                     keypad(stdscr, true);
@@ -268,7 +268,7 @@ inherit ViClone
                 }
                 elif(statusLineInCommandMode.match(/^grep$/)) {
                     endwin();
-                    iclover2 -s 'a := grep("-Ine", "", glob("*")).selector().scan(/^(.+):(\\d+)/); vicl_open_file(a.items(1), a.items(2))' -p 19 -c
+                    iclover2 -s 'a := grep("-Ine", "", glob("*")).selector().scan(/^(.+?):(\\d+)/); vicl_open_file(a.items(1), a.items(2))' -p 19 -c
                     initscr();
                     setEscapeDelay(0);
                     keypad(stdscr, true);
@@ -279,7 +279,7 @@ inherit ViClone
                 }
                 elif(statusLineInCommandMode.match(/^make$/)) {
                     endwin();
-                    iclover2 -s 'a := make().getErrorOutput().selector().scan(/^(.+):(\\d+)/); vicl_open_file(a.items(1), a.items(2))' -p 10 -c
+                    iclover2 -s 'a := make().getErrorOutput().selector().scan(/^(.+?):(\\d+)/); vicl_open_file(a.items(1), a.items(2))' -p 10 -c
                     initscr();
                     setEscapeDelay(0);
                     keypad(stdscr, true);

@@ -59,16 +59,18 @@ ViClone.oclcl: vicl1App.clcl
 
 viclone.ocl: viclone.cl
 	cclover2 viclone.cl
-	mkdir -p $(HOME)/.clover2
-	install -m 644 viclone.ocl $(HOME)/.clover2/viclone.ocl
+	mkdir -p $(HOME)/.clover2/vicl
+	install -m 644 viclone.ocl $(HOME)/.clover2/vicl/viclone.ocl
 
 viclone_insert_file.ocl:viclone_insert_file.cl
 	cclover2 viclone_insert_file.cl
-	install -m 644 viclone_insert_file.ocl $(HOME)/.clover2/viclone_insert_file.ocl
+	mkdir -p $(HOME)/.clover2/vicl
+	install -m 644 viclone_insert_file.ocl $(HOME)/.clover2/vicl/viclone_insert_file.ocl
 
 viclone_open_file.ocl:viclone_open_file.cl
 	cclover2 viclone_open_file.cl
-	install -m 644 viclone_open_file.ocl $(HOME)/.clover2/viclone_open_file.ocl
+	mkdir -p $(HOME)/.clover2/vicl
+	install -m 644 viclone_open_file.ocl $(HOME)/.clover2/vicl/viclone_open_file.ocl
 
 preinstall:
 	mkdir -p $(HOME)/.clover2/vicl
@@ -76,6 +78,8 @@ preinstall:
 	if test -e Clover.so.1.0.0; then install -m 755 Clover.so.1.0.0 $(HOME)/.clover2/vicl; cp -a Clover.so $(HOME)/.clover2/vicl; fi
 	install -m 644 ViClone.oclcl $(HOME)/.clover2/vicl
 	if test -e ViClone.so.1.0.0; then install -m 755 ViClone.so.1.0.0 $(HOME)/.clover2/vicl; cp -a ViClone.so $(HOME)/.clover2/vicl; fi
+	install -m 644 ViCloneWindow.oclcl $(HOME)/.clover2/vicl
+	if test -e ViCloneWindow.so.1.0.0; then install -m 755 ViCloneWindow.so.1.0.0 $(HOME)/.clover2/vicl; cp -a ViCloneWindow.so $(HOME)/.clover2/vicl; fi
 	install -m 644 viclone.ocl $(HOME)/.clover2/vicl
 
 #########################################################
