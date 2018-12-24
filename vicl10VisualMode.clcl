@@ -194,6 +194,58 @@ inherit ViClone
             case (':'.to_int) {
                 enterCommandMode();
             }
+            case ('!'.to_int) {
+                win.addUndoText();
+
+                path := getenv("HOME").add("/.clover2/vicl/vmode_out");
+
+                win.texts.subList(win.visualModeStart, win.getRealPosY()+1).join("\n").write(path);
+                endwin();
+                iclover2("--controlling-terminal", "-s", "path := getenv(\"HOME\").add(\"/.clover2/vicl/vmode_out\"); path.toPath().read().toString()..toString().write(path)", "-p", -24.toString(), "-o")
+                initscr();
+                setEscapeDelay(0);
+                keypad(stdscr, true);
+                raw();
+                noecho();
+
+                command_result := path.toPath().read().toString().split('\n');
+
+                real_pos_y := win.getRealPosY();
+
+                if(win.visualModeStart < real_pos_y) {
+                    win.texts.deleteWithRange(win.visualModeStart, real_pos_y+1);
+                    
+                    if(win.texts.length() == 0) {
+                        win.texts.push("");
+                    }
+                }
+                else {
+                    win.texts.deleteWithRange(real_pos_y, win.visualModeStart+1);
+                    if(win.texts.length() == 0) {
+                        win.texts.push("");
+                    }
+                }
+
+                win.makeVisibleTexts(); 
+                win.moveCursor(win.visualModeStart, 0);
+                
+                y := win.getRealPosY();
+                x := win.getRealPosX();
+
+                line := win.texts.items(y);
+
+                if(line != null) {
+                    if(command_result.length() >= 1) {
+                        win.texts.insert(y, command_result);
+                        win.makeVisibleTexts();
+                    }
+                }
+
+                finishVisualMode(); 
+
+                mode = EDITMODE;
+                statusLineInCommandMode = "";
+            }
             else {
                 mode = EDITMODE;
                 key2 := 0;
@@ -220,6 +272,11 @@ inherit ViClone
     def commandMode(key:int):dynamic {
         if(win.visualMode) {
             when(key) {
+                case (('['-'A').to_int+1, ('C'-'A').to_int+1) {
+                    mode = EDITMODE;
+                    statusLineInCommandMode = "";
+                    win.visualMode = false;
+                }
                 case (KEY_ENTER, ('J'-'A').to_int+1) {
                     win.addUndoText();
 
@@ -262,6 +319,7 @@ inherit ViClone
 
                     mode = EDITMODE;
                     statusLineInCommandMode = "";
+                    win.visualMode = false;
                 }
                 else {
                     inherit(key);
