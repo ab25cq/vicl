@@ -1,15 +1,61 @@
 
-inherit ViClone
+inherit ViCloneWindow
 {
-    visualModeStart:int;
-    visualModeEnd:int;
-    clipBoard:SortableList<String>;
-     
-    def initialize():dynamic {
-        inherit();
+    var visualModeStart:int;
+    var visualModeEnd:int;
+    var visualMode:bool
+
+    def initialize(fname:String, dir_path:String, win_pos:int, arg_line_num:int, vicl:ViClone):dynamic {
+        inherit(fname, dir_path, win_pos, arg_line_num, vicl);
 
         visualModeStart = -1;
         visualModeEnd = -1;
+        visualMode = false;
+    }
+
+    def view():dynamic {
+        if(visualMode) {
+            for(y:=0; y<visibleTexts.length(); y++) {
+                line := visibleTexts.items(y);
+
+                if(line == null) {
+                    break;
+                }
+
+                y2 := viewYToRealY(y);
+                cursor_line := viewYToRealY(cursorY);
+
+                if((y2 >= visualModeStart && y2 <= cursor_line) || (y2 >= cursor_line && y2 <= visualModeStart))
+                {
+                    attron(A_REVERSE);
+                }
+
+                mvprintw(y + winPos, 0 + ViClone.vicl.dirPaneLength, line);
+
+                if((y2 >= visualModeStart && y2 <= cursor_line) || (y2 >= cursor_line && y2 <= visualModeStart))
+                {
+                    attroff(A_REVERSE);
+                }
+            }
+
+            try {
+                attron(A_REVERSE);
+                mvprintw(MaxY -1 + winPos, 0 + ViClone.vicl.dirPaneLength, "%s/%s%s", { dirPath, fileName, " ".multiply(getmaxx()-1-ViClone.vicl.dirPaneLength-dirPath.length()-fileName.length()-1) });
+                attroff(A_REVERSE);
+            }
+        }
+        else {
+            inherit();
+        }
+    }
+}
+
+inherit ViClone
+{
+    var clipBoard:SortableList<String>;
+     
+    def initialize():dynamic {
+        inherit();
 
         clipBoard = SortableList<String>();
 
@@ -28,20 +74,24 @@ inherit ViClone
     def enterVisualMode() {
         mode = VISUALMODE;
 
-        visualModeStart = win.getRealPosY();
+        win.visualModeStart = win.getRealPosY();
+
+        win.visualMode = true;
     }
     
     def finishVisualMode() {
         mode = EDITMODE;
-        visualModeEnd = win.getRealPosY();
+        win.visualModeEnd = win.getRealPosY();
         win.fixCursorAndScrollTop(win.scrollTopY);
+        win.visualMode = false;
     }
     
     def renterVisualMode() {
-        if(visualModeStart != -1 && visualModeEnd != -1) {
+        if(win.visualModeStart != -1 && win.visualModeEnd != -1) {
             mode = VISUALMODE;
-            win.moveCursor(visualModeEnd, 0);
+            win.moveCursor(win.visualModeEnd, 0);
             view();
+            win.visualMode = true;
         }
     }
 
@@ -80,11 +130,11 @@ inherit ViClone
             case ('y'.to_int) {
                 line := win.getRealPosY();
 
-                if(visualModeStart < line) {
-                    clipBoard = win.texts.subList(visualModeStart, line+1);
+                if(win.visualModeStart < line) {
+                    clipBoard = win.texts.subList(win.visualModeStart, line+1);
                 }
                 else {
-                    clipBoard = win.texts.subList(line, visualModeStart+1);
+                    clipBoard = win.texts.subList(line, win.visualModeStart+1);
                 }
 
                 finishVisualMode(); 
@@ -95,30 +145,30 @@ inherit ViClone
 
                 real_pos_y := win.getRealPosY();
 
-                if(visualModeStart < real_pos_y) {
-                    clipBoard = win.texts.subList(visualModeStart, real_pos_y+1);
-                    win.texts.deleteWithRange(visualModeStart, real_pos_y+1);
+                if(win.visualModeStart < real_pos_y) {
+                    clipBoard = win.texts.subList(win.visualModeStart, real_pos_y+1);
+                    win.texts.deleteWithRange(win.visualModeStart, real_pos_y+1);
                     
                     if(win.texts.length() == 0) {
                         win.texts.push("");
                     }
                 }
                 else {
-                    clipBoard = win.texts.subList(real_pos_y, visualModeStart+1);
-                    win.texts.deleteWithRange(real_pos_y, visualModeStart+1);
+                    clipBoard = win.texts.subList(real_pos_y, win.visualModeStart+1);
+                    win.texts.deleteWithRange(real_pos_y, win.visualModeStart+1);
                     if(win.texts.length() == 0) {
                         win.texts.push("");
                     }
                 }
 
                 win.makeVisibleTexts(); 
+                win.moveCursor(win.visualModeStart, 0);
                 finishVisualMode(); 
-                win.moveCursor(visualModeStart, 0);
             }
             case ('>'.to_int) {
                 win.addUndoText();
 
-                win.texts.subList(visualModeStart, win.getRealPosY()+1).each 
+                win.texts.subList(win.visualModeStart, win.getRealPosY()+1).each 
                 {
                     it.insert(0, "    ");
                 } 
@@ -129,17 +179,20 @@ inherit ViClone
             case ('<'.to_int) {
                 win.addUndoText();
 
-                y := visualModeStart; 
+                y := win.visualModeStart; 
                 y2 := win.getRealPosY();
                 
-                lines := win.texts.subList(visualModeStart, y2+1).map {
+                lines := win.texts.subList(win.visualModeStart, y2+1).map {
                     it.sub(/^    /, "");
                 } 
                 
-                win.texts.deleteWithRange(visualModeStart, y2+1).insert(visualModeStart, lines); 
+                win.texts.deleteWithRange(win.visualModeStart, y2+1).insert(win.visualModeStart, lines); 
                 
                 win.makeVisibleTexts(); 
                 win.fixCursorAndScrollTop(win.scrollTopY);
+            }
+            case (':'.to_int) {
+                enterCommandMode();
             }
             else {
                 mode = EDITMODE;
@@ -156,43 +209,67 @@ inherit ViClone
         }
     }
 
-    def view():dynamic {
-        if(mode == VISUALMODE) {
-            for(y:=0; y<win.visibleTexts.length(); y++) {
-                line := win.visibleTexts.items(y);
-
-                if(line == null) {
-                    break;
-                }
-
-                y2 := win.viewYToRealY(y);
-                cursor_line := win.viewYToRealY(win.cursorY);
-
-                if((y2 >= visualModeStart && y2 <= cursor_line) || (y2 >= cursor_line && y2 <= visualModeStart))
-                {
-                    attron(A_REVERSE);
-                }
-
-                ### cursor line ####
-                mvprintw(y, 0 + dirPaneLength, line);
-
-                if((y2 >= visualModeStart && y2 <= cursor_line) || (y2 >= cursor_line && y2 <= visualModeStart))
-                {
-                    attroff(A_REVERSE);
-                }
-           }
-        }
-        else {
-            inherit();
-        }
-    }
-
     def runKeyEvents(key:int, key2:int):dynamic {
         if(mode == VISUALMODE) {
             visualMode(key);
         }
         else {
             inherit(key, key2);
+        }
+    }
+    def commandMode(key:int):dynamic {
+        if(win.visualMode) {
+            when(key) {
+                case (KEY_ENTER, ('J'-'A').to_int+1) {
+                    win.addUndoText();
+
+                    word := statusLineInCommandMode;
+                    
+                    command_result := win.texts.subList(win.visualModeStart, win.getRealPosY()+1).join("\n").toCommand().bash("-c", word).toString().split('\n');
+
+                    real_pos_y := win.getRealPosY();
+
+                    if(win.visualModeStart < real_pos_y) {
+                        win.texts.deleteWithRange(win.visualModeStart, real_pos_y+1);
+                        
+                        if(win.texts.length() == 0) {
+                            win.texts.push("");
+                        }
+                    }
+                    else {
+                        win.texts.deleteWithRange(real_pos_y, win.visualModeStart+1);
+                        if(win.texts.length() == 0) {
+                            win.texts.push("");
+                        }
+                    }
+
+                    win.makeVisibleTexts(); 
+                    win.moveCursor(win.visualModeStart, 0);
+                    
+                    y := win.getRealPosY();
+                    x := win.getRealPosX();
+
+                    line := win.texts.items(y);
+
+                    if(line != null) {
+                        if(command_result.length() >= 1) {
+                            win.texts.insert(y, command_result);
+                            win.makeVisibleTexts();
+                        }
+                    }
+
+                    finishVisualMode(); 
+
+                    mode = EDITMODE;
+                    statusLineInCommandMode = "";
+                }
+                else {
+                    inherit(key);
+                }
+            }
+        }
+        else {
+            inherit(key);
         }
     }
 }

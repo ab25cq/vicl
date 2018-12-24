@@ -188,8 +188,6 @@ class ViCloneWindow
             mvprintw(MaxY -1 + winPos, 0 + ViClone.vicl.dirPaneLength, "%s/%s%s", { dirPath, fileName, " ".multiply(getmaxx()-1-ViClone.vicl.dirPaneLength-dirPath.length()-fileName.length()-1) });
             attroff(A_REVERSE);
         }
-        catch(e:Exception) {
-        }
     }
 }
 

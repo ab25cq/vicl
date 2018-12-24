@@ -163,7 +163,7 @@ inherit ViClone
         }
     }
 
-    def commandMode(key:int) {
+    def commandMode(key:int):dynamic {
         when(key) {
             case (('['-'A').to_int+1, ('C'-'A').to_int+1) {
                 mode = EDITMODE;
@@ -305,6 +305,39 @@ inherit ViClone
                 }
                 elif(statusLineInCommandMode.match(/^\.!/)) {
                     word := statusLineInCommandMode.scan(/^\.!(.+)/).items(1);
+                    
+                    command_result := bash("-c", word).toString().split('\n');
+                    
+                    y := win.getRealPosY();
+                    x := win.getRealPosX();
+
+                    line := win.texts.items(y);
+
+                    if(line != null) {
+                        if(command_result.length() == 1) {
+                            win.addUndoText();
+
+                            str := command_result.items(0);
+                            line.insert(x, str);
+                            win.cursorX += str.length();
+                            win.makeVisibleTexts();
+                        }
+                        elif(command_result.length() > 1) {
+                            win.addUndoText();
+
+                            str := command_result.items(0);
+                            line.insert(x, str);
+                            win.cursorX += str.length();
+                            win.texts.insert(y+1, command_result.subList(1,-1));
+                            win.makeVisibleTexts();
+                        }
+                    }
+
+                    mode = EDITMODE;
+                    statusLineInCommandMode = "";
+                }
+                elif(statusLineInCommandMode.match(/^\.!!/)) {
+                    word := statusLineInCommandMode.scan(/^\.!!(.+)/).items(1);
                     
                     command_result := iclover2("-c", word).toString().split('\n');
                     
