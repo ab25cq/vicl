@@ -1,5 +1,5 @@
 
-class ClassCloverTest {
+class ClassA {
     abc:int;
     bcd:String;
     XYZ:String;
@@ -8,6 +8,7 @@ class ClassCloverTest {
         abc = 123;
         bcd = "ABC";
         XYZ = "DEF";
+        iclover2("-p");
     }
 
     def method3():String {
@@ -15,7 +16,7 @@ class ClassCloverTest {
     }
     
     def method4():SortableList<String> {
-        return slist { "1", "2", "3" };
+        return { "1", "2", "3" };
     }
     
     def method5():Integer {
@@ -27,18 +28,5 @@ class ClassCloverTest {
         
         test1 := "ABC";
         lelolelo := "ABC";
-    }
-}
-
-class ClassCloverTest2 {
-    GGG:int;
-    HHH:String;
-    
-    def getInt():int {
-        return 123;
-    }
-    
-    def method(xyz:int) {
-        ggg := slist { 1,2,3 }
     }
 }

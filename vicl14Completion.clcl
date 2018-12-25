@@ -192,6 +192,7 @@ inherit ViClone
             
             line2 = win.texts.items(i);
             source.append(line2.subString(0, win.getRealPosX()));
+            source.append("\n");
         }
         else {
             for(i:=0; i<win.getRealPosY(); i++) {
@@ -201,6 +202,7 @@ inherit ViClone
             }
             line2 := win.texts.items(i);
             source.append(line2.subString(0, win.getRealPosX()));
+            source.append("\n");
         }
         
         ### remove comment ###
@@ -776,7 +778,7 @@ inherit ViClone
 
         is_shell_mode := line.toCommand().tyclover2("--shell").toString().chomp().equals("true");
         
-        path_name_completion := line.match(regex "p\".*$");
+        path_name_completion := line.match(regex "p\".*?\n");
         
         if(path_name_completion) {
             fileCompletion();

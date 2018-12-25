@@ -1,10 +1,10 @@
-a := ClassC(123);
+class ClassC
+{
+    var XYZ:int;
 
-str := "ABC";
+    def initialzie() {
+        XYZ = 1;
 
-a.a = 1
-a.a += str.length();
+        ls -al
 
-a.a.toString().println();
-
-
+        XY
