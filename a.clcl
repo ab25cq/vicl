@@ -8,7 +8,6 @@ class ClassA {
         abc = 123;
         bcd = "ABC";
         XYZ = "DEF";
-        iclover2("-p");
     }
 
     def method3():String {

@@ -212,9 +212,7 @@ inherit ViClone
         return source;
     }
 
-    def localVariableCompletion():SortableList<String> {
-        source := getSource();
-        
+    def localVariableCompletion(source:String):SortableList<String> {
         local_variables := source.toCommand().tyclover2("--lvar").toString().split(/\n/);
 
         return local_variables;
@@ -354,10 +352,10 @@ inherit ViClone
         return completionCommandNames;
     }
     
-    def topLevelCompletion() {
+    def topLevelCompletion(source:String) {
         words := SortableList<String>();
         
-        local_variables := localVariableCompletion();
+        local_variables := localVariableCompletion(source);
         words.append(local_variables);
         
         class_names := classNameCompletion()
@@ -450,11 +448,9 @@ inherit ViClone
         return result;
     }
     
-    def methodNameCompletion() {
+    def methodNameCompletion(source:String) {
         line := win.texts.items(win.getRealPosY());
 
-        source := getSource();
-        
         type_name := "";
         if(win.fileName.match(/.+\.clcl/)) {
             class_name := getInnerClassDefinitionName();
@@ -774,11 +770,11 @@ inherit ViClone
     } 
     
     def clover2Completion() {
-        line := getSource();
+        source := getSource();
 
-        is_shell_mode := line.toCommand().tyclover2("--shell").toString().chomp().equals("true");
+        is_shell_mode := source.toCommand().tyclover2("--shell").toString().chomp().equals("true");
         
-        path_name_completion := line.match(regex "p\".*?\n");
+        path_name_completion := source.match(regex "p\".*?\n");
         
         if(path_name_completion) {
             fileCompletion();
@@ -786,11 +782,11 @@ inherit ViClone
         elif(is_shell_mode) {
             shellModeCompletion();
         }
-        elif(line.match(/(.+)\.[a-zA-Z_]*$/)) {
-            methodNameCompletion();
+        elif(source.match(/(.+)\.[a-zA-Z_]*$/)) {
+            methodNameCompletion(source);
         }
         else {
-            topLevelCompletion();
+            topLevelCompletion(source);
         }
     }
     
