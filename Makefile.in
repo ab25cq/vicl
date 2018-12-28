@@ -54,6 +54,7 @@ ViClone.oclcl: vicl1App.clcl
 	cclover2 vicl13dot.clcl
 	cclover2 vicl14Completion.clcl
 	cclover2 vicl15CCompletion.clcl
+	cclover2 vicl16VVisual.clcl
 	if which bclover2; then bclover2 ViClone.oclcl; fi
 	if which bclover2; then bclover2 ViCloneWindow.oclcl; fi
 

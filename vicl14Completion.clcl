@@ -266,8 +266,7 @@ inherit ViClone
         return -1;
     }
 
-    def innerFieldsCompletion(source:SortableList<String>, inner_fields:SortableList<String>, inner_class_name:String) 
-    {
+    def innerFieldsCompletion(source:SortableList<String>, inner_fields:SortableList<String>, inner_class_name:String)  {
         inner_class_flag := false;
         for(i:=0; i<source.length(); i++) {
             line := source.items(i);
@@ -307,8 +306,7 @@ inherit ViClone
         }
     }
 
-    def innerMethodCompletion(source:SortableList<String>, inner_methods:SortableList<String>, inner_class_name:String): SortableList<String> 
-    {
+    def innerMethodCompletion(source:SortableList<String>, inner_methods:SortableList<String>, inner_class_name:String): SortableList<String>  {
         inner_class_flag := false;
         for(i:=0; i<source.length(); i++) {
             line := source.items(i);
@@ -342,13 +340,11 @@ inherit ViClone
         }
     }
     
-    def classNameCompletion():SortableList<String>
-    {
+    def classNameCompletion():SortableList<String> {
         return tyclover2("--class").toString().split(/\n/)
     }
     
-    def commandNameCompletion():SortableList<String>
-    {
+    def commandNameCompletion():SortableList<String> {
         return completionCommandNames;
     }
     
@@ -417,8 +413,7 @@ inherit ViClone
         completion_core(inputing_text, j, words)
     }
 
-    def get_class_names(source:SortableList<String>, result:SortableList<String>)
-    {
+    def get_class_names(source:SortableList<String>, result:SortableList<String>) {
         for(i:=0; i<source.length(); i++) {
             line := source.items(i);
 
@@ -439,8 +434,7 @@ inherit ViClone
         }
     }
 
-    def getClassNameInSource():SortableList<String>
-    {
+    def getClassNameInSource():SortableList<String> {
         result := SortableList<String>();
 
         get_class_names(win.texts, result);

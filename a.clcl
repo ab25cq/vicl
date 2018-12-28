@@ -8,10 +8,11 @@ class ClassA {
         abc = 123;
         bcd = "ABC";
         XYZ = "DEF";
-    }
-
-    def method3():String {
-        return "ABC";
+        
+        54321aaaaaaaa
+        54321aaaaabbb
+        54321aaaaaccc
+        54321aaaaaddd
     }
     
     def method4():SortableList<String> {
