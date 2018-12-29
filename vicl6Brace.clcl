@@ -14,7 +14,7 @@ class ViCloneWindow version 4
     
 }
 
-class ViClone version6
+class ViClone version 6
 {
     def forwardBrace(head_char:char, tail_char:char): Tuple2<Integer, Integer> {
         line_num := win.getRealPosY();
