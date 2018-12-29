@@ -1,5 +1,5 @@
 
-class ViCloneWindow version 6
+class ViCloneWindow version 7
 {
     var undoTexts:SortableList<SortableList<String>>;
     var undoIndex:int;

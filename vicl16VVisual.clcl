@@ -1,5 +1,5 @@
 
-class ViCloneWindow version 8
+class ViCloneWindow version 10
 {
     var vvisualModeStart:int;
     var vvisualModeStartX:int;

@@ -1,4 +1,4 @@
-class ViCloneWindow version 4
+class ViCloneWindow version 5
 {
     def rehashCCompletion():dynamic {}
 

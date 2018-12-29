@@ -1,5 +1,5 @@
 
-class ViCloneWindow version 5
+class ViCloneWindow version 6
 {
     var visualModeStart:int;
     var visualModeEnd:int;

@@ -1,5 +1,5 @@
 
-class ViCloneWindow version 8
+class ViCloneWindow version 9
 {
     ccompletionCandidates: SortableList<String>;
     

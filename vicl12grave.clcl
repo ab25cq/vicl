@@ -1,5 +1,5 @@
 
-class ViCloneWindow version 7
+class ViCloneWindow version 8
 {
     graveCursorPosition:int[];
     numGraveCursorPosition: int;
