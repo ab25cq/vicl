@@ -38,25 +38,57 @@ Clover.oclcl: Fundamental.clcl
 	cclover2 Fundamental.clcl
 	if which bclover2; then bclover2 Clover.oclcl; fi
 
-ViClone.oclcl: vicl1App.clcl
-	cclover2 vicl1App.clcl
-	cclover2 vicl2Win.clcl
-	cclover2 vicl3InsertMode.clcl
-	cclover2 vicl4Edit.clcl
-	cclover2 vicl5Word.clcl
-	cclover2 vicl6Brace.clcl
-	cclover2 vicl7DirPane.clcl
-	cclover2 vicl8CommandMode.clcl
-	cclover2 vicl9SearchMode.clcl
-	cclover2 vicl10VisualMode.clcl
-	cclover2 vicl11Undo.clcl
-	cclover2 vicl12grave.clcl
-	cclover2 vicl13dot.clcl
-	cclover2 vicl14Completion.clcl
-	cclover2 vicl15CCompletion.clcl
-	cclover2 vicl16VVisual.clcl
+ViClone.oclcl: ViClone@16.oclcl
 	if which bclover2; then bclover2 ViClone.oclcl; fi
 	if which bclover2; then bclover2 ViCloneWindow.oclcl; fi
+
+ViClone@16.oclcl: vicl16VVisual.clcl ViClone@15.oclcl
+	cclover2 vicl16VVisual.clcl
+
+ViClone@15.oclcl: vicl15CCompletion.clcl ViClone@14.oclcl
+	cclover2 vicl15CCompletion.clcl
+
+ViClone@14.oclcl: vicl14Completion.clcl ViClone@13.oclcl
+	cclover2 vicl14Completion.clcl
+
+ViClone@13.oclcl: vicl13dot.clcl ViClone@12.oclcl
+	cclover2 vicl13dot.clcl
+
+ViClone@12.oclcl: vicl12grave.clcl ViClone@11.oclcl
+	cclover2 vicl12grave.clcl
+
+ViClone@11.oclcl: vicl11Undo.clcl ViClone@10.oclcl
+	cclover2 vicl11Undo.clcl
+
+ViClone@10.oclcl: vicl10VisualMode.clcl ViClone@9.oclcl
+	cclover2 vicl10VisualMode.clcl
+
+ViClone@9.oclcl: vicl9SearchMode.clcl ViClone@8.oclcl
+	cclover2 vicl9SearchMode.clcl
+
+ViClone@8.oclcl: vicl8CommandMode.clcl ViClone@7.oclcl
+	cclover2 vicl8CommandMode.clcl
+
+ViClone@7.oclcl: vicl7DirPane.clcl ViClone@6.oclcl
+	cclover2 vicl7DirPane.clcl
+
+ViClone@6.oclcl: vicl6Brace.clcl ViClone@5.oclcl
+	cclover2 vicl6Brace.clcl
+
+ViClone@5.oclcl: vicl5Word.clcl ViClone@4.oclcl
+	cclover2 vicl5Word.clcl
+
+ViClone@4.oclcl: vicl4Edit.clcl ViClone@3.oclcl
+	cclover2 vicl4Edit.clcl
+
+ViClone@3.oclcl: vicl3InsertMode.clcl ViClone@2.oclcl
+	cclover2 vicl3InsertMode.clcl
+
+ViClone@2.oclcl: vicl2Win.clcl ViClone@1.oclcl
+	cclover2 vicl2Win.clcl
+
+ViClone@1.oclcl: vicl1App.clcl
+	cclover2 vicl1App.clcl
 
 viclone.ocl: viclone.cl
 	cclover2 viclone.cl

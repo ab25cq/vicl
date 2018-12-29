@@ -1,5 +1,5 @@
 
-inherit ViCloneWindow
+class ViCloneWindow version 2
 {
     def addUndoText(): dynamic {}
     def clearUndoText():dynamic {}
@@ -105,7 +105,7 @@ inherit ViCloneWindow
     }
 }
 
-inherit ViClone
+class ViClone version 3
 {
     def setLastInsertedTextPos(): dynamic {
     }

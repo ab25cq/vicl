@@ -1,5 +1,5 @@
 
-class ViCloneWindow
+class ViCloneWindow version 1
 {
     var cursorX:int;
     var cursorY:int;
@@ -191,7 +191,7 @@ class ViCloneWindow
     }
 }
 
-inherit ViClone
+class ViClone version 2
 {
     var win:ViCloneWindow;
     var windows:List<ViCloneWindow>;

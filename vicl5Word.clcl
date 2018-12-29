@@ -1,5 +1,5 @@
 
-inherit ViClone
+class ViClone version 5
 {
     def forwardWord(offset:int=0):dynamic Tuple2<Integer, Integer> {
         real_pos_x := win.getRealPosX();

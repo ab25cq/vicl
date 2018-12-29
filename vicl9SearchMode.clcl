@@ -1,5 +1,5 @@
 
-inherit ViClone
+class ViClone version 9
 {
     statusLineInSearchMode:String;
     searchMode:int;

@@ -1,5 +1,5 @@
 
-inherit ViClone
+class ViClone version 14
 {
     completionCommandNames:SortableList<String>;
 

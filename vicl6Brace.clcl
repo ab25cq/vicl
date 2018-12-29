@@ -1,5 +1,5 @@
 
-inherit ViCloneWindow
+class ViCloneWindow version 4
 {
     def getCursorChar(): char {
         line := visibleTexts.items(cursorY);
@@ -14,7 +14,7 @@ inherit ViCloneWindow
     
 }
 
-inherit ViClone
+class ViClone version6
 {
     def forwardBrace(head_char:char, tail_char:char): Tuple2<Integer, Integer> {
         line_num := win.getRealPosY();

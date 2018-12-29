@@ -1,5 +1,5 @@
 
-inherit ViCloneWindow
+class ViCloneWindow version 5
 {
     var visualModeStart:int;
     var visualModeEnd:int;
@@ -50,7 +50,7 @@ inherit ViCloneWindow
     }
 }
 
-inherit ViClone
+class ViClone version 10
 {
     var clipBoard:SortableList<String>;
      

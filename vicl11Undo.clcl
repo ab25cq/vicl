@@ -1,5 +1,5 @@
 
-inherit ViCloneWindow
+class ViCloneWindow version 6
 {
     var undoTexts:SortableList<SortableList<String>>;
     var undoIndex:int;
@@ -64,7 +64,7 @@ inherit ViCloneWindow
     }
 }
 
-inherit ViClone
+class ViClone version 11
 {
     def initialize():dynamic {
         inherit();

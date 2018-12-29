@@ -1,5 +1,5 @@
 
-inherit ViClone
+class ViClone version 8
 {
     var statusLineInCommandMode:String;
 

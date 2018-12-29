@@ -1,5 +1,5 @@
 
-inherit ViCloneWindow
+class ViCloneWindow version 3
 {
     def findChar(key:char): Tuple2<Integer, Integer> 
     {
@@ -21,7 +21,7 @@ inherit ViCloneWindow
     }
 }
 
-inherit ViClone
+class ViClone version 4
 {
     var tabSize:int;
 

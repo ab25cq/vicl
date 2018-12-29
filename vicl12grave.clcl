@@ -1,5 +1,5 @@
 
-inherit ViCloneWindow
+class ViCloneWindow version 7
 {
     graveCursorPosition:int[];
     numGraveCursorPosition: int;
@@ -41,7 +41,7 @@ inherit ViCloneWindow
     }
 }
 
-inherit ViClone
+class ViClone version 12
 {
     def initialize():dynamic {
         inherit();

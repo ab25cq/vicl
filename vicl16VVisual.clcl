@@ -1,5 +1,5 @@
 
-inherit ViCloneWindow
+class ViCloneWindow version 8
 {
     var vvisualModeStart:int;
     var vvisualModeStartX:int;
@@ -89,7 +89,7 @@ inherit ViCloneWindow
     }
 }
 
-inherit ViClone
+class ViClone version 16
 {
     def initialize():dynamic {
         inherit();

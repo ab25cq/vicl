@@ -1,5 +1,5 @@
 
-inherit ViClone
+class ViClone version 13
 {
     lastKey: int;
     lastKey2: int;

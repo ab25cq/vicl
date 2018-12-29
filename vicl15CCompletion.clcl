@@ -1,5 +1,5 @@
 
-inherit ViCloneWindow
+class ViCloneWindow version 8
 {
     ccompletionCandidates: SortableList<String>;
     
@@ -21,7 +21,7 @@ inherit ViCloneWindow
     }
 }
 
-inherit ViClone
+class ViClone version 15
 {
     def initialize():dynamic {
         inherit();
