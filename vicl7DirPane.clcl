@@ -686,7 +686,7 @@ class ViClone version 7
 
                 if(vicl.mode == ViClone.EDITMODE) {
                     when(key) {
-                        case ('d'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int, 'z'.to_int, '['.to_int, ']'.to_int, '`'.to_int, 'm'.to_int, 't'.to_int, ('W'-'A').to_int+1) 
+                        case ('@'.to_int, 'd'.to_int, 'c'.to_int, 'Z'.to_int, 'g'.to_int, 'z'.to_int, '['.to_int, ']'.to_int, '`'.to_int, 'm'.to_int, 't'.to_int, ('W'-'A').to_int+1)
                         {
                             key2 = getch();
                         }

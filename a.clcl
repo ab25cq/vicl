@@ -13,7 +13,7 @@ class ClassA {
     def method4():SortableList<String> {
         return { "1", "2", "3" };
     }
-    
+  
     def method5():Integer {
         return 123;
     }

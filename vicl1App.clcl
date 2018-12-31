@@ -9,7 +9,7 @@ class ViClone version 1
     var argFileName:String?;
     var argLineNum:int;
 
-    enum { EDITMODE, INSERTMODE, COMMANDMODE, SEARCHMODE, VISUALMODE, DIRMODE, VVISUALMODE, VINSERTMODE }
+    enum { EDITMODE, INSERTMODE, COMMANDMODE, SEARCHMODE, VISUALMODE, DIRMODE, VVISUALMODE, VINSERTMODE, MACROMODE }
 
     def initialize():dynamic {
         endOfAplication = false;
