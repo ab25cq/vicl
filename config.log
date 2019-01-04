@@ -28,6 +28,7 @@ uname -v = #1 SMP PREEMPT Tue Dec 27 18:54:07 CST 2016
 /bin/universe          = unknown
 
 PATH: /home/ab25cq/bin
+PATH: /home/ab25cq/bin
 PATH: /usr/local/sbin
 PATH: /usr/local/bin
 PATH: /usr/sbin

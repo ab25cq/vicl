@@ -1,4 +1,4 @@
-.
+v
 
 word completion at the end of visible line occurs bug
 
@@ -26,3 +26,4 @@ Command Name completion with cache
 brace checking blink
 t
 dt
+.

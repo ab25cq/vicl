@@ -53,21 +53,36 @@ class ViCloneWindow version 6
 class ViClone version 10
 {
     var clipBoard:SortableList<String>;
-     
+    var pasteMode: int;
+
+    enum { PASTEMODE_LINE, PASTEMODE_CURSOR }
+
     def initialize():dynamic {
         inherit();
 
         clipBoard = SortableList<String>();
+
+        pasteMode = PASTEMODE_CURSOR;
 
         ### Insert Mode ###
         keyEvents['V'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             enterVisualMode();
         }
         keyEvents['p'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            pasteAfterCursor();
+            if(pasteMode == PASTEMODE_LINE) {
+                pasteAfterCursorLineMode();
+            }
+            else {
+                pasteAfterCursor();
+            }
         }
         keyEvents['P'.to_int] = lambda(self:ViClone, key:int, key2:int) {
-            pasteBeforeCursor();
+            if(pasteMode == PASTEMODE_LINE) {
+                pasteBeforeCursorLineMode();
+            }
+            else {
+                pasteBeforeCursor();
+            }
         }
     }
 
@@ -102,7 +117,7 @@ class ViClone version 10
         clipBoard.push(line);
     }
 
-    def pasteBeforeCursor() {
+    def pasteBeforeCursorLineMode() {
         win.addUndoText();
 
         line := win.getRealPosY();
@@ -111,11 +126,59 @@ class ViClone version 10
         win.makeVisibleTexts();
         win.fixCursorAndScrollTop(win.scrollTopY);
     }
-    def pasteAfterCursor() {
+    def pasteAfterCursorLineMode() {
         win.addUndoText();
 
         line := win.getRealPosY();
         win.texts.insert(line+1, clipBoard.clone());
+
+        win.makeVisibleTexts();
+        win.fixCursorAndScrollTop(win.scrollTopY);
+    }
+
+    def pasteBeforeCursor() {
+        win.addUndoText();
+
+        y := win.getRealPosY();
+        x := win.getRealPosX();
+
+        line := win.texts.items(y);
+
+        if(clipBoard.length() > 1) {
+            tail := line.subString(x, -1);
+            line.delete(x, -1);
+            line.append(clipBoard.items(0));
+
+            win.texts.insert(y+1, clipBoard.subList(1,-2).clone());
+            win.texts.insert(y + clipBoard.length()-1, clipBoard.items(-1).add(tail));
+        }
+        elif(clipBoard.length() == 1) {
+            line.insert(x, clipBoard.items(0));
+        }
+
+        win.makeVisibleTexts();
+        win.fixCursorAndScrollTop(win.scrollTopY);
+    }
+    
+    def pasteAfterCursor() {
+        win.addUndoText();
+
+        y := win.getRealPosY();
+        x := win.getRealPosX();
+
+        line := win.texts.items(y);
+
+        if(clipBoard.length() > 1) {
+            tail := line.subString(x+1, -1);
+            line.delete(x+1, -1);
+            line.append(clipBoard.items(0));
+
+            win.texts.insert(y+1, clipBoard.subList(1,-2).clone());
+            win.texts.insert(y + clipBoard.length()-1, clipBoard.items(-1).add(tail));
+        }
+        elif(clipBoard.length() == 1) {
+            line.insert(x+1, clipBoard.items(0));
+        }
 
         win.makeVisibleTexts();
         win.fixCursorAndScrollTop(win.scrollTopY);
@@ -136,6 +199,7 @@ class ViClone version 10
                 else {
                     clipBoard = win.texts.subList(line, win.visualModeStart+1);
                 }
+                pasteMode = PASTEMODE_LINE;
 
                 finishVisualMode(); 
             }
@@ -160,6 +224,8 @@ class ViClone version 10
                         win.texts.push("");
                     }
                 }
+
+                pasteMode = PASTEMODE_LINE;
 
                 win.makeVisibleTexts(); 
                 win.moveCursor(win.visualModeStart, 0);
