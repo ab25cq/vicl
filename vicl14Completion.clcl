@@ -3,7 +3,6 @@ class ViClone version 14
 {
     completionCommandNames:SortableList<String>;
 
-
     def initialize():dynamic {
         inherit();
         completionCommandNames = tyclover2("--command").toString().split(/\n/)
@@ -770,14 +769,15 @@ class ViClone version 14
         
         path_name_completion := source.match(regex "p\".*?\n");
         
-        if(path_name_completion) {
+        if(source.match(/(.+?)\.[a-zA-Z_]* $/)) {
+            source.delete(-1);
+            methodNameCompletion(source);
+        }
+        elif(path_name_completion) {
             fileCompletion();
         }
         elif(is_shell_mode) {
             shellModeCompletion();
-        }
-        elif(source.match(/(.+)\.[a-zA-Z_]*$/)) {
-            methodNameCompletion(source);
         }
         else {
             topLevelCompletion(source);
