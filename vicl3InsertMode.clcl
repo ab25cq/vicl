@@ -310,7 +310,15 @@ class ViClone version 3
             }
             
             case (('X'-'A').to_int+1) {
-                completion();
+                if(win.fileName.match(/.+\.cl/) || win.fileName.match(/.+\.clcl/)) {
+                    clover2Completion();
+                }
+                elif(win.fileName.match(/.+\.c/)) {
+                    CCompletion();
+                }
+                else {
+                    completion();
+                }
             }
 
             case (('I'-'A').to_int+1) {
@@ -327,15 +335,7 @@ class ViClone version 3
                         } 
                     }
                     else {
-                        if(win.fileName.match(/.+\.cl/) || win.fileName.match(/.+\.clcl/)) {
-                            clover2Completion();
-                        }
-                        elif(win.fileName.match(/.+\.c/)) {
-                            CCompletion();
-                        }
-                        else {
-                            completion();
-                        }
+                        completion();
                     }
                 }
                 

@@ -20,7 +20,7 @@ class ClassA {
     
     def method(aaa:int, bbbb:String) {
         ccc := "ABC";
-        
+
         test1 := "ABC";
         lelolelo := "ABC";
     }
