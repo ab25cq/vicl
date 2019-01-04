@@ -19,6 +19,9 @@ class ClassA {
     }
     
     def method(aaa:int, bbbb:String) {
+        if("AAA".equals("BBB")) {
+            println("AAA");
+        }
         ccc := "ABC";
 
         test1 := "ABC";

@@ -1,60 +1,31 @@
 
-class ViClone version17 {
-    var macro: EqualableList<Tuple2<Integer,Integer>>[];
-    var macroKey: int;
-    var macroMode: bool;
-    
+class ViClone version 19
+{
     def initialize():dynamic {
         inherit();
-        
-        macro = EqualableList<Tuple2<Integer,Integer>>[KEY_MAX];
 
-        ### Insert Mode ###
-        keyEvents['q'] = lambda(self:ViClone, key:int, key2:int) {
+        block:lambda(int) = lambda(signum:int) {
+            win_pos := 0;
 
-            macro[key2] = new EqualableList<Tuple2<Integer,Integer>>();
-            
-            macroKey = key2;
-            macroMode = true;
-        }
-        keyEvents['@'] = lambda(self:ViClone, key:int, key2:int) {
-            if(macro[key2] != null) {
-                for(i:=0; i<macro[key2].length(); i++) {
-                    key := macro[key2].items(i);
+            ViClone.vicl.windows.each {
+                it.makeMaxxy(ViClone.vicl);
+                it.makeVisibleTexts();
 
-                    runKeyEvents(key.value1, key.value2);
-                }
+                it.winPos = win_pos;
+
+                clear();
+                vicl.clearWithoutBlink(); 
+                vicl.clearStatusLine();
+                vicl.dirView();
+                vicl.view();
+                vicl.statusView();
+                refresh();
+
+                win_pos += it.MaxY;
             }
         }
-    }
-    def runKeyEvents(key:int, key2:int):dynamic {
-        if(macroMode) {
-            if(mode == EDITMODE && key == 'q'.to_int) {
-                macroMode = false;
-            }
-            else {
-                macro[macroKey].push((key, key2));
 
-                inherit(key, key2);
-            }
-        }
-        else {
-            inherit(key, key2);
-        }
-    }
-    def statusView(): dynamic {
-        if(macroMode) {
-            maxy := getmaxy();
-
-            clearStatusLine();
-
-            attron(A_REVERSE);
-            mvprintw(maxy-1, 0, "MACRO %c", array { macroKey.to_char });
-            attroff(A_REVERSE);
-        }
-        else {
-            inherit();
-        }
+        signal(SIGWINCH, block);
     }
     def main():dynamic static {
         vicl = ViClone();
@@ -90,7 +61,16 @@ class ViClone version17 {
 
             read_ok = mask.clone();
 
-            result := select(sockfd+1, read_ok, null, null, null);
+            result := -1;
+            try {
+                result = select(sockfd+1, read_ok, null, null, null);
+            } catch(e:Exception) {
+                if(!e.message.match(/Interrupted system call/) )
+                {
+                    e.message.println();
+                    exit(2);
+                }
+            }
 
             if(FD_ISSET(0, read_ok)) {
                 key := getch();

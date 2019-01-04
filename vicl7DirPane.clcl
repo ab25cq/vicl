@@ -643,7 +643,7 @@ class ViClone version 7
         win = createNewWin(dir_name, file_name, line_num);
     }
 
-    def main():static {
+    def main():dynamic static {
         vicl = ViClone();
 
         sockfd := socket(AF_UNIX, SOCK_STREAM,  0);

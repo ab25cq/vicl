@@ -343,7 +343,7 @@ class ViClone version 2
         }
     }
 
-    def main():static {
+    def main():dynamic static {
         vicl = ViClone();
 
         loop_num := 0;
