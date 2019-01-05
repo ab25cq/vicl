@@ -50,13 +50,13 @@ class ViClone version 1
         
         ### read file ###
         if(argc == 2) {
-            argFileName = null;
+            throw Exception("require file name");
         }
         elif(argc == 3) {
             argFileName = argv.items(2);
         }
         else {
-            throw Exception("vi clone can't edit multiple files");
+            throw Exception("vi clone can't edit multiple files on start time");
         }
     }
 

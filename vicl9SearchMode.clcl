@@ -6,8 +6,8 @@ class ViClone version 9
 
     enum { SEARCHMODE_NORMAL, SEARCHMODE_REVERSE }
 
-    def messageBox(message:String) {
-        clearWithoutBlink();
+    def messageBox(message:String):static {
+        clear();
         mvprintw(0,0, message);
         refresh();
 

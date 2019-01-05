@@ -75,3 +75,15 @@ alnum
 123
 456
 789
+asdfafa
+asdfafa
+asdfaf
+asdfsfa
+asdfasfda
+
+if(true) {
+    println("AAA");
+}
+else {
+    println("BBB");
+}

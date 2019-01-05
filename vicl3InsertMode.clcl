@@ -132,6 +132,11 @@ class ViClone version 3
         setLastInsertedTextPos();
     }
 
+    def finishInsertMode():dynamic {
+        mode = EDITMODE;
+        getLastInsertedText();
+    }
+
     def initialize():dynamic {
         inherit();
 
@@ -261,8 +266,7 @@ class ViClone version 3
     def insertMode(key:int) {
         when(key) {
             case (('['-'A').to_int+1, ('C'-'A').to_int+1) {
-                mode = EDITMODE;
-                getLastInsertedText();
+                finishInsertMode();
             }
 
             ### Backspace ###
