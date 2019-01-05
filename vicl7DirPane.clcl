@@ -32,6 +32,20 @@ class ViCloneWindow version 5
     def readFile(arg_line_num:int, vicl:ViClone) {
         file_path := dirPath.add("/").add(fileName);
 
+        if(access(file_path, R_OK) != 0) {
+            touch(file_path);
+        }
+
+        try {
+            file_path = realpath(file_path);
+
+            dirPath = dirname(file_path);
+            fileName = basename(file_path);
+        }
+        catch(e:Exception) {
+            throw Exception("Invalid file path");
+        }
+
         if(access(file_path, R_OK) == 0) {
             texts = file_path.toPath().read().toString().split('\n');
 

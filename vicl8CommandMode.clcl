@@ -243,6 +243,10 @@ class ViClone version 8
                 }
                 elif(statusLineInCommandMode.match(/^sp\s+.+/)) {
                     fpath := statusLineInCommandMode.scan(/^sp\s+(.+)/).items(1);
+
+                    try {
+                        fpath = realpath(fpath);
+                    }
                     
                     dir_name := dirname(fpath);
                     file_name := basename(fpath);
