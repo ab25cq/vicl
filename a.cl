@@ -5,13 +5,13 @@ str
 2
 a
 aaaaaaaaaa
-abc
-def
-ghi
-abc
-def
-ghi
-abc
+            abc
+            def
+            ghi
+            abc
+            def
+            ghi
+            abc
 @@@abc
 abc
 abc
@@ -22,7 +22,6 @@ abc
             xx
             xx
             xx
-
 aaaaa
 asdlkfsldfals asldkflasdflasd alsd lasdfj alsdfaldfjsala sd aslkdjl sds asdfasdfas
 asdlkasflasdf asd fasldfaslaslkfa lsf a
@@ -86,4 +85,10 @@ if(true) {
 }
 else {
     println("BBB");
+}
+
+if(a == 1) {
+   vvv := 123;
+   jjj := 123;
+   zzz := 123;
 }

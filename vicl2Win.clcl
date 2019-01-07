@@ -185,7 +185,8 @@ class ViCloneWindow version 1
 
         try {
             attron(A_REVERSE);
-            mvprintw(MaxY -1 + winPos, 0 + ViClone.vicl.dirPaneLength, "%s/%s%s", { dirPath, fileName, " ".multiply(getmaxx()-1-ViClone.vicl.dirPaneLength-dirPath.length()-fileName.length()-1) });
+            str := sprintf("%s/%s%s", array { dirPath, fileName, " ".multiply(getmaxx()-1-ViClone.vicl.dirPaneLength-dirPath.length()-fileName.length()-1) });
+            mvprintw(MaxY -1 + winPos, 0 + ViClone.vicl.dirPaneLength, "%s", array { str.subString(0, getmaxx()-1-ViClone.vicl.dirPaneLength) });
             attroff(A_REVERSE);
         }
     }

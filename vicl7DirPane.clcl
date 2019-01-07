@@ -586,7 +586,7 @@ class ViClone version 7
                 fname := fileNames.items(dirScrollTop+dirCursor);
                 fpath := dirName.add("/").add(fname);
                 cmdline := "cp -r \{fpath} "
-                iclover2("-c", "--controlling-terminal", "-s", cmdline);
+                iclover2("-o", "--controlling-terminal", "-s", cmdline);
                 initscr();
                 setEscapeDelay(0);
                 keypad(stdscr, true);
@@ -600,7 +600,7 @@ class ViClone version 7
                 fname := fileNames.items(dirScrollTop+dirCursor);
                 fpath := dirName.add("/").add(fname);
                 cmdline := "rm -ir \{fpath} "
-                iclover2("-c", "--controlling-terminal", "-s", cmdline);
+                iclover2("-o", "--controlling-terminal", "-s", cmdline);
                 initscr();
                 setEscapeDelay(0);
                 keypad(stdscr, true);
@@ -612,7 +612,7 @@ class ViClone version 7
             case ('n'.to_int) {
                 endwin();
                 cmdline := "touch "
-                iclover2("-c", "--controlling-terminal", "-s", cmdline);
+                iclover2("-o", "--controlling-terminal", "-s", cmdline);
                 initscr();
                 setEscapeDelay(0);
                 keypad(stdscr, true);

@@ -23,8 +23,9 @@ class ClassA {
             println("AAA");
         }
         ccc := "ABC";
-
+        
         test1 := "ABC";
         lelolelo := "ABC";
+        test2 := "DEF";
     }
 }
