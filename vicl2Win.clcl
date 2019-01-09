@@ -220,7 +220,7 @@ class ViClone version 2
             file_name = basename(argFileName);
         }
 
-        win = ViCloneWindow(argFileName, dir_path, 0, argLineNum, self);
+        win = ViCloneWindow(file_name, dir_path, 0, argLineNum, self);
 
         windows.push(win);
 
