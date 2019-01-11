@@ -186,7 +186,7 @@ class ViClone version 10
 
     def visualMode(key:int) {
         when(key) {
-            case (('['-'A').to_int+1) {
+            case (('['-'A').to_int+1, ('C'-'A').to_int+1) {
                 finishVisualMode(); 
             }
 
