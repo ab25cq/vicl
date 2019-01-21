@@ -383,7 +383,7 @@ class ViClone version 3
 
     def statusView():dynamic {
         maxy := getmaxy();
-
+        
         attron(A_REVERSE);
         try {
             mvprintw(maxy-1, 0, "%s %d %d %s", { (win.fileName?.nothing():""), win.getRealPosY() + 1, win.getRealPosX(), if(win.modifiedText) { "changed" } else { "no changed" } });
