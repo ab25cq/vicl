@@ -60,7 +60,14 @@ class ViClone version 10
     def initialize():dynamic {
         inherit();
 
-        clipBoard = SortableList<String>();
+        path := getenv("HOME").add("/.clover2/vicl/clipbord")
+        
+        if(access(path, R_OK) == 0) {
+            clipBoard = path.toPath().read().toString().split('\n');
+        }
+        else {
+            clipBoard = SortableList<String>();
+        }
 
         pasteMode = PASTEMODE_LINE;
 
@@ -84,6 +91,14 @@ class ViClone version 10
                 pasteBeforeCursor();
             }
         }
+    }
+    
+    def finalize():dynamic {
+        inherit();
+
+        path := getenv("HOME").add("/.clover2/vicl/clipbord")
+        
+        clipBoard.join("\n").write(path);
     }
 
     def enterVisualMode() {

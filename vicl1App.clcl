@@ -60,7 +60,7 @@ class ViClone version 1
         }
     }
 
-    def finalize() {
+    def finalize():dynamic {
         endwin();
         runningCurses = false;
     }
