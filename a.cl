@@ -3,6 +3,17 @@ alnum
 str
 1
 
+
+
+
+
+"AAA".toCommand().less()
+
+aa
+
+  aaadd
+st
+
 2
 a
 aaaaaaaaaa
