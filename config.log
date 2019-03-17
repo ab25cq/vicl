@@ -29,8 +29,6 @@ uname -v = #1 SMP PREEMPT Mon Nov 21 10:55:09 2016
 
 PATH: /data/data/com.termux/files/home/bin
 PATH: /data/data/com.termux/files/home/bin
-PATH: /data/data/com.termux/files/home/bin
-PATH: /data/data/com.termux/files/home/bin
 PATH: /data/data/com.termux/files/usr/bin
 PATH: /data/data/com.termux/files/usr/bin/applets
 

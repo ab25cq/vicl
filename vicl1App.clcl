@@ -24,6 +24,8 @@ class ViClone version 1
             }
         }
 
+        setlocale(LC_ALL, "");
+
         runningCurses = true;
         initscr();
         setEscapeDelay(0);

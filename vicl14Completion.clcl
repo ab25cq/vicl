@@ -839,12 +839,12 @@ class ViClone version 14
     }
     
     def getWords():SortableList<String> {
-        return win.texts.join("\n").toCommand().bash("-c", "sed -re 's/(\\s|\\W)+/\\n/g' | egrep -v '\\W+' | egrep -v '^$' | sort | uniq").toString().split('\n');
+        return win.texts.join("\n").toCommand().bash("-c", "sed -re 's/  */\\n/g' | sed -re 's/[!-@\\[-\\`{-~]/\\n/g' | egrep -v '^$' | sort | uniq").toString().split('\n');
     }
     
     def completion():dynamic {
         words := getWords();
-        
+
         (inputing_text,i) := gettingInputingWord();
         completion_core(inputing_text, i, words)
     }  
