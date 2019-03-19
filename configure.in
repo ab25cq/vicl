@@ -119,9 +119,9 @@ fi
 
 AC_SUBST(OS)
 
-##########################################################
+###########################################
 # Libs
-##########################################################
+###########################################
 CC=gcc
 
 INSTALL="/usr/bin/install -c"
@@ -129,6 +129,28 @@ DESTDIR=$myprefix
 AC_SUBST(DESTDIR)
 
 AC_SUBST(CFLAGS)
+
+###########################################
+# termux
+###########################################
+if test -e /data/data/com.termux/files
+then
+cat << EOS > vicl
+#!/bin/bash
+
+export CLEAR_VIEW=1
+export LD_LIBRARY_PATH=$HOME/.clover2/vicl/:$LD_LIBRARY_PATH
+clover2 ~/.clover2/vicl/viclone.ocl $@
+EOS
+else
+cat << EOS > vicl
+#!/bin/bash
+
+export LD_LIBRARY_PATH=$HOME/.clover2/vicl/:$LD_LIBRARY_PATH
+clover2 ~/.clover2/vicl/viclone.ocl $@
+EOS
+
+fi
 
 AC_OUTPUT(Makefile)
 
