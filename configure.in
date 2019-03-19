@@ -135,21 +135,21 @@ AC_SUBST(CFLAGS)
 ###########################################
 if test -e /data/data/com.termux/files
 then
-cat << EOS > vicl
+cat <<'EOF' > vicl
 #!/bin/bash
 
 export CLEAR_VIEW=1
 export LD_LIBRARY_PATH=$HOME/.clover2/vicl/:$LD_LIBRARY_PATH
 clover2 ~/.clover2/vicl/viclone.ocl $@
-EOS
+EOF
+
 else
-cat << EOS > vicl
+cat <<'EOF' > vicl
 #!/bin/bash
 
 export LD_LIBRARY_PATH=$HOME/.clover2/vicl/:$LD_LIBRARY_PATH
 clover2 ~/.clover2/vicl/viclone.ocl $@
-EOS
-
+EOF
 fi
 
 AC_OUTPUT(Makefile)
