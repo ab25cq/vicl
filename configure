@@ -2889,7 +2889,7 @@ DESTDIR=$myprefix
 ###########################################
 # termux
 ###########################################
-if test -e /data/data/com.termux/files
+if pwd | grep /data/data/com.termux/files > /dev/null
 then
     echo "termux on Android...termux"
 
