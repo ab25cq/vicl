@@ -135,6 +135,7 @@ AC_SUBST(CFLAGS)
 ###########################################
 if test -e /data/data/com.termux/files
 then
+    echo "termux on Android...termux"
 cat <<'EOF' > vicl
 #!/bin/bash
 
@@ -144,6 +145,7 @@ clover2 ~/.clover2/vicl/viclone.ocl $@
 EOF
 
 else
+    echo "termux on Android...no termux
 cat <<'EOF' > vicl
 #!/bin/bash
 
