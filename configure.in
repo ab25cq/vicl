@@ -136,6 +136,7 @@ AC_SUBST(CFLAGS)
 if test -e /data/data/com.termux/files
 then
     echo "termux on Android...termux"
+
 cat <<'EOF' > vicl
 #!/bin/bash
 
@@ -145,13 +146,15 @@ clover2 ~/.clover2/vicl/viclone.ocl $@
 EOF
 
 else
-    echo "termux on Android...no termux
+    echo "termux on Android...no termux"
+
 cat <<'EOF' > vicl
 #!/bin/bash
 
 export LD_LIBRARY_PATH=$HOME/.clover2/vicl/:$LD_LIBRARY_PATH
 clover2 ~/.clover2/vicl/viclone.ocl $@
 EOF
+
 fi
 
 AC_OUTPUT(Makefile)
