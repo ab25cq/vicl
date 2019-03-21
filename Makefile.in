@@ -138,6 +138,7 @@ install:
 	install -m 755 vicl "$(DESTDIR)"/bin
 	install -m 755 vicl_open_file "$(DESTDIR)"/bin
 	install -m 755 vicl_insert_file "$(DESTDIR)"/bin
+	install -m 644 SKK-JISYO.L $(HOME)/.clover2/vicl
 
 #########################################################
 # uninstall

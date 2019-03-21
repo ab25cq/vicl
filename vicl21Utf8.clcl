@@ -178,62 +178,462 @@ class ViCloneWindow version 13
         }
     }
     def view():dynamic {
-        for(y:=0; y<visibleTexts.length() && y < MaxY -1; y++) {
-            line := visibleTexts.items(y);
-
-            if(line == null) {
-                break;
+        if(visualMode || vvisualMode || rangeMode) {
+            inherit();
+        }
+        else {
+            clear_view := false;
+            clear_view_env := getenv("CLEAR_VIEW");
+            if(clear_view_env.equals("1")) {
+                clear_view = true;
             }
 
-            ### cursor line ####
-            if(cursorY == y && ViClone.vicl.win == self) {
-                if(line.length() == 0) {
-                    attron(A_REVERSE);
-                    mvprintw(y + winPos, 0 + ViClone.vicl.dirPaneLength, " ");
-                    attroff(A_REVERSE);
-                }
-                else {
-                    cursor_x_term_len := ViClone.getTermLen(line.subString(0, cursorX));
-                    if(cursorX >= line.length()) {
-                        mvprintw(y + winPos
-                            , 0 + ViClone.vicl.dirPaneLength, line);
+            for(y:=0; y<visibleTexts.length() && y < MaxY -1; y++) {
+                line := visibleTexts.items(y);
 
+                if(line == null) {
+                    break;
+                }
+
+                ### cursor line ####
+                if(cursorY == y && ViClone.vicl.win == self) {
+                    if(line.length() == 0) {
                         attron(A_REVERSE);
-                        mvprintw(y + winPos, cursor_x_term_len + ViClone.vicl.dirPaneLength, " ");
+                        mvprintw(y + winPos, 0 + ViClone.vicl.dirPaneLength, " ");
                         attroff(A_REVERSE);
                     }
                     else {
-                        mvprintw(y + winPos
-                            , ViClone.vicl.dirPaneLength
-                            , "%s", array { line.subString(0, cursorX) } );
+                        cursor_x_term_len := 0;
+                        if(clear_view) {
+                            cursor_x_term_len = cursorX;
+                        }
+                        else {
+                            cursor_x_term_len = ViClone.getTermLen(line.subString(0, cursorX));
+                        }
+                        if(cursorX >= line.length()) {
+                            mvprintw(y + winPos
+                                , 0 + ViClone.vicl.dirPaneLength, line);
 
-                        c := line.chars(cursorX);
+                            attron(A_REVERSE);
+                            mvprintw(y + winPos, cursor_x_term_len + ViClone.vicl.dirPaneLength, " ");
+                            attroff(A_REVERSE);
+                        }
+                        else {
+                            mvprintw(y + winPos
+                                , ViClone.vicl.dirPaneLength
+                                , "%s", array { line.subString(0, cursorX) } );
 
-                        attron(A_REVERSE);
-                        printw("%s", array { c.toString() });
-                        attroff(A_REVERSE);
+                            c := line.chars(cursorX);
 
-                        printw("%s", array { line.subString(cursorX+1, -1) });
+                            attron(A_REVERSE);
+                            printw("%s", array { c.toString() });
+                            attroff(A_REVERSE);
+
+                            printw("%s", array { line.subString(cursorX+1, -1) });
+                       }
                    }
-               }
+                }
+                ### visible line ###
+                else {
+                    mvprintw(y + winPos, 0 + ViClone.vicl.dirPaneLength, line);
+                }
             }
-            ### visible line ###
-            else {
-                mvprintw(y + winPos, 0 + ViClone.vicl.dirPaneLength, line);
-            }
-        }
 
-        try {
-            attron(A_REVERSE);
-            str := sprintf("%s/%s%s", array { dirPath, fileName, " ".multiply(getmaxx()-1-ViClone.vicl.dirPaneLength-dirPath.length()-fileName.length()-1) });
-            mvprintw(MaxY -1 + winPos, 0 + ViClone.vicl.dirPaneLength, "%s", array { str.subString(0, getmaxx()-1-ViClone.vicl.dirPaneLength) });
-            attroff(A_REVERSE);
+            try {
+                attron(A_REVERSE);
+                str := sprintf("%s/%s%s", array { dirPath, fileName, " ".multiply(getmaxx()-1-ViClone.vicl.dirPaneLength-dirPath.length()-fileName.length()-1) });
+                mvprintw(MaxY -1 + winPos, 0 + ViClone.vicl.dirPaneLength, "%s", array { str.subString(0, getmaxx()-1-ViClone.vicl.dirPaneLength) });
+                attroff(A_REVERSE);
+            }
         }
     }
 }
 
 class ViClone version 21
 {
+    var fep:bool;
+    var fepString:String;
+    
+    def initialize() {
+        inherit();
+
+        fep = false;
+        fepString = "";
+            
+        keyEvents[('J'-'A').to_int+1] = lambda(self:ViClone, key:int, key2:int) {
+           win.addUndoText();
+           fep = true;
+
+           enterInsertMode();
+        }
+    }
+    def finishInsertMode():dynamic {
+        inherit();
+
+        fepString = "";
+        fep = false;
+    }
+    # result is -1 --> canceled to select
+    def selectStrings(message:String, strings:SortableList<String>):int {
+        result := -1;
+
+        cursor := 0;
+        scroll_top := 0;
+        maxy := getmaxy()-1;
+        maxx := getmaxx();
+
+        while(true) {
+            clear();
+
+            n := 0;
+            mvprintw(0, 0 , message.subString(0, maxx-1));
+
+            strings.subList(scroll_top, scroll_top+maxy-1).each  {
+                if(cursor == n) {
+                    attron(A_REVERSE);
+                    mvprintw(n+1, 0, it);
+                    attroff(A_REVERSE);
+                }
+                else {
+                    mvprintw(n+1, 0, it);
+                }
+                n++;
+            }
+
+            refresh();
+
+            key := getch();
+
+            when(key) {
+                case (('['-'A').to_int+1, ('C'-'A').to_int + 1) {
+                    break;
+                }
+                case (KEY_UP, 'k'.to_int) {
+                    cursor--;
+                }
+                case (KEY_DOWN, 'j'.to_int, ('I'-'A').to_int + 1) {
+                    cursor++;
+                }
+                case (('J'-'A').to_int + 1) {
+                    result = scroll_top + cursor;
+                    break;
+                }
+                case (('D'-'A').to_int + 1) {
+                    cursor += 10;
+                }
+                case (('U'-'A').to_int + 1) {
+                    cursor -= 10;
+                }
+            }
+
+            if(cursor > maxy-1) {
+                scroll_top += maxy-1;
+                cursor = 0;
+            }
+
+            if(scroll_top+cursor >= strings.length()) {
+                cursor = strings.length()-scroll_top-1;
+            }
+
+            if(cursor < 0) {
+                cursor += maxy-1;
+                scroll_top -= maxy-1;
+            }
+
+            if(scroll_top < 0) {
+                scroll_top = 0;
+                cursor = 0;
+            }
+        }
+
+        return result;
+    }
+    def selectFEPString(): String {
+        oomoji := false;
+
+        head := fepString.chars(0);
+
+        if(head >= 'A' && head <= 'Z') {
+            oomoji = true;
+        }
+
+        fepString = fepString.lowerCase();
+
+        # change Roma-ji to Hiragana
+        hiragana := "";
+
+        for(i:=0; i<fepString.length(); i++) {
+            c := fepString.chars(i);
+
+            if(c == 'a') {
+                hiragana.append("あ");
+            }
+            elif(c == 'i') {
+                hiragana.append("い");
+            }
+            elif(c == 'u') {
+                hiragana.append("う");
+            }
+            elif(c == 'e') {
+                hiragana.append("え");
+            }
+            elif(c == 'o') {
+                hiragana.append("お");
+            }
+            elif(c == 's') {
+                c2 := fepString.chars(i+1);
+                if(c2 == 'a') {
+                    hiragana.append("さ");
+                    i++;
+                }
+                elif(c2 == 'i') {
+                    hiragana.append("し");
+                    i++;
+                }
+                elif(c2 == 'u') {
+                    hiragana.append("す");
+                    i++;
+                }
+                elif(c2 == 'e') {
+                    hiragana.append("せ");
+                    i++;
+                }
+                elif(c2 == 'o') {
+                    hiragana.append("そ");
+                    i++;
+                }
+            }
+            elif(c == 'k') {
+                c2 := fepString.chars(i+1);
+                if(c2 == 'a') {
+                    hiragana.append("か");
+                    i++;
+                }
+                elif(c2 == 'i') {
+                    hiragana.append("き");
+                    i++;
+                }
+                elif(c2 == 'u') {
+                    hiragana.append("く");
+                    i++;
+                }
+                elif(c2 == 'e') {
+                    hiragana.append("け");
+                    i++;
+                }
+                elif(c2 == 'o') {
+                    hiragana.append("こ");
+                    i++;
+                }
+            }
+            elif(c == 's') {
+                c2 := fepString.chars(i+1);
+                if(c2 == 'a') {
+                    hiragana.append("さ");
+                    i++;
+                }
+                elif(c2 == 'i') {
+                    hiragana.append("し");
+                    i++;
+                }
+                elif(c2 == 'u') {
+                    hiragana.append("す");
+                    i++;
+                }
+                elif(c2 == 'e') {
+                    hiragana.append("せ");
+                    i++;
+                }
+                elif(c2 == 'o') {
+                    hiragana.append("そ");
+                    i++;
+                }
+            }
+            elif(c == 't') {
+                c2 := fepString.chars(i+1);
+                if(c2 == 'a') {
+                    hiragana.append("た");
+                    i++;
+                }
+                elif(c2 == 'i') {
+                    hiragana.append("ち");
+                    i++;
+                }
+                elif(c2 == 'u') {
+                    hiragana.append("つ");
+                    i++;
+                }
+                elif(c2 == 'e') {
+                    hiragana.append("て");
+                    i++;
+                }
+                elif(c2 == 'o') {
+                    hiragana.append("と");
+                    i++;
+                }
+            }
+            elif(c == 'n') {
+                c2 := fepString.chars(i+1);
+                if(c2 == 'a') {
+                    hiragana.append("な");
+                    i++;
+                }
+                elif(c2 == 'i') {
+                    hiragana.append("に");
+                    i++;
+                }
+                elif(c2 == 'u') {
+                    hiragana.append("ぬ");
+                    i++;
+                }
+                elif(c2 == 'e') {
+                    hiragana.append("ね");
+                    i++;
+                }
+                elif(c2 == 'o') {
+                    hiragana.append("の");
+                    i++;
+                }
+                elif(c2 == 'n') {
+                    hiragana.append("ん");
+                    i++;
+                }
+            }
+            elif(c == 'h') {
+                c2 := fepString.chars(i+1);
+                if(c2 == 'a') {
+                    hiragana.append("は");
+                    i++;
+                }
+                elif(c2 == 'i') {
+                    hiragana.append("ひ");
+                    i++;
+                }
+                elif(c2 == 'u') {
+                    hiragana.append("ふ");
+                    i++;
+                }
+                elif(c2 == 'e') {
+                    hiragana.append("へ");
+                    i++;
+                }
+                elif(c2 == 'o') {
+                    hiragana.append("ほ");
+                    i++;
+                }
+            }
+            elif(c == 'm') {
+                c2 := fepString.chars(i+1);
+                if(c2 == 'a') {
+                    hiragana.append("ま");
+                    i++;
+                }
+                elif(c2 == 'i') {
+                    hiragana.append("み");
+                    i++;
+                }
+                elif(c2 == 'u') {
+                    hiragana.append("む");
+                    i++;
+                }
+                elif(c2 == 'e') {
+                    hiragana.append("め");
+                    i++;
+                }
+                elif(c2 == 'o') {
+                    hiragana.append("も");
+                    i++;
+                }
+            }
+            elif(c == 'y') {
+                c2 := fepString.chars(i+1);
+                if(c2 == 'a') {
+                    hiragana.append("や");
+                    i++;
+                }
+                elif(c2 == 'u') {
+                    hiragana.append("ゆ");
+                    i++;
+                }
+                elif(c2 == 'o') {
+                    hiragana.append("よ");
+                    i++;
+                }
+            }
+            elif(c == 'r') {
+                c2 := fepString.chars(i+1);
+                if(c2 == 'a') {
+                    hiragana.append("ら");
+                    i++;
+                }
+                elif(c2 == 'i') {
+                    hiragana.append("り");
+                    i++;
+                }
+                elif(c2 == 'u') {
+                    hiragana.append("る");
+                    i++;
+                }
+                elif(c2 == 'e') {
+                    hiragana.append("れ");
+                    i++;
+                }
+                elif(c2 == 'o') {
+                    hiragana.append("ろ");
+                    i++;
+                }
+            }
+            elif(c == 'w') {
+                c2 := fepString.chars(i+1);
+                if(c2 == 'a') {
+                    hiragana.append("わ");
+                    i++;
+                }
+                elif(c2 == 'o') {
+                    hiragana.append("を");
+                    i++;
+                }
+            }
+            else {
+                hiragana.append(c.toString());
+            }
+        }
+
+        if(oomoji) {
+            lines := bash("-c", "cat ~/.clover2/vicl/SKK-JISYO.L | egrep ^\{hiragana}").toString().split('\n');
+            candidates := SortableList<String>();
+            for(i:=0; i<lines.length(); i++) {
+                line := lines.items(i);
+
+                if(line.match(regex"/(.+)/")) {
+                    words := line.scan(regex"/(.+)/").items(1).split('/');
+                    for(i:=0; i<words.length(); i++) {
+                        word := words.items(i);
+                        word = word.sub(/;.+/, "");
+                        candidates.push(word);
+                    }
+                }
+            }
+
+            if(candidates.length() > 0) {
+                index := selectStrings(hiragana, candidates);
+
+                if(index == -1) {
+                    return hiragana;
+                }
+                else {
+                    return candidates.items(index);
+                }
+            }
+            else {
+                return hiragana;
+            }
+        }
+        else {
+            return hiragana;
+        }
+    }
+
     def getTermLen(str:String):static int {
         result := 0;
 
@@ -752,6 +1152,43 @@ class ViClone version 21
         win.cursorX = spaces_num;
     }
 
+    def appendFEPString() {
+        y := win.getRealPosY();
+        x := win.getRealPosX();
+
+        line := win.texts.items(y);
+        
+        if(line != null) {
+            buf := selectFEPString();
+
+            line.insert(x, buf);
+
+            win.makeVisibleTexts();
+
+            win.cursorX+=buf.length();
+
+            line2 := win.visibleTexts.items(win.cursorY);
+
+            term_len := getTermLen(line2)
+
+            cursor_term_len := getTermLen(line2.subString(0, win.cursorX));
+
+            if(cursor_term_len == term_len && term_len >= win.MaxX-1) {
+                win.cursorY++;
+                win.cursorX = 0;
+
+                if(win.cursorY >= win.MaxY -1) {
+                    win.scrollTopY++;
+                    win.cursorY--;
+                    win.makeVisibleTexts();
+
+                    win.fixCursorAndScrollTop(win.scrollTopY);
+                }
+            }
+            fepString = "";
+        }
+    }
+
     def insertMode(key:int):dynamic {
         when(key) {
             case (('['-'A').to_int+1, ('C'-'A').to_int+1) {
@@ -791,9 +1228,14 @@ class ViClone version 21
             }
 
             case ('\n'.to_int) {
-                enterNewLine(false);
-                
-                win.makeVisibleTexts();
+                if(fep) {
+                    appendFEPString();
+                }
+                else {
+                    enterNewLine(false);
+                    
+                    win.makeVisibleTexts();
+                }
             }
 
             case (('D'-'A').to_int+1) {
@@ -858,85 +1300,97 @@ class ViClone version 21
                 line := win.texts.items(y);
                 
                 if(line != null) {
-                    c := key.to_char;
+                    if(fep) {
+                        c := key.to_char;
 
-                    if(c > 127) {
-                        size := ((c.to_int & 0x80) >> 7) + ((c.to_int & 0x40) >> 6) + ((c.to_int & 0x20) >> 5) + ((c.to_int & 0x10) >> 4);
-
-                        buf := Buffer();
-                        buf.append(c.to_byte);
-
-                        for(i:=0; i<size-1; i++) {
-                            key2 := getch();
-                            buf.append(key2.to_byte);
+                        if(c == ' ') {
+                            appendFEPString();
                         }
-
-                        line.insert(x, buf.toString());
-
-                        win.makeVisibleTexts();
-
-                        win.cursorX++;
-
-                        line2 := win.visibleTexts.items(win.cursorY);
-
-                        term_len := getTermLen(line2)
-
-                        cursor_term_len := getTermLen(line2.subString(0, win.cursorX));
-
-                        if(cursor_term_len == term_len && term_len >= win.MaxX-1) {
-                            win.cursorY++;
-                            win.cursorX = 0;
-
-                            if(win.cursorY >= win.MaxY -1) {
-                                win.scrollTopY++;
-                                win.cursorY--;
-                                win.makeVisibleTexts();
-
-                                win.fixCursorAndScrollTop(win.scrollTopY);
-                            }
+                        elif(c <= 127) {
+                            fepString.append(c.toString());
                         }
                     }
-                    elif(c.isalnum() || c == ' ' || c.isgraph()) {
-                        line2 := win.visibleTexts.items(win.cursorY-1);
+                    else {
+                        c := key.to_char;
 
-                        term_len := getTermLen(line2)
+                        if(c > 127) {
+                            size := ((c.to_int & 0x80) >> 7) + ((c.to_int & 0x40) >> 6) + ((c.to_int & 0x20) >> 5) + ((c.to_int & 0x10) >> 4);
 
-                        line3 := win.visibleTexts.items(win.cursorY);
+                            buf := Buffer();
+                            buf.append(c.to_byte);
 
-                        term_len2 := getTermLen(line3)
+                            for(i:=0; i<size-1; i++) {
+                                key2 := getch();
+                                buf.append(key2.to_byte);
+                            }
 
-                        if(term_len == win.MaxX-1 && term_len2 == 0) {
-                            line.append(c.toString());
+                            line.insert(x, buf.toString());
+
+                            win.makeVisibleTexts();
+
+                            win.cursorX++;
+
+                            line2 := win.visibleTexts.items(win.cursorY);
+
+                            term_len := getTermLen(line2)
+
+                            cursor_term_len := getTermLen(line2.subString(0, win.cursorX));
+
+                            if(cursor_term_len == term_len && term_len >= win.MaxX-1) {
+                                win.cursorY++;
+                                win.cursorX = 0;
+
+                                if(win.cursorY >= win.MaxY -1) {
+                                    win.scrollTopY++;
+                                    win.cursorY--;
+                                    win.makeVisibleTexts();
+
+                                    win.fixCursorAndScrollTop(win.scrollTopY);
+                                }
+                            }
                         }
-                        else {
-                            line.insert(x, c.toString());
-                        }
+                        elif(c.isalnum() || c == ' ' || c.isgraph()) {
+                            line2 := win.visibleTexts.items(win.cursorY-1);
 
-                        win.makeVisibleTexts();
+                            term_len := getTermLen(line2)
 
-                        if(key == '}' || key == ')')
-                        {
-                            blinkParen();
-                        }
+                            line3 := win.visibleTexts.items(win.cursorY);
 
-                        win.cursorX++;
+                            term_len2 := getTermLen(line3)
 
-                        line2 = win.visibleTexts.items(win.cursorY);
+                            if(term_len == win.MaxX-1 && term_len2 == 0) {
+                                line.append(c.toString());
+                            }
+                            else {
+                                line.insert(x, c.toString());
+                            }
 
-                        term_len = getTermLen(line2)
+                            win.makeVisibleTexts();
 
-                        cursor_term_len := getTermLen(line2.subString(0, win.cursorX));
+                            if(key == '}' || key == ')')
+                            {
+                                blinkParen();
+                            }
 
-                        if(cursor_term_len == term_len && term_len >= win.MaxX-1) {
-                            win.cursorY++;
-                            win.cursorX = 0;
-                            
-                            if(win.cursorY >= win.MaxY -1) {
-                                win.scrollTopY++;
-                                win.cursorY--;
-                                win.makeVisibleTexts();
+                            win.cursorX++;
 
-                                win.fixCursorAndScrollTop(win.scrollTopY);
+                            line2 = win.visibleTexts.items(win.cursorY);
+
+                            term_len = getTermLen(line2)
+
+                            cursor_term_len := getTermLen(line2.subString(0, win.cursorX));
+
+                            if(cursor_term_len == term_len && term_len >= win.MaxX-1) {
+                                win.cursorY++;
+                                win.cursorX = 0;
+                                
+                                if(win.cursorY >= win.MaxY -1) {
+                                    win.scrollTopY++;
+                                    win.cursorY--;
+                                    win.makeVisibleTexts();
+
+                                    win.fixCursorAndScrollTop(win.scrollTopY);
+                                }
                             }
                         }
                     }

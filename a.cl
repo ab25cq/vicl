@@ -4,11 +4,11 @@ str
 1
 ksalfalsdkflsadlfdslfadslkadslaskdflsdlalsdfdlsakfjlkaljdladsf
 あああああああああllllllあlllllll
-
+愛
 iiiiiiiiiiiiiiiiiiiiiiiiああああああああああああああああああああああああああ
 aaaaaaa
 ああいうえお
-愛している
+愛
 vim愛している
 あああああlああああ
 ああああああああああああああasあああdfaslkfslaalsdflfldskfsllsadl
@@ -68,20 +68,25 @@ if(a == 1) {
 else {
     b = 123;
 }
-
 def main() {
     println("HELLO WORLD");
     println("HELLO WORLD");
     println("HELLO WORLD");
     println("AAA");
 }
-
 lll
 bbb
 ccc
 lll
 
+あい
 
+
+
+
+あいうえおいいいいかかかか
+あいうえお
+かきくけこかきくけこ
 aaaa
 bbbb
 aaaa
