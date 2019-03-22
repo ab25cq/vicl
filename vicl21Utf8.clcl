@@ -446,10 +446,10 @@ class ViCloneWindow version 13
             }
         }
         else {
-            clear_view := false;
-            clear_view_env := getenv("CLEAR_VIEW");
-            if(clear_view_env.equals("1")) {
-                clear_view = true;
+            termux := false;
+            termux_env := getenv("TERMUX");
+            if(termux_env.equals("1")) {
+                termux = true;
             }
 
             for(y:=0; y<visibleTexts.length() && y < MaxY -1; y++) {
@@ -476,7 +476,7 @@ class ViCloneWindow version 13
                     }
                     else {
                         cursor_x_term_len := 0;
-                        if(clear_view) {
+                        if(termux) {
                             cursor_x_term_len = cursorX;
                         }
                         else {
@@ -2448,10 +2448,10 @@ class ViClone version 21
 
         loop_num := 0;
 
-        clear_env := getenv("CLEAR_VIEW");
+        termux_env := getenv("TERMUX");
         clear_flag := false;
-        if(clear_env != null) {
-            clear_flag = clear_env.equals("1");
+        if(termux_env != null) {
+            clear_flag = termux_env.equals("1");
         }
 
         while(!vicl.endOfAplication) {
