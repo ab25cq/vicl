@@ -448,7 +448,7 @@ class ViCloneWindow version 13
         else {
             termux := false;
             termux_env := getenv("TERMUX");
-            if(termux_env.equals("1")) {
+            if(termux_env != null && termux_env.equals("1")) {
                 termux = true;
             }
 
@@ -2472,6 +2472,7 @@ class ViClone version 21
                 refresh();
             }
             else {
+                #vicl.clearWithoutBlink();
                 erase();
                 vicl.clearStatusLine();
                 vicl.dirView();

@@ -2896,7 +2896,7 @@ then
 cat <<'EOF' > vicl
 #!/bin/bash
 
-export CLEAR_VIEW=1
+export TERMUX=1
 export LD_LIBRARY_PATH=$HOME/.clover2/vicl/:$LD_LIBRARY_PATH
 clover2 ~/.clover2/vicl/viclone.ocl $@
 EOF
