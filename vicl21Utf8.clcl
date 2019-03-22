@@ -14,7 +14,7 @@ class ViCloneWindow version 13
                 elif(x >= head && x == 0 && width == 0) {
                     return (i, x-head);
                 }
-                elif(x >= head && x < head + width) 
+                elif(x >= head && x <= head + width) 
                 {
                     return (i, x-head);
                 }
@@ -99,6 +99,39 @@ class ViCloneWindow version 13
         }
     }
 
+    def moveCursor(y:int, x:int):dynamic int {
+        (y2,x2) := realPosToViewPos(y, x);
+
+        if(y2 >= 0 && y2 < visibleTexts.length())
+        {
+            (cursorY, cursorX) = realPosToViewPos(y, x);
+        }
+        else {
+            scroll_size := (MaxY-1)/2;
+            scrollTopY = y - scroll_size;
+
+            fixCursorAndScrollTop(scrollTopY);
+            makeVisibleTexts();
+
+            (cursorY, cursorX) = realPosToViewPos(y, x);
+
+            if(cursorY == -1 && cursorX == -1) {
+                scrollTopY = y;
+
+                fixCursorAndScrollTop(scrollTopY);
+                makeVisibleTexts();
+
+                (cursorY, cursorX) = realPosToViewPos(y, x);
+                fixCursorAndScrollTop(scrollTopY);
+                makeVisibleTexts();
+            }
+            else {
+                fixCursorAndScrollTop(scrollTopY);
+                makeVisibleTexts();
+            }
+        }
+    }
+
     def makeVisibleTexts():dynamic {
         visibleTexts = SortableList<String>();
         visibleTextsPos = EqualableList<Tuple3<Integer, Integer, Integer>>();
@@ -178,8 +211,239 @@ class ViCloneWindow version 13
         }
     }
     def view():dynamic {
-        if(visualMode || vvisualMode || rangeMode) {
-            inherit();
+        if(visualMode) {
+            for(y:=0; y<visibleTexts.length(); y++) {
+                line := visibleTexts.items(y);
+                pos := visibleTextsPos.items(y);
+
+                if(line == null) {
+                    break;
+                }
+
+                if(pos.value3 > 1) {
+                    mvprintw(y, 0, "~~~~ ", array { y + scrollTopY });
+                }
+                else {
+                    mvprintw(y, 0, "%04d ", array { y + scrollTopY });
+                }
+
+                y2 := viewYToRealY(y);
+                cursor_line := viewYToRealY(cursorY);
+
+                if((y2 >= visualModeStart && y2 <= cursor_line) || (y2 >= cursor_line && y2 <= visualModeStart))
+                {
+                    attron(A_REVERSE);
+                }
+
+                mvprintw(y + winPos, 5 + ViClone.vicl.dirPaneLength, line);
+
+                if((y2 >= visualModeStart && y2 <= cursor_line) || (y2 >= cursor_line && y2 <= visualModeStart))
+                {
+                    attroff(A_REVERSE);
+                }
+            }
+
+            try {
+                attron(A_REVERSE);
+                mvprintw(MaxY -1 + winPos, 0 + ViClone.vicl.dirPaneLength, "%s/%s%s", { dirPath, fileName, " ".multiply(getmaxx()-1-ViClone.vicl.dirPaneLength-dirPath.length()-fileName.length()-1) });
+                attroff(A_REVERSE);
+            }
+        }
+        elif(vvisualMode) {
+            for(y:=0; y<visibleTexts.length(); y++) {
+                line := visibleTexts.items(y);
+                pos := visibleTextsPos.items(y);
+
+                if(line == null) {
+                    break;
+                }
+
+                if(pos.value3 > 1) {
+                    mvprintw(y, 0, "~~~~ ", array { y + scrollTopY });
+                }
+                else {
+                    mvprintw(y, 0, "%04d ", array { y + scrollTopY });
+                }
+
+                y2 := viewYToRealY(y);
+                cursor_line := viewYToRealY(cursorY);
+
+                if((y2 >= vvisualModeStart && y2 <= cursor_line) || (y2 >= cursor_line && y2 <= vvisualModeStart))
+                {
+                    x2 := getRealPosX();
+                    
+                    if(x2 == vvisualModeStartX) {
+                        x2++;
+                        line1 := line.subString(0, vvisualModeStartX);
+                        line2 := line.subString(vvisualModeStartX, x2);
+                        line3 := line.subString(x2, -1);
+                        
+                        mvprintw(y + winPos, 5 + ViClone.vicl.dirPaneLength, line1);
+                        
+                        attron(A_REVERSE);
+                        mvprintw(y + winPos, 5 + line1.length() + ViClone.vicl.dirPaneLength, line2);
+                        attroff(A_REVERSE);
+                        
+                        mvprintw(y + winPos, 5 + line1.length() + line2.length() + ViClone.vicl.dirPaneLength, line3);
+                    }
+                    elif(x2 > vvisualModeStartX) {
+                        line1 := line.subString(0, vvisualModeStartX);
+                        line2 := line.subString(vvisualModeStartX, x2);
+                        line3 := line.subString(x2, -1);
+                        
+                        mvprintw(y + winPos, 5 + ViClone.vicl.dirPaneLength, line1);
+                        
+                        attron(A_REVERSE);
+                        mvprintw(y + winPos, 5 + line1.length() + ViClone.vicl.dirPaneLength, line2);
+                        attroff(A_REVERSE);
+                        
+                        mvprintw(y + winPos, 5+ line1.length() + line2.length() + ViClone.vicl.dirPaneLength, line3);
+                    }
+                    else {
+                        line1 := line.subString(0, x2);
+                        line2 := line.subString(x2, vvisualModeStartX);
+                        line3 := line.subString(vvisualModeStartX, -1);
+                        
+                        mvprintw(y + winPos, 5 + ViClone.vicl.dirPaneLength, line1);
+                        
+                        attron(A_REVERSE);
+                        mvprintw(y + winPos, 5 + line1.length() + ViClone.vicl.dirPaneLength, line2);
+                        attroff(A_REVERSE);
+                        
+                        mvprintw(y + winPos, 5 + line1.length() + line2.length() + ViClone.vicl.dirPaneLength, line3);
+                    }
+                }
+                else {
+                    mvprintw(y + winPos, 5 + ViClone.vicl.dirPaneLength, line);
+                }
+            }
+
+            try {
+                attron(A_REVERSE);
+                mvprintw(MaxY -1 + winPos, 0 + ViClone.vicl.dirPaneLength, "%s/%s%s", { dirPath, fileName, " ".multiply(getmaxx()-1-ViClone.vicl.dirPaneLength-dirPath.length()-fileName.length()-1) });
+                attroff(A_REVERSE);
+            }
+        }
+        elif(rangeMode) {
+            for(y:=0; y<visibleTexts.length(); y++) {
+                line := visibleTexts.items(y);
+                pos := visibleTextsPos.items(y);
+
+                if(line == null) {
+                    break;
+                }
+
+                if(pos.value3 > 1) {
+                    mvprintw(y, 0, "~~~~ ", array { y + scrollTopY });
+                }
+                else {
+                    mvprintw(y, 0, "%04d ", array { y + scrollTopY });
+                }
+
+                y2 := viewYToRealY(y);
+                cursor_line := viewYToRealY(cursorY);
+
+                if(y2 == cursor_line && y2 == rangeModeStart) 
+                {
+                    x2 := getRealPosX();
+                
+                    if(x2 >= rangeModeStartX) 
+                    {
+                        line1 := line.subString(0, rangeModeStartX);
+                        line2 := line.subString(rangeModeStartX, x2);
+                        line3 := line.subString(x2, -1);
+                        
+                        mvprintw(y + winPos, 5 + ViClone.vicl.dirPaneLength, line1);
+                        
+                        attron(A_REVERSE);
+                        mvprintw(y + winPos, 5 + line1.length() + ViClone.vicl.dirPaneLength, line2);
+                        attroff(A_REVERSE);
+                        
+                        mvprintw(y + winPos, 5 + line1.length() + line2.length() + ViClone.vicl.dirPaneLength, line3);
+                    }
+                    else {
+                        line1 := line.subString(0, x2);
+                        line2 := line.subString(x2, rangeModeStartX);
+                        line3 := line.subString(rangeModeStartX, -1);
+                        
+                        mvprintw(y + winPos, 5 + ViClone.vicl.dirPaneLength, line1);
+                        
+                        attron(A_REVERSE);
+                        mvprintw(y + winPos, 5 + line1.length() + ViClone.vicl.dirPaneLength, line2);
+                        attroff(A_REVERSE);
+                        
+                        mvprintw(y + winPos, 5 + line1.length() + line2.length() + ViClone.vicl.dirPaneLength, line3);
+                    }
+                }
+                elif(y2 == rangeModeStart) 
+                {
+                    if(y2 < cursor_line) {
+                        line1 := line.subString(0, rangeModeStartX);
+                        line2 := line.subString(rangeModeStartX, -1);
+                        
+                        mvprintw(y + winPos, 5 + ViClone.vicl.dirPaneLength, line1);
+                        
+                        attron(A_REVERSE);
+                        mvprintw(y + winPos, 5 + line1.length() + ViClone.vicl.dirPaneLength, line2);
+                        attroff(A_REVERSE);
+                    }
+                    else {
+                        line1 := line.subString(0, rangeModeStartX);
+                        line2 := line.subString(rangeModeStartX, -1);
+                        
+                        attron(A_REVERSE);
+                        mvprintw(y + winPos, 5 + ViClone.vicl.dirPaneLength, line1);
+                        attroff(A_REVERSE);
+                        
+                        mvprintw(y + winPos, 5 + line1.length() + ViClone.vicl.dirPaneLength, line2);
+                    }
+                }
+                elif(y2 == cursor_line) {
+                    if(y2 < rangeModeStart) {
+                        x2 := getRealPosX();
+                        
+                        line1 := line.subString(0, x2);
+                        line2 := line.subString(x2, -1);
+                        
+                        mvprintw(y + winPos, 5 + ViClone.vicl.dirPaneLength, line1);
+                        
+                        attron(A_REVERSE);
+                        mvprintw(y + winPos, 5 + line1.length() + ViClone.vicl.dirPaneLength, line2);
+                        attroff(A_REVERSE);
+                    }
+                    else {
+                        x2 := getRealPosX();
+                        
+                        line1 := line.subString(0, x2);
+                        line2 := line.subString(x2, -1);
+                        
+                        attron(A_REVERSE);
+                        mvprintw(y + winPos, 5 + ViClone.vicl.dirPaneLength, line1);
+                        attroff(A_REVERSE);
+                        
+                        mvprintw(y + winPos, 5 + line1.length() + ViClone.vicl.dirPaneLength, line2);
+                    }
+                }
+                elif(y2 < rangeModeStart && y2 > cursor_line) {
+                    attron(A_REVERSE);
+                    mvprintw(y + winPos, 5 + ViClone.vicl.dirPaneLength, line);
+                    attroff(A_REVERSE);
+                }
+                elif(y2 > rangeModeStart && y2 < cursor_line) {
+                    attron(A_REVERSE);
+                    mvprintw(y + winPos, 5 + ViClone.vicl.dirPaneLength, line);
+                    attroff(A_REVERSE);
+                }
+                else {
+                    mvprintw(y + winPos, 5 + ViClone.vicl.dirPaneLength, line);
+                }
+            }
+
+            try {
+                attron(A_REVERSE);
+                mvprintw(MaxY -1 + winPos, 0 + ViClone.vicl.dirPaneLength, "%s/%s%s", { dirPath, fileName, " ".multiply(getmaxx()-1-ViClone.vicl.dirPaneLength-dirPath.length()-fileName.length()-1) });
+                attroff(A_REVERSE);
+            }
         }
         else {
             clear_view := false;
@@ -2007,6 +2271,7 @@ class ViClone version 21
 
         return result;
     }
+
     def forwardWord(offset:int=0):dynamic Tuple2<Integer, Integer> {
         real_pos_x := win.getRealPosX();
         real_pos_y := win.getRealPosY(); 
@@ -2154,172 +2419,6 @@ class ViClone version 21
                     c = line?.chars(x):'\0';
                 }
             }
-        }
-
-        return (y, x);
-    }
-
-    def backwardWord(offset:int=0):dynamic Tuple2<Integer, Integer> {
-        real_pos_x := win.getRealPosX();
-        real_pos_y := win.getRealPosY(); 
-    
-        line := win.texts.items(real_pos_y);
-
-        x := real_pos_x + offset;
-        y := real_pos_y;
-
-        c := line?.chars(x):'\0';
-        
-        if(line == null || line.equals("")) {
-            y--;
-            if(y >= 0) {
-                line = win.texts.items(y);
-                
-                if(line.length() == 0) {
-                    x = 0;
-                }
-                else {
-                    x = line.length()-1;
-                }
-            }
-            else {
-                y = 0;
-            }
-        }
-        else {
-            c := line.chars(x)?:'\0';
-
-            if(c > 127) {
-                while(c > 127) {
-                    x--;
-
-                    if(x < 0) {
-                        y--;
-
-                        if(y >= 0) {
-                            line = win.texts.items(y);
-                            if(line.length() == 0) {
-                                x = 0;
-                            }
-                            else {
-                                x = line.length()-1;
-                            }
-                        }
-                        else {
-                            x = 0;
-                            y = 0;
-                            break;
-                        }
-                    }
-
-                    c = line?.chars(x):'\0';
-                }
-            }
-            elif(c.isalpha() || c == '_') {
-                while((c.isalpha() || c == '_') && c <= 127) {
-                    x--;
-
-                    if(x < 0) {
-                        y--;
-
-                        if(y >= 0) {
-                            line = win.texts.items(y);
-                            if(line.length() == 0) {
-                                x = 0;
-                            }
-                            else {
-                                x = line.length()-1;
-                            }
-                        }
-                        else {
-                            x = 0;
-                            y = 0;
-                            break;
-                        }
-                    }
-
-                    c = line?.chars(x):'\0';
-                }
-            }
-            elif(c.isdigit()) {
-                while(c.isdigit()) {
-                    x--;
-
-                    if(x < 0) {
-                        y--;
-
-                        if(y >= 0) {
-                            line = win.texts.items(y);
-                            if(line.length() == 0) {
-                                x = 0;
-                            }
-                            else {
-                                x = line.length()-1;
-                            }
-                        }
-                        else {
-                            x = 0;
-                            y = 0;
-                            break;
-                        }
-                    }
-
-                    c = line?.chars(x):'\0';
-                }
-            }
-            elif(c.isspace()) {
-                while(c.isspace()) {
-                    x--;
-
-                    if(x < 0) {
-                        y--;
-
-                        if(y >= 0) {
-                            line = win.texts.items(y);
-                            if(line.length() == 0) {
-                                x = 0;
-                            }
-                            else {
-                                x = line.length()-1;
-                            }
-                        }
-                        else {
-                            x = 0;
-                            y = 0;
-                            break;
-                        }
-                    }
-
-                    c = line?.chars(x):'\0';
-                }
-            }
-            elif(c != '\0') {
-                while(!c.isalpha() && !c.isdigit() && !c.isspace()) {
-                    x--;
-
-                    if(x < 0) {
-                        y--;
-
-                        if(y >= 0) {
-                            line = win.texts.items(y);
-                            if(line.length() == 0) {
-                                x = 0;
-                            }
-                            else {
-                                x = line.length()-1;
-                            }
-                        }
-                        else {
-                            x = 0;
-                            y = 0;
-                            break;
-                        }
-                    }
-
-                    c = line?.chars(x):'\0';
-                }
-            }
-            x++; 
         }
 
         return (y, x);
