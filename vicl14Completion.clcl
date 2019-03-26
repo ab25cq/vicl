@@ -23,7 +23,8 @@ class ViClone version 14
                     }
                     else {
                         (y, x) := getFunctionDefinitionTop();
-    
+                        
+                        
                         if(y != -1 && x != -1) {
                             win.moveCursor(y, x);
                         }
@@ -809,10 +810,17 @@ class ViClone version 14
 
                 line.delete(i, win.getRealPosX());
                 line.insert(i, selected_string);
-                win.cursorX += selected_string.length() - (win.getRealPosX() - i)
+                win.cursorX += selected_string.length() - (win.getRealPosX() - i);
             }
         }
-
+    
+        win.makeVisibleTexts();
+        
+        if(win.cursorX >= win.MaxX-1) {
+            win.cursorX -= win.MaxX-1;
+            win.cursorY++;                                     
+        }
+        
         return true;
     } 
     
