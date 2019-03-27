@@ -1,0 +1,8 @@
+class ClassA {
+    def initialize() {
+    }
+    
+    def method() {
+        Clover.
+    }
+}

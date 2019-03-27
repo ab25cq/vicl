@@ -508,54 +508,91 @@ class ViClone version 14
         else {
             type_name = source.toCommand().tyclover2().toString().chomp();
         }
-
-        if(type_name.match(/\s*(.+)\s*/)) {
-            type_name = type_name.scan(/\s*(.+)\s*/).items(0);
-        }
         
-        class_name := Clover.primitiveClassToBoxingClass(type_name);
+        object_name := line.scan(/([a-zA-Z_0-9]+)\.[a-zA-Z_0-9]*/).items(1);
         
-        if(class_name.match(/.+<.+>/)) {
-            class_name = class_name.scan(/(.+)<.+>/).items(1);
-        }
-        
-        if(class_name.match(/.+\?/)) {
-            class_name = class_name.scan(/(.+)\?/).items(1);
-        }
-
-        if(class_name.equals("")) {
-            messageBox("require type for Method name completion. Maybe not compiled this source file");
-            return; 
-        }
-
-        klass:Class? = null;
+        is_class_name := false;
         try {
+            Clover.load(object_name);
+            is_class_name = true;
+        }
+        
+        if(is_class_name) {
+            class_name := object_name;
+            klass:Class? = null;
             if(win.fileName.match(/.+\.jsclcl$|.+\.jscl$/)) {
                 klass = Class(class_name, true);
             }
             else {
                 klass = Class(class_name);
             }
-        } catch(e:Exception) {
-            messageBox("class not found \{class_name}");
-            return;
+            
+            words := SortableList<String>();
+            
+            fields := klass.getClassFields();
+            for(j:=0; j<fields.length(); j++) {
+                it := fields.items(j);
+                words.push(it.name);
+            }
+            methods := klass.getClassMethods();
+            for(j=0; j<methods.length(); j++) {
+                it := methods.items(j);
+                words.push(it.methodNameAndParams);
+            }
+            
+            (inputing_text,i) := gettingInputingWord();
+            completion_core(inputing_text, i, words)
         }
-        
-        words := SortableList<String>();
-        methods := klass.getMethods();
-
-        if(class_name.equals("Command")) {
-            command_names := commandNameCompletion();
-
-            words.append(command_names);
+        else {
+            if(type_name.match(/\s*(.+)\s*/)) {
+                type_name = type_name.scan(/\s*(.+)\s*/).items(0);
+            }
+            
+            class_name := Clover.primitiveClassToBoxingClass(type_name);
+            
+            if(class_name.match(/.+<.+>/)) {
+                class_name = class_name.scan(/(.+)<.+>/).items(1);
+            }
+            
+            if(class_name.match(/.+\?/)) {
+                class_name = class_name.scan(/(.+)\?/).items(1);
+            }
+    
+            if(class_name.equals("")) {
+                messageBox("require type for Method name completion. Maybe not compiled this source file");
+                return; 
+            }
+    
+            klass:Class? = null;
+            try {
+                if(win.fileName.match(/.+\.jsclcl$|.+\.jscl$/)) {
+                    klass = Class(class_name, true);
+                }
+                else {
+                    klass = Class(class_name);
+                }
+            } catch(e:Exception) {
+                messageBox("class not found \{class_name}");
+                return;
+            }
+            
+            words := SortableList<String>();
+            methods := klass.getMethods();
+    
+            if(class_name.equals("Command")) {
+                command_names := commandNameCompletion();
+    
+                words.append(command_names);
+            }
+    
+            for(j:=0; j<methods.length(); j++) {
+                it := methods.items(j);
+                words.push(it.methodNameAndParams);
+            }
+            
+            (inputing_text,i) := gettingInputingWord();
+            completion_core(inputing_text, i, words)
         }
-
-        methods.each {
-            words.push(it.methodNameAndParams);
-        }
-        
-        (inputing_text,i) := gettingInputingWord();
-        completion_core(inputing_text, i, words)
     }
 
     def fileCompletion():dynamic {
