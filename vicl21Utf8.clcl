@@ -1,12 +1,12 @@
 class ViCloneWindow version 13
 {
     def realPosToViewPos(y:int, x:int): dynamic Tuple2<Integer, Integer> {
-        for(i:=visibleTextsPos.length()-1; i>=0; i--) {
+        for(i:=0; i<visibleTextsPos.length(); i++) {
             (y2, head, line_num) := visibleTextsPos.items(i);
             line := visibleTexts.items(i);
 
             width := line.length();
-
+            
             if(y2 == y) {
                 if(x >= head && width == 0) {
                     return (i, 0);
@@ -14,8 +14,7 @@ class ViCloneWindow version 13
                 elif(x >= head && x == 0 && width == 0) {
                     return (i, x-head);
                 }
-                elif(x >= head && x <= head + width) 
-                {
+                elif(x >= head && x <= head + width)  {
                     return (i, x-head);
                 }
             }
