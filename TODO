@@ -1,12 +1,10 @@
-fast undo vicl10VisualMode.clcl
-
 search mode utf-8
-
 search mode in visual mode
 
-word completion at the end of visible line occurs bug
+繰返し
 
 --- end ---
+word completion at the end of visible line occurs bug
 v
 Path expression completion
 [[

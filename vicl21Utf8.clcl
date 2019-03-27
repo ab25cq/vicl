@@ -28,7 +28,7 @@ class ViCloneWindow version 13
         {
             cursorY = visibleTexts.length()-1;
         }
-
+        
         if(cursorY >= MaxY-1) {
             (tmp, tmp2, top_line_size) := visibleTextsPos.items(0);
 
@@ -221,10 +221,10 @@ class ViCloneWindow version 13
                 }
 
                 if(pos.value3 > 1) {
-                    mvprintw(y, 0, "~~~~ ", array { y + scrollTopY });
+                    mvprintw(y + winPos, 0, "~~~~ ", array { y + scrollTopY });
                 }
                 else {
-                    mvprintw(y, 0, "%04d ", array { y + scrollTopY });
+                    mvprintw(y + winPos, 0, "%04d ", array { y + scrollTopY });
                 }
 
                 y2 := viewYToRealY(y);
@@ -259,10 +259,10 @@ class ViCloneWindow version 13
                 }
 
                 if(pos.value3 > 1) {
-                    mvprintw(y, 0, "~~~~ ", array { y + scrollTopY });
+                    mvprintw(y + winPos, 0, "~~~~ ", array { y + scrollTopY });
                 }
                 else {
-                    mvprintw(y, 0, "%04d ", array { y + scrollTopY });
+                    mvprintw(y + winPos, 0, "%04d ", array { y + scrollTopY });
                 }
 
                 y2 := viewYToRealY(y);
@@ -334,10 +334,10 @@ class ViCloneWindow version 13
                 }
 
                 if(pos.value3 > 1) {
-                    mvprintw(y, 0, "~~~~ ", array { y + scrollTopY });
+                    mvprintw(y + winPos, 0, "~~~~ ", array { y + scrollTopY });
                 }
                 else {
-                    mvprintw(y, 0, "%04d ", array { y + scrollTopY });
+                    mvprintw(y + winPos, 0, "%04d ", array { y + scrollTopY });
                 }
 
                 y2 := viewYToRealY(y);
@@ -461,10 +461,10 @@ class ViCloneWindow version 13
                 }
 
                 if(pos.value3 > 1) {
-                    mvprintw(y, 0, "~~~~ ", array { y + scrollTopY });
+                    mvprintw(y + winPos, 0, "~~~~ ", array { y + scrollTopY });
                 }
                 else {
-                    mvprintw(y, 0, "%04d ", array { y + scrollTopY });
+                    mvprintw(y + winPos, 0, "%04d ", array { y + scrollTopY });
                 }
 
                 ### cursor line ####

@@ -171,4 +171,5 @@ if(x == 2) {
 
 asldkfasdlfslflakslfsa
 asdlfkslafldas
-asdlfkaslfdlskflsdlfadlsfjadslkfdlksfasldflsafkadslfadlsfldalfdaslfalfalsfdlaalsdfladfdallfdadslkfalfla
+asdlfkaslfdlskflsdlfadlsfjadslkfdlksfasldflsafkadslfadlsfldalfdaslfalfalsjfdlaalsdfladfdallfdadslkfalfla aaa
+        keyEvents['x'.to_int] = lambda(self:ViClone, key:int, key2:int) {
