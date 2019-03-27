@@ -379,7 +379,7 @@ class ViClone version 14
         words.append(slist { "if", "when", "while", "for", "break", "true", "false", "null", "wildcard", "throw", "try", "return", "new", "closure", "lambda", "var", "val", "def", "inherit", "unset", "list", "elist", "slist", "tuple", "hash", "array", "earray", "sarray" });
         
         klass:Class? = null;
-
+        
         if(win.fileName.match(/.+\.jsclcl$|.+\.jscl$/)) {
             klass = Class("Global", true);
         }
@@ -569,7 +569,6 @@ class ViClone version 14
 
         while(p >= p.head()) {
             if(p->byte == ' ' || p->byte == '\t') {
-                p++;
                 break;
             }
             elif(p->byte == '"') {
@@ -657,7 +656,7 @@ class ViClone version 14
         while(p->byte == ' ' || p->byte == '\t') {
             p++;
         }
-
+        
         while(p->byte != '\0') {
             if(p->byte == '\\') {
                 p++;

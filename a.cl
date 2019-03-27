@@ -19,7 +19,7 @@ str
 ksalfalsdkflsadlfdslfadslkadslaskdflsdlalsdfdlsakfjlkaljdladsf
 あああああああああllllllあlllllll
 愛
-
+Clover.
 iiiiiiiiiiiiiiiiiiiiiiiiああああああああああああああああああああああああああ
 aaaaaaa
 ああいうえお
