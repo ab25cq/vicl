@@ -5,7 +5,7 @@ class ViClone version 14
 
     def initialize():dynamic {
         inherit();
-
+        
         if(win.fileName.match(/.+\.cl$|.+\.clcl$/)) 
         {
             completionCommandNames = tyclover2("--command").toString().split(/\n/)
@@ -511,6 +511,7 @@ class ViClone version 14
         
         object_name := line.scan(/([a-zA-Z_0-9]+)\.[a-zA-Z_0-9]*/).items(1);
         
+        
         is_class_name := false;
         try {
             Clover.load(object_name);
@@ -534,6 +535,7 @@ class ViClone version 14
                 it := fields.items(j);
                 words.push(it.name);
             }
+            
             methods := klass.getClassMethods();
             for(j=0; j<methods.length(); j++) {
                 it := methods.items(j);
