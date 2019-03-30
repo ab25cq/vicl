@@ -3,6 +3,8 @@ search mode in visual mode
 
 繰返し
 
+[[,]]でイテレーターを使う。completionでイテレーターを使う
+
 --- end ---
 word completion at the end of visible line occurs bug
 v
