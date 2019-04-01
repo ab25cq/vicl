@@ -2566,7 +2566,7 @@ class ViClone version 21
         line := win.texts.items(y);
 
         spaces_num := line.scan(/^\s+/)?.items(0).length():0;
-
+        
         tails := "";
         if(!no_tails_getting) {
             tails = line.subString(x..-1);
@@ -2597,9 +2597,6 @@ class ViClone version 21
         win.texts.insert(y+1, spaces);
 
         win.makeVisibleTexts();
-        win.fixCursorAndScrollTopOnInsertMode(win.scrollTopY);
-
-        win.cursorX = spaces_num;
     }
 
     def appendFEPString() {
