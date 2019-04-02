@@ -168,6 +168,7 @@ class ViClone version 4
                     y := win.getRealPosY();
 
                     line := win.texts.items(y);
+                    line2 := win.texts.items(y+1);
 
                     if(line != null) {
                         clearClipBoard();
@@ -183,7 +184,13 @@ class ViClone version 4
                     }
                     
                     win.makeVisibleTexts();                     
-                    win.fixCursorAndScrollTop(win.scrollTopY);
+                    win.fixCursorAndScrollTop(win.scrollTopY, false);
+                    if(line2 != null) {
+                        if(line2.equals("")) {
+                            win.cursorY--;
+                        }
+                    }
+                    
                     win.modifiedText = true;
                 }
                 case ('t'.to_int) {

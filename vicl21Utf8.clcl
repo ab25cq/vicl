@@ -22,7 +22,7 @@ class ViCloneWindow version 13
 
         return (-1,-1)
     }
-    def fixCursorAndScrollTop(scrolltop_y_before:int):dynamic {
+    def fixCursorAndScrollTop(scrolltop_y_before:int, newline:bool=true):dynamic {
         if(visibleTexts.length() < MaxY -1 && cursorY >= visibleTexts.length()) 
         {
             cursorY = visibleTexts.length()-1;
@@ -70,12 +70,17 @@ class ViCloneWindow version 13
             cursorX = 0;
         }
         elif(line.length() == 0) {
-            if(cursorX > 0) {
+            if(newline) {
+                if(cursorX > 0) {
+                    cursorX = 0;
+                    cursorY++;
+                }
+            }
+            else {
                 cursorX = 0;
-                cursorY++;
             }
         }
-        elif(cursorX >= line.length()) {
+        elif(newline && cursorX >= line.length()) {
             cursorX = 0;
             cursorY++;
         }
@@ -2597,6 +2602,8 @@ class ViClone version 21
         win.texts.insert(y+1, spaces);
 
         win.makeVisibleTexts();
+        
+        win.fixCursorAndScrollTop(win.scrollTopY, false);
     }
 
     def appendFEPString() {
