@@ -86,10 +86,15 @@ class ViCloneWindow version 13
         }
 
         if(cursorX < 0) {
-            cursorY--;
-            if(cursorY >= 0) {
-                line := visibleTexts.items(cursorY);
-                cursorX = line.length() -1;
+            if(newline) {
+                cursorY--;
+                if(cursorY >= 0) {
+                    line := visibleTexts.items(cursorY);
+                    cursorX = line.length() -1;
+                }
+            }
+            else {
+                cursorX = 0;
             }
         }
 
