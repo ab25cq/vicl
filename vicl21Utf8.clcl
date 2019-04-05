@@ -110,7 +110,7 @@ class ViCloneWindow version 13
 
     def moveCursor(y:int, x:int):dynamic int {
         (y2,x2) := realPosToViewPos(y, x);
-
+        
         if(y2 >= 0 && y2 < visibleTexts.length())
         {
             (cursorY, cursorX) = realPosToViewPos(y, x);
@@ -2306,7 +2306,7 @@ class ViClone version 21
                                 x = 0;
                             }
                             else {
-                                x = line.length()-1;
+                                x = line.length();
                             }
                             break;
                         }
@@ -2332,7 +2332,7 @@ class ViClone version 21
                                 x = 0;
                             }
                             else {
-                                x = line.length()-1;
+                                x = line.length();
                             }
                             break;
                         }
@@ -2357,7 +2357,7 @@ class ViClone version 21
                                 x = 0;
                             }
                             else {
-                                x = line.length()-1;
+                                x = line.length();
                             }
                             break;
                         }
@@ -2383,7 +2383,7 @@ class ViClone version 21
                                 x = 0;
                             }
                             else {
-                                x = line.length()-1;
+                                x = line.length();
                             }
                             break;
                         }
@@ -2410,7 +2410,7 @@ class ViClone version 21
                                 x = 0;
                             }
                             else {
-                                x = line.length()-1;
+                                x = line.length();
                             }
                             break;
                         }
@@ -2582,9 +2582,17 @@ class ViClone version 21
             tails = line.subString(x..-1);
             line.delete(x..-1);
         }
+        
+        spaces := " ".multiply(spaces_num);
+        spaces.append(tails);
+        win.texts.insert(y+1, spaces);
 
-        win.cursorX = spaces_num;
-        win.cursorY++;
+        win.makeVisibleTexts();
+        
+        (y2, x2) := win.realPosToViewPos(y+1, spaces_num);
+        
+        win.cursorX = x2;
+        win.cursorY = y2;
 
         if(win.cursorY >= win.MaxY-1) {
             (tmp, tmp2, top_line_size) := win.visibleTextsPos.items(0);
@@ -2601,12 +2609,6 @@ class ViClone version 21
                 win.cursorY -= scroll_size + top_line_size -1;
             }
         }
-        
-        spaces := " ".multiply(spaces_num);
-        spaces.append(tails);
-        win.texts.insert(y+1, spaces);
-
-        win.makeVisibleTexts();
         
         win.fixCursorAndScrollTop(win.scrollTopY, false);
     }
