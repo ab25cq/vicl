@@ -134,6 +134,30 @@ class ViClone version 4
                     win.makeVisibleTexts();
                     win.fixCursorAndScrollTop(win.scrollTopY);
                 }
+                
+                case ('t'.to_int) {
+                    win.cursorX = win.getRealPosX();
+                    win.scrollTopY = win.getRealPosY();
+                    win.cursorY = 0;
+
+                    win.makeVisibleTexts();
+                    win.fixCursorAndScrollTop(win.scrollTopY);
+                }
+
+                case ('.'.to_int) {
+                    y := win.getRealPosY();
+                    x := win.getRealPosX();
+
+                    scroll_size := (win.MaxY-1)/2;
+                    win.scrollTopY = win.getRealPosY() - scroll_size;
+
+                    win.fixCursorAndScrollTop(win.scrollTopY);
+                    win.makeVisibleTexts();
+
+                    (win.cursorY, win.cursorX) = win.realPosToViewPos(y, x);
+
+                    win.makeVisibleTexts();
+                }
             }
         }
         keyEvents['d'.to_int] = lambda(self:ViClone, key:int, key2:int) {

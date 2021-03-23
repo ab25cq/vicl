@@ -2643,6 +2643,30 @@ class ViClone version 21
                 finishInsertMode();
             }
 
+            case (('V'-'A').to_int+1) {
+                key := getch();
+
+                y := win.getRealPosY();
+                x := win.getRealPosX();
+
+                line := win.texts.items(y);
+                
+                if(line != null) {
+                    c := key.to_char;
+                    line.insert(x, c);
+
+                    win.makeVisibleTexts();
+
+                    if(key == '}' || key == ')')
+                    {
+                        blinkParen();
+                    }
+                    win.cursorX++;
+                    
+                    win.fixCursorAndScrollTopOnInsertMode(win.scrollTopY);
+                }
+            } 
+
             case (('O'-'A').to_int+1) {
                 if(fep) {
                     finishFEP();
