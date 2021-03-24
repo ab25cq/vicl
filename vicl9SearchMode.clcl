@@ -171,6 +171,16 @@ class ViClone version 9
             case (('H'-'A').to_int+1, KEY_BACKSPACE) {
                 statusLineInSearchMode.delete(-2);
             }
+            case (('W'-'A').to_int+1) {
+                n := statusLineInSearchMode.rindexOf(" ");
+
+                if(n == -1) {
+                    statusLineInSearchMode.deleteWithRange(0, -1);
+                }
+                else {
+                    statusLineInSearchMode.deleteWithRange(n, -1);
+                }
+            }
             case (('['-'A').to_int+1, ('C'-'A').to_int+1) {
                 mode = EDITMODE; 
             } 

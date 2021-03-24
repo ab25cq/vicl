@@ -132,7 +132,16 @@ class ViClone version 3
         setLastInsertedTextPos();
     }
 
+    def enterRewriteMode() {
+        mode = REWRITEMODE;
+        setLastInsertedTextPos();
+    }
+
     def finishInsertMode():dynamic {
+        mode = EDITMODE;
+        getLastInsertedText();
+    }
+    def finishRewriteMode():dynamic {
         mode = EDITMODE;
         getLastInsertedText();
     }
@@ -143,6 +152,18 @@ class ViClone version 3
         ### Insert Mode ###
         keyEvents['i'.to_int] = lambda(self:ViClone, key:int, key2:int) {
            win.addUndoText();
+
+           enterInsertMode();
+        }
+        keyEvents['r'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+           win.addUndoText();
+
+           enterRewriteMode();
+        }
+        keyEvents['I'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+           win.addUndoText();
+
+           win.cursorX = 0;
 
            enterInsertMode();
         }
@@ -423,11 +444,35 @@ class ViClone version 3
             }
         }
     }
+    def rewriteMode(key:int):dynamic {
+        y := win.getRealPosY();
+        x := win.getRealPosX();
+
+        line := win.texts.items(y);
+        
+        if(line != null) {
+            c := key.to_char;
+
+            if(c.isalnum() || c == ' ' || c.isgraph()) {
+                line.delete(x);
+                line.insert(x, c.toString());
+
+                win.makeVisibleTexts();
+                
+                win.fixCursorAndScrollTopOnInsertMode(win.scrollTopY);
+            }
+        }
+        finishRewriteMode();
+    }
 
     def runKeyEvents(key:int, key2:int): dynamic {
         if(mode == INSERTMODE) {
             win.modifiedText = true;
             insertMode(key);
+        }
+        elif(mode == REWRITEMODE) {
+            win.modifiedText = true;
+            rewriteMode(key);
         }
         else {
             inherit(key, key2);

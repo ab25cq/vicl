@@ -305,6 +305,11 @@ class ViClone version 5
             
             win.moveCursor(y, x);
         }
+        keyEvents['e'.to_int] = lambda(self:ViClone, key:int, key2:int) {
+            (y, x) := forwardWord();
+            
+            win.moveCursor(y, x);
+        }
         keyEvents['b'.to_int] = lambda(self:ViClone, key:int, key2:int) {
             (y, x) := backwardWord(-1);
             
